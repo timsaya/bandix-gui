@@ -9,18 +9,17 @@ pub struct DashboardData {
     pub devices: ApiResult<Vec<Device>>,
     pub schedules: ApiResult<Vec<ScheduledRateLimit>>,
     pub quotas: ApiResult<Vec<TrafficQuotaStatus>>,
+    pub global_rate_limit: ApiResult<GlobalRateLimit>,
     pub metrics: ApiResult<Metrics>,
     pub connection_stats: ApiResult<ConnectionStats>,
-    pub connection_flows: ApiResult<ConnectionFlows>,
     pub dns_stats: ApiResult<DnsStats>,
-    pub dns_queries: ApiResult<DnsQueries>,
 }
 
-pub fn fetch_dashboard(endpoint: &str) -> DashboardData {
+pub fn fetch_dashboard(endpoint: &str, range: Option<(u64, u64)>) -> DashboardData {
     match Endpoint::parse(endpoint) {
         Ok(endpoint) => DashboardData {
             devices: endpoint
-                .get_json::<DevicesResponse>("/api/traffic/devices")
+                .get_json::<DevicesResponse>(&devices_path(range))
                 .map(|data| data.devices),
             schedules: endpoint
                 .get_json::<ScheduledRateLimitsResponse>("/api/traffic/limits/schedule")
@@ -28,13 +27,12 @@ pub fn fetch_dashboard(endpoint: &str) -> DashboardData {
             quotas: endpoint
                 .get_json::<TrafficQuotasResponse>("/api/traffic/quotas")
                 .map(|data| data.quotas),
+            global_rate_limit: endpoint.get_json("/api/traffic/rate_limit/whitelist"),
             metrics: endpoint.get_json("/api/traffic/metrics"),
             connection_stats: endpoint.get_json("/api/connection/devices"),
-            connection_flows: endpoint.get_json("/api/connection/flows?page=1&page_size=50"),
             dns_stats: endpoint
                 .get_json::<DnsStatsResponse>("/api/dns/stats")
                 .map(|data| data.stats),
-            dns_queries: endpoint.get_json("/api/dns/queries?page=1&page_size=50"),
         },
         Err(error) => DashboardData::failed(error),
     }
@@ -46,13 +44,71 @@ impl DashboardData {
             devices: Err(error.clone()),
             schedules: Err(error.clone()),
             quotas: Err(error.clone()),
+            global_rate_limit: Err(error.clone()),
             metrics: Err(error.clone()),
             connection_stats: Err(error.clone()),
-            connection_flows: Err(error.clone()),
-            dns_stats: Err(error.clone()),
-            dns_queries: Err(error),
+            dns_stats: Err(error),
         }
     }
+}
+
+fn devices_path(range: Option<(u64, u64)>) -> String {
+    match range {
+        Some((start, end)) => format!("/api/traffic/devices?start_ms={start}&end_ms={end}"),
+        None => "/api/traffic/devices".into(),
+    }
+}
+
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Eq)]
+pub struct GlobalRateLimit {
+    pub enabled: bool,
+    pub default_wan_rx_rate_limit: u64,
+    pub default_wan_tx_rate_limit: u64,
+    pub macs: Vec<String>,
+}
+
+impl GlobalRateLimit {
+    pub fn is_exempt(&self, mac: &str) -> bool {
+        self.macs
+            .iter()
+            .any(|entry| entry.eq_ignore_ascii_case(mac))
+    }
+}
+
+pub fn fetch_global_rate_limit(endpoint: &str) -> ApiResult<GlobalRateLimit> {
+    Endpoint::parse(endpoint)?.get_json("/api/traffic/rate_limit/whitelist")
+}
+
+pub fn set_global_rate_limit_enabled(endpoint: &str, enabled: bool) -> ApiResult<()> {
+    Endpoint::parse(endpoint)?.send_json(
+        "POST",
+        "/api/traffic/rate_limit/whitelist/enabled",
+        &serde_json::json!({"enabled":enabled}),
+    )
+}
+
+pub fn set_global_rate_limits(endpoint: &str, download: u64, upload: u64) -> ApiResult<()> {
+    Endpoint::parse(endpoint)?.send_json(
+        "POST",
+        "/api/traffic/rate_limit/default",
+        &serde_json::json!({"wan_rx_rate_limit":download,"wan_tx_rate_limit":upload}),
+    )
+}
+
+pub fn add_rate_limit_exemption(endpoint: &str, mac: &str) -> ApiResult<()> {
+    Endpoint::parse(endpoint)?.send_json(
+        "POST",
+        "/api/traffic/rate_limit/whitelist",
+        &serde_json::json!({"mac":mac}),
+    )
+}
+
+pub fn remove_rate_limit_exemption(endpoint: &str, mac: &str) -> ApiResult<()> {
+    Endpoint::parse(endpoint)?.send_json(
+        "DELETE",
+        "/api/traffic/rate_limit/whitelist",
+        &serde_json::json!({"mac":mac}),
+    )
 }
 
 pub fn fetch_usage_timeline(
@@ -500,12 +556,132 @@ pub struct DeviceConnection {
     pub ip: String,
     #[serde(rename = "host")]
     pub hostname: String,
+    #[serde(default)]
+    pub mac: String,
+    #[serde(default, rename = "tcp")]
+    pub tcp_connections: u32,
+    #[serde(default, rename = "udp")]
+    pub udp_connections: u32,
+    #[serde(default, rename = "tcp_est")]
+    pub established_tcp: u32,
+    #[serde(default, rename = "tcp_tw")]
+    pub time_wait_tcp: u32,
+    #[serde(default, rename = "tcp_cw")]
+    pub close_wait_tcp: u32,
+    #[serde(default, rename = "total")]
+    pub total_connections: u32,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+impl DeviceConnection {
+    pub fn display_name(&self) -> &str {
+        if !self.hostname.trim().is_empty() {
+            &self.hostname
+        } else if !self.ip.is_empty() {
+            &self.ip
+        } else if !self.mac.is_empty() {
+            &self.mac
+        } else {
+            "未知设备"
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct ConnectionFlows {
     pub items: Vec<ConnectionFlow>,
     pub total: usize,
+    pub page: usize,
+    pub page_size: usize,
+    pub total_pages: usize,
+}
+
+impl<'de> Deserialize<'de> for ConnectionFlows {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum Response {
+            Paged {
+                items: Vec<ConnectionFlow>,
+                total: usize,
+                page: Option<usize>,
+                page_size: Option<usize>,
+                total_pages: Option<usize>,
+            },
+            Legacy(Vec<ConnectionFlow>),
+        }
+        Ok(match Response::deserialize(deserializer)? {
+            Response::Paged {
+                items,
+                total,
+                page,
+                page_size,
+                total_pages,
+            } => {
+                let page_size = page_size.unwrap_or(100).max(1);
+                let total_pages = total_pages
+                    .unwrap_or_else(|| total.div_ceil(page_size))
+                    .max(1);
+                Self {
+                    items,
+                    total,
+                    page: page.unwrap_or(1).clamp(1, total_pages),
+                    page_size,
+                    total_pages,
+                }
+            }
+            Response::Legacy(items) => Self {
+                total: items.len(),
+                page: 1,
+                page_size: items.len().max(1),
+                total_pages: 1,
+                items,
+            },
+        })
+    }
+}
+
+pub fn fetch_connection_flows(
+    endpoint: &str,
+    ip: &str,
+    protocol: &str,
+    state: &str,
+    page: usize,
+    page_size: usize,
+) -> ApiResult<ConnectionFlows> {
+    Endpoint::parse(endpoint)?
+        .get_json(&connection_flows_path(ip, protocol, state, page, page_size))
+}
+
+fn connection_flows_path(
+    ip: &str,
+    protocol: &str,
+    state: &str,
+    page: usize,
+    page_size: usize,
+) -> String {
+    let mut path = format!(
+        "/api/connection/flows?page={}&page_size={}",
+        page.max(1),
+        page_size.clamp(1, 1000)
+    );
+    for (key, value) in [("ip", ip), ("protocol", protocol), ("state", state)] {
+        if !value.is_empty() {
+            path.push_str(&format!("&{key}={}", encode_query_value(value)));
+        }
+    }
+    path
+}
+
+fn encode_query_value(value: &str) -> String {
+    value
+        .bytes()
+        .map(|byte| match byte {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                (byte as char).to_string()
+            }
+            _ => format!("%{byte:02X}"),
+        })
+        .collect()
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -513,14 +689,24 @@ pub struct ConnectionFlow {
     pub protocol: String,
     pub state: Option<String>,
     pub orig: FlowEndpoint,
+    #[serde(default)]
+    pub repl: FlowEndpoint,
+    #[serde(default)]
+    pub orig_packets: u64,
     pub orig_bytes: u64,
+    #[serde(default)]
+    pub repl_packets: u64,
     pub repl_bytes: u64,
+    #[serde(default)]
+    pub flags: Vec<String>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize)]
 pub struct FlowEndpoint {
     pub src: String,
     pub dst: String,
+    #[serde(default)]
+    pub sport: u16,
     pub dport: u16,
 }
 
@@ -529,38 +715,206 @@ struct DnsStatsResponse {
     stats: DnsStats,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize)]
+#[serde(default)]
 pub struct DnsStats {
     pub total_queries: usize,
+    pub total_responses: usize,
     pub queries_without_response: usize,
     pub avg_response_time_ms: f64,
+    pub latest_response_time_ms: Option<u64>,
+    pub min_response_time_ms: u64,
+    pub max_response_time_ms: u64,
     pub failure_count: usize,
     pub success_rate: f64,
     pub unique_devices: usize,
     pub response_time_percentiles: ResponseTimePercentiles,
+    pub top_domains: Vec<DnsTopItem>,
+    pub top_query_types: Vec<DnsTopItem>,
+    pub top_devices: Vec<DnsTopItem>,
+    pub top_dns_servers: Vec<DnsTopItem>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize)]
+#[serde(default)]
+pub struct ResponseTimePercentiles {
+    pub p95: u64,
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct ResponseTimePercentiles {
-    pub p95: u64,
+pub struct DnsTopItem {
+    pub name: String,
+    pub count: usize,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct DnsQueries {
     pub queries: Vec<DnsQuery>,
     pub total: usize,
+    #[serde(default = "first_page")]
+    pub page: usize,
+    #[serde(default = "default_dns_page_size")]
+    pub page_size: usize,
+    #[serde(default = "first_page")]
+    pub total_pages: usize,
+}
+fn first_page() -> usize {
+    1
+}
+fn default_dns_page_size() -> usize {
+    20
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize)]
+#[serde(default)]
 pub struct DnsQuery {
+    pub timestamp: u64,
+    pub timestamp_formatted: String,
     pub domain: String,
     pub query_type: String,
     pub response_code: String,
     pub response_time_ms: Option<u64>,
     pub source_ip: String,
+    pub destination_ip: String,
     pub is_query: bool,
     pub device_mac: String,
     pub device_name: String,
+    pub response_records: Vec<String>,
+    pub response_ips: Vec<String>,
+}
+impl DnsQuery {
+    pub fn device_ip(&self) -> &str {
+        if self.is_query {
+            &self.source_ip
+        } else {
+            &self.destination_ip
+        }
+    }
+    pub fn dns_server(&self) -> &str {
+        if self.is_query {
+            &self.destination_ip
+        } else {
+            &self.source_ip
+        }
+    }
+    pub fn results(&self) -> &[String] {
+        if self.response_records.is_empty() {
+            &self.response_ips
+        } else {
+            &self.response_records
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct DnsQueryFilter {
+    pub domain: String,
+    pub device: String,
+    pub is_query: Option<bool>,
+    pub dns_server: String,
+    pub query_type: String,
+}
+
+pub fn fetch_dns_queries(
+    endpoint: &str,
+    filter: &DnsQueryFilter,
+    page: usize,
+    page_size: usize,
+) -> ApiResult<DnsQueries> {
+    let endpoint = Endpoint::parse(endpoint)?;
+    let remote = DnsQueryFilter {
+        domain: dns_filter_token(&filter.domain),
+        device: dns_filter_token(&filter.device),
+        dns_server: dns_filter_token(&filter.dns_server),
+        query_type: filter.query_type.clone(),
+        is_query: filter.is_query,
+    };
+    let page_size = page_size.clamp(1, 1000);
+    if remote.domain == filter.domain.trim()
+        && remote.device == filter.device.trim()
+        && remote.dns_server == filter.dns_server.trim()
+    {
+        return read_dns_page(&endpoint, &remote, page, page_size);
+    }
+    // Bandix's HTTP parser reads query values literally (without percent decoding).
+    // Narrow on safe substrings first; apply names containing spaces or delimiters locally.
+    let first = read_dns_page(&endpoint, &remote, 1, 1000)?;
+    let pages = first.total_pages;
+    let mut queries = first.queries;
+    for next in 2..=pages {
+        queries.extend(read_dns_page(&endpoint, &remote, next, 1000)?.queries);
+    }
+    queries.retain(|query| dns_matches(query, filter));
+    let total = queries.len();
+    let total_pages = total.div_ceil(page_size).max(1);
+    let page = page.clamp(1, total_pages);
+    Ok(DnsQueries {
+        queries: queries
+            .into_iter()
+            .skip((page - 1) * page_size)
+            .take(page_size)
+            .collect(),
+        total,
+        page,
+        page_size,
+        total_pages,
+    })
+}
+fn read_dns_page(
+    endpoint: &Endpoint,
+    filter: &DnsQueryFilter,
+    page: usize,
+    page_size: usize,
+) -> ApiResult<DnsQueries> {
+    let mut result: DnsQueries = endpoint.get_json(&dns_queries_path(filter, page, page_size))?;
+    result.page = result.page.max(1);
+    result.page_size = result.page_size.max(1);
+    result.total_pages = result.total_pages.max(1);
+    Ok(result)
+}
+fn dns_filter_token(value: &str) -> String {
+    value
+        .trim()
+        .split(|c: char| c.is_whitespace() || c.is_control() || matches!(c, '&' | '#' | '?' | '%'))
+        .max_by_key(|part| part.len())
+        .unwrap_or_default()
+        .to_string()
+}
+fn dns_matches(query: &DnsQuery, filter: &DnsQueryFilter) -> bool {
+    let device = filter.device.trim().to_lowercase();
+    query.domain.contains(filter.domain.trim())
+        && (device.is_empty()
+            || [&query.device_name, &query.device_mac, query.device_ip()]
+                .into_iter()
+                .any(|value| value.to_lowercase().contains(&device)))
+        && query.dns_server().contains(filter.dns_server.trim())
+        && filter
+            .is_query
+            .is_none_or(|is_query| query.is_query == is_query)
+        && (filter.query_type.is_empty()
+            || query.query_type.eq_ignore_ascii_case(&filter.query_type))
+}
+fn dns_queries_path(filter: &DnsQueryFilter, page: usize, page_size: usize) -> String {
+    let mut path = format!(
+        "/api/dns/queries?page={}&page_size={}",
+        page.max(1),
+        page_size.clamp(1, 1000)
+    );
+    for (key, value) in [
+        ("domain", filter.domain.as_str()),
+        ("device", &filter.device),
+        ("dns_server", &filter.dns_server),
+        ("query_type", &filter.query_type),
+    ] {
+        let value = value.trim();
+        if !value.is_empty() {
+            path.push_str(&format!("&{key}={value}"));
+        }
+    }
+    if let Some(is_query) = filter.is_query {
+        path.push_str(&format!("&is_query={is_query}"));
+    }
+    path
 }
 
 pub fn format_bytes(bytes: u64) -> String {
@@ -592,6 +946,258 @@ fn now_ms() -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn devices_period_query_supplies_both_boundaries_and_all_omits_them() {
+        assert_eq!(devices_path(None), "/api/traffic/devices");
+        assert_eq!(
+            devices_path(Some((123, 456))),
+            "/api/traffic/devices?start_ms=123&end_ms=456"
+        );
+    }
+
+    #[test]
+    fn global_policy_requests_match_bandix_api_methods_and_json_types() {
+        use std::{
+            io::{Read, Write},
+            net::TcpListener,
+        };
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let endpoint = listener.local_addr().unwrap().to_string();
+        let server = std::thread::spawn(move || {
+            for (method, path, expected) in [
+                (
+                    "GET",
+                    "/api/traffic/rate_limit/whitelist",
+                    serde_json::Value::Null,
+                ),
+                (
+                    "POST",
+                    "/api/traffic/rate_limit/whitelist/enabled",
+                    serde_json::json!({"enabled":false}),
+                ),
+                (
+                    "POST",
+                    "/api/traffic/rate_limit/default",
+                    serde_json::json!({"wan_rx_rate_limit":125000,"wan_tx_rate_limit":2048}),
+                ),
+                (
+                    "POST",
+                    "/api/traffic/rate_limit/whitelist",
+                    serde_json::json!({"mac":"aa:bb:cc:dd:ee:ff"}),
+                ),
+                (
+                    "DELETE",
+                    "/api/traffic/rate_limit/whitelist",
+                    serde_json::json!({"mac":"aa:bb:cc:dd:ee:ff"}),
+                ),
+            ] {
+                let (mut stream, _) = listener.accept().unwrap();
+                stream
+                    .set_read_timeout(Some(std::time::Duration::from_secs(3)))
+                    .unwrap();
+                let mut bytes = Vec::new();
+                let (header_end, length) = loop {
+                    let mut buffer = [0u8; 4096];
+                    let count = stream.read(&mut buffer).unwrap();
+                    assert!(count > 0);
+                    bytes.extend_from_slice(&buffer[..count]);
+                    if let Some(end) = bytes.windows(4).position(|part| part == b"\r\n\r\n") {
+                        let headers = std::str::from_utf8(&bytes[..end]).unwrap();
+                        assert!(headers.starts_with(&format!("{method} {path} HTTP/1.1")));
+                        let length = headers
+                            .lines()
+                            .find_map(|line| line.strip_prefix("Content-Length: "))
+                            .unwrap()
+                            .parse::<usize>()
+                            .unwrap();
+                        if bytes.len() >= end + 4 + length {
+                            break (end, length);
+                        }
+                    }
+                };
+                if length > 0 {
+                    assert_eq!(
+                        serde_json::from_slice::<serde_json::Value>(
+                            &bytes[header_end + 4..header_end + 4 + length]
+                        )
+                        .unwrap(),
+                        expected
+                    );
+                }
+                let data = if method == "GET" {
+                    serde_json::json!({"enabled":true,"default_wan_rx_rate_limit":4096,"default_wan_tx_rate_limit":1024,"macs":["AA:BB:CC:DD:EE:FF"]})
+                } else {
+                    serde_json::Value::Null
+                };
+                let body = serde_json::json!({"status":"success","data":data}).to_string();
+                write!(
+                    stream,
+                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    body.len(),
+                    body
+                )
+                .unwrap();
+            }
+        });
+        let policy = fetch_global_rate_limit(&endpoint).unwrap();
+        assert!(policy.is_exempt("aa:bb:cc:dd:ee:ff"));
+        set_global_rate_limit_enabled(&endpoint, false).unwrap();
+        set_global_rate_limits(&endpoint, 125000, 2048).unwrap();
+        add_rate_limit_exemption(&endpoint, "aa:bb:cc:dd:ee:ff").unwrap();
+        remove_rate_limit_exemption(&endpoint, "aa:bb:cc:dd:ee:ff").unwrap();
+        server.join().unwrap();
+    }
+
+    #[test]
+    fn connection_stats_decode_per_device_protocol_and_state_counts() {
+        let stats:ConnectionStats=serde_json::from_value(serde_json::json!({
+            "g":{"total":460,"tcp":350,"udp":110,"tcp_est":300,"tcp_tw":40,"tcp_cw":10},
+            "d":[{"ip4":"192.168.1.2","host":"Laptop","mac":"aa:bb:cc:dd:ee:ff","tcp":70,"udp":20,"tcp_est":60,"tcp_tw":8,"tcp_cw":2,"total":90}]
+        })).unwrap();
+        let device = &stats.devices[0];
+        assert_eq!(
+            (
+                device.tcp_connections,
+                device.udp_connections,
+                device.total_connections
+            ),
+            (70, 20, 90)
+        );
+        assert_eq!(
+            (
+                device.established_tcp,
+                device.time_wait_tcp,
+                device.close_wait_tcp
+            ),
+            (60, 8, 2)
+        );
+        assert_eq!(device.display_name(), "Laptop");
+        let mut unnamed = device.clone();
+        unnamed.hostname = " ".into();
+        assert_eq!(unnamed.display_name(), "192.168.1.2");
+    }
+
+    #[test]
+    fn connection_flows_preserve_both_directions_and_normalize_legacy_pagination() {
+        let flow = serde_json::json!({"protocol":"tcp","state":"ESTABLISHED",
+            "orig":{"src":"192.168.1.2","sport":50000,"dst":"1.1.1.1","dport":443},
+            "repl":{"src":"1.1.1.1","sport":443,"dst":"203.0.113.5","dport":50000},
+            "orig_packets":30,"orig_bytes":3000,"repl_packets":90,"repl_bytes":9000,"flags":["ASSURED"]});
+        let data:ConnectionFlows=serde_json::from_value(serde_json::json!({"items":[flow.clone()],"total":201,"page":3,"page_size":100,"total_pages":3})).unwrap();
+        assert_eq!(
+            (data.total, data.page, data.page_size, data.total_pages),
+            (201, 3, 100, 3)
+        );
+        assert_eq!(data.items[0].orig.sport, 50000);
+        assert_eq!(data.items[0].repl.dst, "203.0.113.5");
+        assert_eq!(
+            (data.items[0].orig_packets, data.items[0].repl_packets),
+            (30, 90)
+        );
+        assert_eq!(data.items[0].flags, ["ASSURED"]);
+        let legacy: ConnectionFlows = serde_json::from_value(serde_json::json!([flow])).unwrap();
+        assert_eq!(
+            (
+                legacy.total,
+                legacy.page,
+                legacy.page_size,
+                legacy.total_pages
+            ),
+            (1, 1, 1, 1)
+        );
+        let empty: ConnectionFlows = serde_json::from_value(
+            serde_json::json!({"items":[],"total":0,"page":0,"page_size":0,"total_pages":0}),
+        )
+        .unwrap();
+        assert_eq!((empty.page, empty.page_size, empty.total_pages), (1, 1, 1));
+    }
+
+    #[test]
+    fn dns_query_response_direction_and_answer_fallback_preserve_zero_latency() {
+        let mut query:DnsQuery=serde_json::from_value(serde_json::json!({"domain":"example.com","query_type":"AAAA","is_query":true,"source_ip":"192.168.1.12","destination_ip":"2001:4860:4860::8888","response_time_ms":0,"response_records":["CNAME example.net","AAAA 2001:db8::1"],"response_ips":["2001:db8::1"]})).unwrap();
+        assert_eq!(
+            (query.device_ip(), query.dns_server()),
+            ("192.168.1.12", "2001:4860:4860::8888")
+        );
+        assert_eq!(query.response_time_ms, Some(0));
+        assert_eq!(query.results(), ["CNAME example.net", "AAAA 2001:db8::1"]);
+        query.is_query = false;
+        std::mem::swap(&mut query.source_ip, &mut query.destination_ip);
+        assert_eq!(
+            (query.device_ip(), query.dns_server()),
+            ("192.168.1.12", "2001:4860:4860::8888")
+        );
+        query.response_records.clear();
+        assert_eq!(query.results(), ["2001:db8::1"]);
+        let mac_filter = DnsQueryFilter {
+            device: "aa:bb:cc".into(),
+            dns_server: "2001:4860::8888".into(),
+            is_query: Some(false),
+            ..Default::default()
+        };
+        assert_eq!(
+            dns_queries_path(&mac_filter, 1, 20),
+            "/api/dns/queries?page=1&page_size=20&device=aa:bb:cc&dns_server=2001:4860::8888&is_query=false"
+        );
+    }
+
+    #[test]
+    fn dns_filters_with_spaces_apply_to_all_server_pages_and_keep_correct_totals() {
+        use std::{
+            io::{Read, Write},
+            net::TcpListener,
+        };
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap().to_string();
+        let server = std::thread::spawn(move || {
+            for page in 1..=2 {
+                let (mut stream, _) = listener.accept().unwrap();
+                let mut bytes = Vec::new();
+                while !bytes.windows(4).any(|part| part == b"\r\n\r\n") {
+                    let mut b = [0u8; 2048];
+                    let n = stream.read(&mut b).unwrap();
+                    assert!(n > 0);
+                    bytes.extend_from_slice(&b[..n]);
+                }
+                let request = String::from_utf8(bytes).unwrap();
+                assert!(request.starts_with(&format!("GET /api/dns/queries?page={page}&page_size=1000&domain=例子.test&device=MacBook&dns_server=2001:4860:4860::8888&query_type=AAAA&is_query=false HTTP/1.1")));
+                let queries=(0..if page==1 {1000}else{1}).map(|i|serde_json::json!({"domain":"例子.test","query_type":"AAAA","is_query":false,"device_name":if i<3 {"MacBook Pro"}else{"MacBook Air"},"source_ip":"2001:4860:4860::8888","destination_ip":"192.168.1.12","response_time_ms":0})).collect::<Vec<_>>();
+                let body=serde_json::json!({"status":"success","data":{"queries":queries,"total":1001,"page":page,"page_size":1000,"total_pages":2}}).to_string();
+                write!(
+                    stream,
+                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                )
+                .unwrap();
+            }
+        });
+        let filter = DnsQueryFilter {
+            domain: "例子.test".into(),
+            device: "MacBook Pro".into(),
+            dns_server: "2001:4860:4860::8888".into(),
+            query_type: "AAAA".into(),
+            is_query: Some(false),
+        };
+        let result = fetch_dns_queries(&address, &filter, 2, 2).unwrap();
+        assert_eq!(
+            (
+                result.page,
+                result.page_size,
+                result.total,
+                result.total_pages,
+                result.queries.len()
+            ),
+            (2, 2, 4, 2, 2)
+        );
+        assert!(
+            result
+                .queries
+                .iter()
+                .all(|query| query.device_name == "MacBook Pro")
+        );
+        server.join().unwrap();
+    }
 
     #[test]
     fn devices_decode_lan_and_wan_traffic_independently_from_total_traffic() {
@@ -653,7 +1259,7 @@ mod tests {
         let Ok(endpoint) = std::env::var("BANDIX_GUI_TEST_ENDPOINT") else {
             return;
         };
-        let data = fetch_dashboard(&endpoint);
+        let data = fetch_dashboard(&endpoint, None);
         assert!(data.devices.is_ok(), "devices: {:?}", data.devices.err());
         assert!(data.metrics.is_ok(), "metrics: {:?}", data.metrics.err());
         assert!(
@@ -673,20 +1279,14 @@ mod tests {
             "connection stats: {:?}",
             data.connection_stats.err()
         );
-        assert!(
-            data.connection_flows.is_ok(),
-            "connection flows: {:?}",
-            data.connection_flows.err()
-        );
+        let flows = fetch_connection_flows(&endpoint, "", "", "", 1, 50);
+        assert!(flows.is_ok(), "connection flows: {:?}", flows.err());
         assert!(
             data.dns_stats.is_ok(),
             "dns stats: {:?}",
             data.dns_stats.err()
         );
-        assert!(
-            data.dns_queries.is_ok(),
-            "dns queries: {:?}",
-            data.dns_queries.err()
-        );
+        let queries = fetch_dns_queries(&endpoint, &DnsQueryFilter::default(), 1, 20);
+        assert!(queries.is_ok(), "dns queries: {:?}", queries.err());
     }
 }

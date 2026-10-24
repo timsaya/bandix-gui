@@ -5,7 +5,8 @@ use super::row::{cell, line};
 use crate::app::quota_usage::{QuotaUsage, blocking_periods, configured_periods};
 use crate::app::theme::*;
 use crate::services::api::{
-    ApiResult, DashboardData, ScheduledRateLimit, TrafficQuotaStatus, format_bytes, format_rate,
+    ApiResult, DashboardData, GlobalRateLimit, ScheduledRateLimit, TrafficQuotaStatus,
+    format_bytes, format_rate,
 };
 use chrono::{Datelike, Local, Timelike};
 use gpui_kit::component::tooltip::Tooltip;
@@ -31,6 +32,7 @@ pub(super) fn render(
         mac,
         now.weekday().number_from_monday() as u8,
         (now.hour() * 60 + now.minute()) as u16,
+        data.map(|data| &data.global_rate_limit),
     );
     let quota = quota_status(data.map(|data| &data.quotas), mac);
     let tooltip = format!("{}\n\n{}", limits.detail, quota.detail);
@@ -61,12 +63,16 @@ fn rate_status(
     mac: &str,
     weekday: u8,
     minute: u16,
+    global: Option<&ApiResult<GlobalRateLimit>>,
 ) -> StatusLine {
     let schedules = match schedules {
         Some(Ok(rules)) => rules,
         Some(Err(error)) => return unavailable("限速", Some(error)),
         None => return unavailable("限速", None),
     };
+    if let Some(Err(error)) = global {
+        return unavailable("限速", Some(error));
+    }
     let rules = schedules
         .iter()
         .filter(|rule| rule.mac.eq_ignore_ascii_case(mac))
@@ -77,13 +83,13 @@ fn rate_status(
         .filter(|rule| rule_is_active(rule, weekday, minute))
         .collect::<Vec<_>>();
     // As in LuCI, overlapping rules use the smallest nonzero limit per direction.
-    let download = active
+    let mut download = active
         .iter()
         .map(|rule| rule.wan_rx_rate_limit)
         .filter(|rate| *rate > 0)
         .min()
         .unwrap_or(0);
-    let upload = active
+    let mut upload = active
         .iter()
         .map(|rule| rule.wan_tx_rate_limit)
         .filter(|rate| *rate > 0)
@@ -120,6 +126,25 @@ fn rate_status(
         .collect::<Vec<_>>()
         .join("\n");
 
+    let global_detail = match global {
+        Some(Ok(policy)) if policy.enabled && !policy.is_exempt(mac) => {
+            let minimum = |a, b| match (a, b) {
+                (0, b) => b,
+                (a, 0) => a,
+                (a, b) => a.min(b),
+            };
+            download = minimum(download, policy.default_wan_rx_rate_limit);
+            upload = minimum(upload, policy.default_wan_tx_rate_limit);
+            format!(
+                "\n全局限速：↓ {} · ↑ {}",
+                limit_text(policy.default_wan_rx_rate_limit),
+                limit_text(policy.default_wan_tx_rate_limit)
+            )
+        }
+        Some(Ok(policy)) if policy.enabled => "\n全局限速：白名单豁免".into(),
+        Some(Err(error)) => format!("\n全局限速状态不可用：{error}"),
+        _ => String::new(),
+    };
     StatusLine {
         usage_lines: Vec::new(),
         text: if download == 0 && upload == 0 {
@@ -133,10 +158,10 @@ fn rate_status(
             BLUE
         },
         detail: if rules.is_empty() {
-            "限速：未设置规则".into()
+            format!("限速：未设置独立规则{global_detail}")
         } else {
             format!(
-                "限速：{} / {} 条规则生效\n{details}",
+                "限速：{} / {} 条规则生效\n{details}{global_detail}",
                 active.len(),
                 rules.len()
             )
@@ -279,6 +304,7 @@ fn unavailable(label: &str, error: Option<&String>) -> StatusLine {
 #[cfg(test)]
 mod tests {
     use super::{most_used_quota, quota_status, rate_status, rule_is_active};
+    use crate::services::api::GlobalRateLimit;
     use crate::services::api::{ScheduleTimeSlot, ScheduledRateLimit, TrafficQuotaStatus};
 
     const MAC: &str = "aa:bb:cc:dd:ee:ff";
@@ -329,10 +355,42 @@ mod tests {
             rule("22:00", "23:59", 1, 1),
             other_device,
         ]);
-        let status = rate_status(Some(&rules), MAC, 1, 600);
+        let status = rate_status(Some(&rules), MAC, 1, 600, None);
         assert_eq!(status.text, "限速 ↓ 2.0 KB/s · ↑ 1.0 KB/s");
         assert!(status.detail.contains("2 / 3 条规则生效"));
-        assert_eq!(rate_status(Some(&rules), MAC, 2, 600).text, "限速 未限速");
+        assert_eq!(
+            rate_status(Some(&rules), MAC, 2, 600, None).text,
+            "限速 未限速"
+        );
+    }
+
+    #[test]
+    fn global_limits_combine_with_independent_rules_and_only_whitelist_exempts_global_limits() {
+        let rules = Ok(vec![rule("00:00", "23:59", 2048, 0)]);
+        let mut policy = GlobalRateLimit {
+            enabled: true,
+            default_wan_rx_rate_limit: 4096,
+            default_wan_tx_rate_limit: 1024,
+            macs: vec![],
+        };
+        assert_eq!(
+            rate_status(Some(&rules), MAC, 1, 600, Some(&Ok(policy.clone()))).text,
+            "限速 ↓ 2.0 KB/s · ↑ 1.0 KB/s"
+        );
+        policy.macs.push(MAC.to_uppercase());
+        let status = rate_status(Some(&rules), MAC, 1, 600, Some(&Ok(policy.clone())));
+        assert_eq!(status.text, "限速 ↓ 2.0 KB/s · ↑ 不限");
+        assert!(status.detail.contains("白名单豁免"));
+        policy.macs.clear();
+        assert_eq!(
+            rate_status(Some(&Ok(vec![])), MAC, 1, 600, Some(&Ok(policy.clone()))).text,
+            "限速 ↓ 4.0 KB/s · ↑ 1.0 KB/s"
+        );
+        policy.enabled = false;
+        assert_eq!(
+            rate_status(Some(&Ok(vec![])), MAC, 1, 600, Some(&Ok(policy))).text,
+            "限速 未限速"
+        );
     }
 
     #[test]
@@ -384,7 +442,18 @@ mod tests {
         assert!(status.detail.contains("HTTP 503"));
         assert_eq!(quota_status(None, MAC).text, "配额 正在读取…");
         assert_eq!(
-            rate_status(Some(&Err("HTTP 503".into())), MAC, 1, 600).text,
+            rate_status(Some(&Err("HTTP 503".into())), MAC, 1, 600, None).text,
+            "限速 读取失败"
+        );
+        assert_eq!(
+            rate_status(
+                Some(&Ok(vec![])),
+                MAC,
+                1,
+                600,
+                Some(&Err("HTTP 503".into()))
+            )
+            .text,
             "限速 读取失败"
         );
     }

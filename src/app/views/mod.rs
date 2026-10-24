@@ -9,8 +9,8 @@ use gpui_kit::*;
 pub(super) fn render(page: Page, app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
     match page {
         Page::Traffic => traffic::render(app, cx),
-        Page::Connections => connections::render(app),
-        Page::Dns => dns::render(app),
+        Page::Connections => connections::render(app, cx),
+        Page::Dns => dns::render(app, cx),
         Page::Settings => settings::render(app, cx).into_any_element(),
     }
 }

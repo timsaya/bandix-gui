@@ -6,7 +6,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
 mod quota;
-mod schedule;
+pub(super) mod schedule;
 use quota::QuotaField;
 use schedule::{RateUnit, TimeSelection, UnitSelect};
 

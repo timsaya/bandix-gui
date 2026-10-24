@@ -31,6 +31,7 @@ fn nav_item(
             app.realtime_chart.resume();
             app.timeline_chart.end_hover();
             app.page = page;
+            app.ensure_dns_queries(cx);
             cx.notify();
         }))
         .child(

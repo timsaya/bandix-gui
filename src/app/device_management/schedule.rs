@@ -15,7 +15,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(super) enum RateUnit {
+pub(in crate::app) enum RateUnit {
     Kilobytes,
     Megabytes,
     Gigabytes,
@@ -25,7 +25,7 @@ pub(super) enum RateUnit {
 }
 
 impl RateUnit {
-    const ALL: [Self; 6] = [
+    pub(in crate::app) const ALL: [Self; 6] = [
         Self::Kilobytes,
         Self::Megabytes,
         Self::Gigabytes,
@@ -45,7 +45,7 @@ impl RateUnit {
         }
     }
 
-    fn bytes_per_second(self) -> f64 {
+    pub(in crate::app) fn bytes_per_second(self) -> f64 {
         // Match LuCI: binary byte units, decimal bit units converted to bytes.
         match self {
             Self::Kilobytes => 1024.0,
@@ -69,7 +69,7 @@ impl SelectItem for RateUnit {
     }
 }
 
-pub(super) type UnitSelect = SelectState<Vec<RateUnit>>;
+pub(in crate::app) type UnitSelect = SelectState<Vec<RateUnit>>;
 type TimeSelect = SelectState<Vec<String>>;
 
 pub(super) struct TimeSelection {
@@ -154,7 +154,10 @@ impl TimeSelection {
     }
 }
 
-pub(super) fn number_state(window: &mut Window, cx: &mut Context<BandixApp>) -> Entity<InputState> {
+pub(in crate::app) fn number_state(
+    window: &mut Window,
+    cx: &mut Context<BandixApp>,
+) -> Entity<InputState> {
     cx.new(|cx| {
         InputState::new(window, cx)
             .default_value("0")
@@ -163,11 +166,14 @@ pub(super) fn number_state(window: &mut Window, cx: &mut Context<BandixApp>) -> 
     })
 }
 
-pub(super) fn unit_state(window: &mut Window, cx: &mut Context<BandixApp>) -> Entity<UnitSelect> {
+pub(in crate::app) fn unit_state(
+    window: &mut Window,
+    cx: &mut Context<BandixApp>,
+) -> Entity<UnitSelect> {
     cx.new(|cx| SelectState::new(RateUnit::ALL.to_vec(), Some(IndexPath::new(0)), window, cx))
 }
 
-pub(super) fn parse_rate(value: &str, unit: RateUnit) -> Result<u64, String> {
+pub(in crate::app) fn parse_rate(value: &str, unit: RateUnit) -> Result<u64, String> {
     let value = value.trim();
     if value.is_empty() {
         return Ok(0);
@@ -196,7 +202,7 @@ fn field_label(label: &'static str) -> Div {
         .child(label)
 }
 
-fn rate_field(
+pub(in crate::app) fn rate_field(
     id: &'static str,
     label: &'static str,
     value: &Entity<InputState>,
@@ -209,14 +215,19 @@ fn rate_field(
             .items_center()
             .gap_2()
             .child(
-                div().flex_1().min_w_0().h(px(36.0)).child(
-                    Input::new(value)
-                        .aria_label(label)
-                        .disabled(disabled)
-                        .w_full()
-                        .h(px(36.0))
-                        .min_w_0(),
-                ),
+                div()
+                    .id(format!("{id}-value"))
+                    .flex_1()
+                    .min_w_0()
+                    .h(px(36.0))
+                    .child(
+                        Input::new(value)
+                            .aria_label(label)
+                            .disabled(disabled)
+                            .w_full()
+                            .h(px(36.0))
+                            .min_w_0(),
+                    ),
             )
             .child(
                 div().w(px(106.0)).h(px(36.0)).flex_none().child(

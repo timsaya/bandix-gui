@@ -99,7 +99,7 @@ fn render_realtime(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
         .child(realtime_chart::render(app, metrics, cx))
         .child(match &data.devices {
             Ok(devices) => device_list::render(app, devices, false, cx),
-            Err(error) => data_notice("设备接口请求失败", error.clone(), RED).into_any_element(),
+            Err(_) => device_list::render(app, &[], false, cx),
         })
         .into_any_element()
 }

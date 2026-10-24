@@ -197,20 +197,3 @@ pub(super) fn data_notice(title: &'static str, detail: String, color: u32) -> im
                 .child(detail),
         )
 }
-
-pub(super) fn table_header<const N: usize>(columns: [(&'static str, f32); N]) -> impl IntoElement {
-    div()
-        .flex()
-        .items_center()
-        .h(px(34.0))
-        .px_2()
-        .rounded_md()
-        .bg(rgb(0x0d131d))
-        .text_size(px(11.0))
-        .text_color(rgb(MUTED))
-        .children(
-            columns
-                .into_iter()
-                .map(|(label, width)| div().w(px(width)).child(label)),
-        )
-}

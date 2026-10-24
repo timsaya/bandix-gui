@@ -7,6 +7,7 @@ use super::{
     theme::*,
 };
 use crate::services::api::Device;
+use gpui_kit::component::Sizable;
 use gpui_kit::component::input::{Input, InputEvent, InputState};
 
 use gpui_kit::prelude::FluentBuilder;
@@ -14,6 +15,7 @@ use gpui_kit::*;
 use std::collections::HashMap;
 
 mod details;
+pub(super) mod period;
 mod policy;
 mod preferences;
 mod row;
@@ -43,6 +45,8 @@ impl DeviceListMode {
 pub(super) struct DeviceListState {
     pub view: AdaptiveListState,
     mode: DeviceListMode,
+    pub period_pending: bool,
+    pub period: period::DevicePeriod,
     device_order: Vec<String>,
     search_input: Option<Entity<InputState>>,
     search_query: String,
@@ -73,15 +77,27 @@ impl DeviceListState {
         };
         Self {
             sort,
+            period: storage.load_period().unwrap_or_default(),
             sort_storage: Some(storage),
             sort_storage_error: error,
             ..Self::default()
         }
     }
 
+    pub fn save_period(&mut self) {
+        self.sort_storage_error = self
+            .sort_storage
+            .as_ref()
+            .ok_or_else(|| "无法获取用户配置目录".to_string())
+            .and_then(|storage| storage.save_period(self.period))
+            .err()
+            .map(|error| format!("无法保存统计周期：{error}"));
+    }
+
     pub fn reset(&mut self) {
         self.view = AdaptiveListState::default();
         self.device_order.clear();
+        self.period_pending = false;
         self.search_input = None;
         self.search_query.clear();
         self._search_subscription = None;
@@ -129,6 +145,7 @@ impl BandixApp {
             window.blur(cx);
         }
         self.device_list.view.toggle_expanded();
+        self.device_period.update(cx, |_, cx| cx.notify());
         cx.notify();
     }
 
@@ -160,15 +177,6 @@ impl BandixApp {
         self.device_list.view.reset_expanded_scroll();
         cx.notify();
     }
-
-    fn reset_device_search(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        self.device_list.search_query.clear();
-        if let Some(input) = &self.device_list.search_input {
-            input.update(cx, |input, cx| input.set_value("", window, cx));
-        }
-        self.device_list.view.reset_expanded_scroll();
-        cx.notify();
-    }
 }
 
 pub(super) fn render(
@@ -192,10 +200,22 @@ pub(super) fn render(
             .cloned()
             .map(|device| row::render(app, device, mode, cx).into_any_element()),
     );
-    let error = expanded
-        .then(|| app.data.as_ref()?.devices.as_ref().err())
-        .flatten();
-    let body = if let Some(error) = error {
+    let error = app
+        .data
+        .as_ref()
+        .and_then(|data| data.devices.as_ref().err());
+    let body = if app.device_list.period_pending {
+        div()
+            .h(px(90.0))
+            .flex()
+            .items_center()
+            .justify_center()
+            .text_size(px(11.0))
+            .text_color(rgb(MUTED))
+            .child("正在读取所选周期用量…")
+            .when(expanded, |view| view.flex_1())
+            .into_any_element()
+    } else if let Some(error) = error {
         div()
             .flex_1()
             .min_h_0()
@@ -236,101 +256,86 @@ pub(super) fn render(
         .p_4()
         .when(expanded, |view| view.h_full().min_h_0().flex().flex_col())
         .child(
-            panel_title("设备列表").flex_none().flex_nowrap().child(
-                div()
-                    .flex()
-                    .items_center()
-                    .gap_2()
-                    .flex_none()
-                    .child(sort_menu::render(app, expanded, cx))
-                    .child(mode_switch(mode, cx))
-                    .child(div().text_size(px(11.0)).text_color(rgb(MUTED)).child(
-                        if query.is_empty() {
-                            format!("{} 台设备", devices.len())
-                        } else {
-                            format!("{} / {} 台设备", visible_count, devices.len())
-                        },
-                    ))
-                    .child(
-                        div()
-                            .id(if expanded {
-                                "collapse-device-list"
+            panel_title("设备列表")
+                .flex_none()
+                .flex_nowrap()
+                .when(expanded, |view| view.child(search_controls(app)))
+                .child(
+                    div()
+                        .flex()
+                        .items_center()
+                        .gap_2()
+                        .flex_none()
+                        .child(period::render(app, expanded))
+                        .child(super::global_rate_limit::header_button(app, expanded, cx))
+                        .child(sort_menu::render(app, expanded, cx))
+                        .child(mode_switch(mode, cx))
+                        .child(div().text_size(px(11.0)).text_color(rgb(MUTED)).child(
+                            if query.is_empty() {
+                                format!("{} 台设备", devices.len())
                             } else {
-                                "expand-device-list"
-                            })
-                            .h(px(26.0))
-                            .px_2()
-                            .rounded_md()
-                            .cursor_pointer()
-                            .flex()
-                            .items_center()
-                            .text_size(px(11.0))
-                            .text_color(rgb(BLUE))
-                            .hover(|style| style.bg(rgb(SURFACE_2)))
-                            .on_click(cx.listener(|app, _, window, cx| {
-                                app.toggle_device_list_expanded(window, cx)
-                            }))
-                            .child(if expanded { "收起" } else { "展开查看" }),
-                    ),
-            ),
+                                format!("{} / {} 台设备", visible_count, devices.len())
+                            },
+                        ))
+                        .child(
+                            div()
+                                .id(if expanded {
+                                    "collapse-device-list"
+                                } else {
+                                    "expand-device-list"
+                                })
+                                .h(px(26.0))
+                                .px_2()
+                                .rounded_md()
+                                .cursor_pointer()
+                                .flex()
+                                .items_center()
+                                .text_size(px(11.0))
+                                .text_color(rgb(BLUE))
+                                .hover(|style| style.bg(rgb(SURFACE_2)))
+                                .on_click(cx.listener(|app, _, window, cx| {
+                                    app.toggle_device_list_expanded(window, cx)
+                                }))
+                                .child(if expanded { "收起" } else { "展开查看" }),
+                        ),
+                ),
         )
-        .when(expanded, |view| view.child(search_toolbar(app, cx)))
         .child(table_header())
         .child(body)
         .into_any_element()
 }
 
-fn search_toolbar(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
+fn search_controls(app: &BandixApp) -> AnyElement {
     let Some(input) = &app.device_list.search_input else {
         return div().into_any_element();
     };
     div()
-        .flex_none()
+        .flex_1()
+        .max_w(px(320.0))
+        .min_w_0()
         .flex()
         .items_center()
         .gap_2()
-        .mb_3()
         .child(
             div()
                 .id("device-search-input")
                 .flex_1()
-                .max_w(px(360.0))
                 .min_w_0()
-                .h(px(32.0))
+                .h(px(28.0))
                 .rounded_md()
                 .bg(rgb(SURFACE_2))
                 .border_1()
                 .border_color(rgb(BORDER))
                 .child(
                     Input::new(input)
+                        .small()
+                        .h(px(28.0))
                         .appearance(false)
                         .cleanable(true)
                         .aria_label("搜索设备"),
                 ),
         )
-        .child(
-            search_button("reset-device-search", "重置", BLUE)
-                .on_click(cx.listener(|app, _, window, cx| app.reset_device_search(window, cx))),
-        )
         .into_any_element()
-}
-
-fn search_button(id: &'static str, label: &'static str, color: u32) -> Stateful<Div> {
-    div()
-        .id(id)
-        .h(px(32.0))
-        .px_4()
-        .rounded_md()
-        .cursor_pointer()
-        .flex()
-        .items_center()
-        .justify_center()
-        .text_size(px(11.0))
-        .bg(rgb(color).opacity(0.12))
-        .text_color(rgb(color))
-        .hover(move |style| style.bg(rgb(color).opacity(0.22)))
-        .active(move |style| style.bg(rgb(color).opacity(0.3)))
-        .child(label)
 }
 
 fn table_header() -> impl IntoElement {
@@ -360,8 +365,8 @@ fn mode_switch(mode: DeviceListMode, cx: &mut Context<BandixApp>) -> impl IntoEl
         .bg(rgb(BG))
         .children(
             [
-                (DeviceListMode::Simple, "简易模式"),
-                (DeviceListMode::Detailed, "详细模式"),
+                (DeviceListMode::Simple, "简易"),
+                (DeviceListMode::Detailed, "详细"),
             ]
             .into_iter()
             .enumerate()

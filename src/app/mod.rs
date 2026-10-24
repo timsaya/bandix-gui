@@ -1,8 +1,11 @@
 mod adaptive_list;
 mod chart_zoom;
 mod components;
+mod connection_monitor;
 mod device_list;
 mod device_management;
+mod dns_monitor;
+mod global_rate_limit;
 mod page;
 mod quota_usage;
 mod realtime_chart;
@@ -17,6 +20,7 @@ use crate::services::api::{self, ApiResult, DashboardData, UsageRanking, UsageTi
 use crate::services::discovery::{self, DiscoveryState, ProbeReport};
 use adaptive_list::AdaptiveListState;
 use device_list::DeviceListState;
+use device_list::period::DevicePeriod;
 use device_management::{DeleteDeviceState, DeviceManagerState};
 use gpui_kit::component::date_picker::{DatePickerEvent, DatePickerState};
 use gpui_kit::component::input::InputState;
@@ -38,6 +42,10 @@ use traffic_stats::{
 
 pub struct BandixApp {
     page: Page,
+    connection_page: connection_monitor::ConnectionPage,
+    dns_page: dns_monitor::DnsPage,
+    connection_details: Option<connection_monitor::ConnectionDetails>,
+    connection_details_generation: u64,
     service_address: Entity<InputState>,
     ranking_start_date: Entity<DatePickerState>,
     ranking_end_date: Entity<DatePickerState>,
@@ -68,6 +76,10 @@ pub struct BandixApp {
     refresh_interval_secs: u64,
     auto_refresh_generation: u64,
     device_list: DeviceListState,
+    device_period: Entity<SelectState<Vec<DevicePeriod>>>,
+    _device_period_subscription: Subscription,
+    global_rate_limit: Option<global_rate_limit::GlobalRateLimitState>,
+    global_rate_limit_generation: u64,
     ranking_list: AdaptiveListState,
     realtime_chart: RealtimeChartState,
     timeline_chart: chart_zoom::ChartZoomState,
@@ -77,6 +89,40 @@ pub struct BandixApp {
 
 impl BandixApp {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
+        let connection_page = connection_monitor::ConnectionPage::new(window, cx);
+        let dns_page = dns_monitor::DnsPage::new(window, cx);
+        let device_list = DeviceListState::load_preferences();
+        let period_index = DevicePeriod::ALL
+            .iter()
+            .position(|period| *period == device_list.period)
+            .unwrap_or_default();
+        let device_period = cx.new(|cx| {
+            SelectState::new(
+                DevicePeriod::ALL.to_vec(),
+                Some(IndexPath::new(period_index)),
+                window,
+                cx,
+            )
+        });
+        let device_period_subscription = cx.subscribe(
+            &device_period,
+            |app, _, event: &SelectEvent<Vec<DevicePeriod>>, cx| {
+                let SelectEvent::Confirm(Some(period)) = event else {
+                    return;
+                };
+                if app.device_list.period == *period {
+                    return;
+                }
+                app.device_list.period = *period;
+                app.device_list.save_period();
+                app.device_list.period_pending = true;
+                app.device_list.view.reset_scroll();
+                if let Some(endpoint) = app.connected_endpoint() {
+                    app.start_data_refresh(endpoint, cx);
+                }
+                cx.notify();
+            },
+        );
         let today = today();
         let ranking_start_date = cx.new(|cx| {
             let mut state = DatePickerState::new(window, cx).date_format("%Y-%m-%d");
@@ -182,6 +228,10 @@ impl BandixApp {
 
         Self {
             page: Page::Traffic,
+            connection_page,
+            dns_page,
+            connection_details: None,
+            connection_details_generation: 0,
             service_address: cx.new(|cx| {
                 InputState::new(window, cx)
                     .default_value("http://127.0.0.1:8686")
@@ -215,7 +265,11 @@ impl BandixApp {
             data_generation: 0,
             refresh_interval_secs: 1,
             auto_refresh_generation: 0,
-            device_list: DeviceListState::load_preferences(),
+            device_list,
+            device_period,
+            _device_period_subscription: device_period_subscription,
+            global_rate_limit: None,
+            global_rate_limit_generation: 0,
             ranking_list: AdaptiveListState::default(),
             realtime_chart: RealtimeChartState::default(),
             timeline_chart: chart_zoom::ChartZoomState::new(1),
@@ -266,6 +320,9 @@ impl BandixApp {
         self.timeline_chart = chart_zoom::ChartZoomState::new(1);
         self.device_manager = None;
         self.delete_device = None;
+        self.global_rate_limit = None;
+        self.connection_details = None;
+        self.dns_page.reset();
         cx.notify();
 
         cx.spawn(async move |this, cx| {
@@ -281,6 +338,7 @@ impl BandixApp {
                         app.start_auto_refresh(endpoint, cx);
                         app.refresh_ranking(cx);
                         app.refresh_timeline(cx);
+                        app.ensure_dns_queries(cx);
                     }
                     Err(error) => {
                         app.discovery = DiscoveryState::Failed(error);
@@ -338,6 +396,13 @@ impl BandixApp {
     }
 
     fn start_data_refresh(&mut self, endpoint: String, cx: &mut Context<Self>) {
+        let range = self
+            .device_period
+            .read(cx)
+            .selected_value()
+            .copied()
+            .unwrap_or_default()
+            .range_ms();
         self.data_generation += 1;
         let generation = self.data_generation;
         self.data_loading = true;
@@ -345,7 +410,7 @@ impl BandixApp {
 
         cx.spawn(async move |this, cx| {
             let mut data = cx
-                .background_spawn(async move { api::fetch_dashboard(&endpoint) })
+                .background_spawn(async move { api::fetch_dashboard(&endpoint, range) })
                 .await;
             this.update(cx, |app, cx| {
                 if app.data_generation != generation {
@@ -355,6 +420,7 @@ impl BandixApp {
                     app.device_list.stabilize_order(devices);
                 }
                 app.data = Some(data);
+                app.device_list.period_pending = false;
                 app.data_loading = false;
                 cx.notify();
             })
@@ -587,6 +653,27 @@ impl Render for BandixApp {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         self.sync_timeline_devices(window, cx);
         let page = self.page;
+        let page_view = div()
+            .size_full()
+            .pl_3()
+            .pr_4()
+            .pt_4()
+            .pb_6()
+            .child(views::render(page, self, cx));
+        let page_view = if page == Page::Dns {
+            page_view
+                .id("main-content-scroll")
+                .flex()
+                .flex_col()
+                .min_h_0()
+                .overflow_hidden()
+                .into_any_element()
+        } else {
+            page_view
+                .overflow_y_scrollbar()
+                .id("main-content-scroll")
+                .into_any_element()
+        };
 
         let content = div()
             .w_full()
@@ -605,17 +692,7 @@ impl Render for BandixApp {
                     .relative()
                     // Keep the overview mounted underneath the expanded list
                     // so collapsing restores the exact page/list positions.
-                    .child(
-                        div()
-                            .size_full()
-                            .overflow_y_scrollbar()
-                            .id("main-content-scroll")
-                            .pl_3()
-                            .pr_4()
-                            .pt_4()
-                            .pb_6()
-                            .child(views::render(page, self, cx)),
-                    )
+                    .child(page_view)
                     .when(
                         page == Page::Traffic && self.device_list.view.expanded,
                         |view| view.child(device_list::render_expanded(self, cx)),
@@ -625,7 +702,9 @@ impl Render for BandixApp {
                         |view| view.child(views::render_expanded_ranking(self, cx)),
                     ),
             )
-            .child(device_management::render_overlay(self, cx));
+            .child(device_management::render_overlay(self, cx))
+            .child(global_rate_limit::render_overlay(self, cx))
+            .child(connection_monitor::render_overlay(self, cx));
 
         div()
             .size_full()

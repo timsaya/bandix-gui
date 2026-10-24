@@ -45,7 +45,9 @@ impl RealtimeChartState {
 
 impl BandixApp {
     pub(in crate::app) fn charts_interactive(&self) -> bool {
-        self.device_manager.is_none()
+        self.global_rate_limit.is_none()
+            && self.connection_details.is_none()
+            && self.device_manager.is_none()
             && self.delete_device.is_none()
             && !self.device_list.view.expanded
             && !self.ranking_list.expanded
