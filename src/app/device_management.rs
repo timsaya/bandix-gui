@@ -1,13 +1,15 @@
-use super::{BandixApp, theme::*};
-use crate::services::api::{
-    self, Device, ScheduledRateLimit, TrafficQuotaStatus, format_bytes, format_rate,
-};
+use super::{BandixApp, quota_usage::QUOTA_LABELS, theme::*};
+use crate::services::api::{self, Device, ScheduledRateLimit, TrafficQuotaStatus, format_rate};
 use gpui_kit::component::input::{Input, InputState};
 use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
-const QUOTA_LABELS: [&str; 6] = ["每分钟", "每小时", "每天", "每周", "每月", "累计"];
+mod quota;
+mod schedule;
+use quota::QuotaField;
+use schedule::{RateUnit, TimeSelection, UnitSelect};
+
 const DAY_LABELS: [&str; 7] = ["一", "二", "三", "四", "五", "六", "日"];
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -22,11 +24,14 @@ pub(super) struct DeviceManagerState {
     endpoint: String,
     active_tab: DeviceManagerTab,
     nickname: Entity<InputState>,
-    rate_start: Entity<InputState>,
-    rate_end: Entity<InputState>,
+    rate_start: TimeSelection,
+    rate_end: TimeSelection,
     download_rate: Entity<InputState>,
     upload_rate: Entity<InputState>,
-    quota_inputs: [Entity<InputState>; 6],
+    download_unit: Entity<UnitSelect>,
+    upload_unit: Entity<UnitSelect>,
+    quota_fields: [QuotaField; 6],
+    scroll: ScrollHandle,
     selected_days: [bool; 7],
     schedules: Vec<ScheduledRateLimit>,
     quota: Option<TrafficQuotaStatus>,
@@ -50,12 +55,13 @@ impl DeviceManagerState {
         cx: &mut Context<BandixApp>,
     ) -> Self {
         let nickname = text_input(&device.hostname, "设备昵称", window, cx);
-        let rate_start = text_input("00:00", "00:00", window, cx);
-        let rate_end = text_input("23:59", "23:59", window, cx);
-        let download_rate = text_input("0", "0 表示不限速", window, cx);
-        let upload_rate = text_input("0", "0 表示不限速", window, cx);
-        let quota_inputs =
-            std::array::from_fn(|_| text_input("0", "例如 500 MB、2 GB", window, cx));
+        let rate_start = TimeSelection::new(0, 0, window, cx);
+        let rate_end = TimeSelection::new(23, 59, window, cx);
+        let download_rate = schedule::number_state(window, cx);
+        let upload_rate = schedule::number_state(window, cx);
+        let download_unit = schedule::unit_state(window, cx);
+        let upload_unit = schedule::unit_state(window, cx);
+        let quota_fields = std::array::from_fn(|index| QuotaField::new(index, window, cx));
 
         Self {
             device,
@@ -66,7 +72,10 @@ impl DeviceManagerState {
             rate_end,
             download_rate,
             upload_rate,
-            quota_inputs,
+            download_unit,
+            upload_unit,
+            quota_fields,
+            scroll: ScrollHandle::new(),
             selected_days: [true; 7],
             schedules: Vec::new(),
             quota: None,
@@ -103,6 +112,8 @@ impl BandixApp {
             return;
         };
         let mac = device.mac.clone();
+        self.realtime_chart.resume();
+        self.timeline_chart.end_hover();
         self.device_manager = Some(DeviceManagerState::new(
             device,
             endpoint.clone(),
@@ -149,6 +160,7 @@ impl BandixApp {
         };
         if manager.active_tab != tab {
             manager.active_tab = tab;
+            manager.scroll.set_offset(point(px(0.0), px(0.0)));
             manager.message = None;
             cx.notify();
         }
@@ -210,16 +222,34 @@ impl BandixApp {
         if manager.busy {
             return;
         }
-        let start = manager.rate_start.read(cx).value().trim().to_string();
-        let end = manager.rate_end.read(cx).value().trim().to_string();
+        let (start, end) = match (manager.rate_start.value(cx), manager.rate_end.value(cx)) {
+            (Ok(start), Ok(end)) => (start, end),
+            _ => {
+                manager.message = Some(("请选择开始和结束时间".to_string(), true));
+                cx.notify();
+                return;
+            }
+        };
         let days = manager
             .selected_days
             .iter()
             .enumerate()
             .filter_map(|(index, selected)| selected.then_some(index as u8 + 1))
             .collect::<Vec<_>>();
-        let download = parse_kib_rate(&manager.download_rate.read(cx).value());
-        let upload = parse_kib_rate(&manager.upload_rate.read(cx).value());
+        let download_unit = manager
+            .download_unit
+            .read(cx)
+            .selected_value()
+            .copied()
+            .unwrap_or(RateUnit::Kilobytes);
+        let upload_unit = manager
+            .upload_unit
+            .read(cx)
+            .selected_value()
+            .copied()
+            .unwrap_or(RateUnit::Kilobytes);
+        let download = schedule::parse_rate(&manager.download_rate.read(cx).value(), download_unit);
+        let upload = schedule::parse_rate(&manager.upload_rate.read(cx).value(), upload_unit);
         let (download, upload) = match (download, upload) {
             (Ok(download), Ok(upload)) => (download, upload),
             (Err(error), _) | (_, Err(error)) => {
@@ -228,11 +258,6 @@ impl BandixApp {
                 return;
             }
         };
-        if !valid_time(&start) || !valid_time(&end) {
-            manager.message = Some(("时间格式应为 HH:MM".to_string(), true));
-            cx.notify();
-            return;
-        }
         if days.is_empty() {
             manager.message = Some(("请至少选择一天".to_string(), true));
             cx.notify();
@@ -295,8 +320,8 @@ impl BandixApp {
             return;
         }
         let mut limits = [0_u64; 6];
-        for (index, input) in manager.quota_inputs.iter().enumerate() {
-            match parse_byte_size(&input.read(cx).value()) {
+        for (index, field) in manager.quota_fields.iter().enumerate() {
+            match field.value(cx) {
                 Ok(value) => limits[index] = value,
                 Err(error) => {
                     manager.message = Some((format!("{}：{error}", QUOTA_LABELS[index]), true));
@@ -352,6 +377,8 @@ impl BandixApp {
         let Some(endpoint) = self.connected_endpoint() else {
             return;
         };
+        self.realtime_chart.resume();
+        self.timeline_chart.end_hover();
         self.delete_device = Some(DeleteDeviceState {
             device,
             endpoint,
@@ -421,7 +448,10 @@ fn finish_control_reload(
             manager.schedules = schedules;
             manager.quota = quota;
             manager.message = Some((success.to_string(), false));
+            manager.scroll.set_offset(point(px(0.0), px(0.0)));
             hydrate_quota_inputs(manager, window, cx);
+            let endpoint = manager.endpoint.clone();
+            app.start_data_refresh(endpoint, cx);
         }
         Err(error) => manager.message = Some((error, true)),
     }
@@ -438,10 +468,8 @@ fn hydrate_quota_inputs(
         .as_ref()
         .map(TrafficQuotaStatus::limits)
         .unwrap_or_default();
-    for (input, value) in manager.quota_inputs.iter().zip(limits) {
-        input.update(cx, |state, cx| {
-            state.set_value(format_edit_bytes(value), window, cx)
-        });
+    for (index, (field, value)) in manager.quota_fields.iter().zip(limits).enumerate() {
+        field.set_bytes(value, index, window, cx);
     }
 }
 
@@ -454,6 +482,8 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
     };
 
     div()
+        .id("device-settings-overlay")
+        .occlude()
         .absolute()
         .top_0()
         .left_0()
@@ -478,8 +508,13 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                     div()
                         .id("device-manager-scroll")
                         .flex_1()
-                        .p_4()
-                        .overflow_y_scrollbar()
+                        .min_h_0()
+                        .relative()
+                        .p_5()
+                        .bg(rgb(BG).opacity(0.4))
+                        .overflow_y_scroll()
+                        .track_scroll(&manager.scroll)
+                        .vertical_scrollbar(&manager.scroll)
                         .when_some(manager.message.clone(), |view, (message, is_error)| {
                             view.child(
                                 div()
@@ -517,7 +552,7 @@ fn manager_header(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> 
                         .text_size(px(16.0))
                         .font_weight(FontWeight::SEMIBOLD)
                         .text_color(rgb(TEXT))
-                        .child("设备管理"),
+                        .child("设备设置"),
                 )
                 .child(
                     div()
@@ -621,8 +656,8 @@ fn manager_tab(
 fn manager_tab_content(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> AnyElement {
     match manager.active_tab {
         DeviceManagerTab::Nickname => nickname_section(manager, cx).into_any_element(),
-        DeviceManagerTab::RateLimit => schedule_section(manager, cx).into_any_element(),
-        DeviceManagerTab::Quota => quota_section(manager, cx).into_any_element(),
+        DeviceManagerTab::RateLimit => schedule::render(manager, cx).into_any_element(),
+        DeviceManagerTab::Quota => quota::render(manager, cx).into_any_element(),
     }
 }
 
@@ -643,217 +678,47 @@ fn nickname_section(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -
     )
 }
 
-fn schedule_section(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> impl IntoElement {
-    let rules = manager.schedules.clone();
-    let rules_empty = rules.is_empty();
-    let mut rule_rows = Vec::with_capacity(rules.len());
-    for rule in rules {
-        rule_rows.push(schedule_rule_row(rule, cx).into_any_element());
-    }
-    manager_section("定时限速", "仅限制 WAN；0 KB/s 表示不限速")
-        .child(
-            div()
-                .flex()
-                .gap_2()
-                .child(labeled_input("开始时间", &manager.rate_start, px(130.0)))
-                .child(labeled_input("结束时间", &manager.rate_end, px(130.0)))
-                .child(labeled_input(
-                    "下载 KB/s",
-                    &manager.download_rate,
-                    px(160.0),
-                ))
-                .child(labeled_input("上传 KB/s", &manager.upload_rate, px(160.0))),
-        )
-        .child(
-            div()
-                .mt_3()
-                .flex()
-                .items_center()
-                .gap_2()
-                .child(
-                    div()
-                        .mr_1()
-                        .text_size(px(11.0))
-                        .text_color(rgb(MUTED))
-                        .child("星期"),
-                )
-                .children(DAY_LABELS.into_iter().enumerate().map(|(index, label)| {
-                    let active = manager.selected_days[index];
-                    div()
-                        .id(("schedule-day", index))
-                        .size(px(28.0))
-                        .rounded_md()
-                        .cursor_pointer()
-                        .flex()
-                        .items_center()
-                        .justify_center()
-                        .text_size(px(11.0))
-                        .bg(rgb(if active { ACCENT } else { SURFACE_2 }))
-                        .text_color(rgb(if active { 0x07110d } else { MUTED }))
-                        .on_click(
-                            cx.listener(move |app, _, _, cx| app.toggle_schedule_day(index, cx)),
-                        )
-                        .child(label)
-                }))
-                .child(div().ml_auto().child(action_button(
-                    "add-schedule",
-                    "添加规则",
-                    BLUE,
-                    cx,
-                    |app, window, cx| app.add_schedule_rule(window, cx),
-                ))),
-        )
-        .child(
-            div()
-                .mt_3()
-                .border_t_1()
-                .border_color(rgb(BORDER))
-                .when(manager.loading, |view| {
-                    view.child(empty_line("正在读取规则…"))
-                })
-                .when(!manager.loading && rules_empty, |view| {
-                    view.child(empty_line("尚未设置限速规则"))
-                })
-                .children(rule_rows),
-        )
-}
-
-fn schedule_rule_row(rule: ScheduledRateLimit, cx: &mut Context<BandixApp>) -> impl IntoElement {
-    let id = rule.id.clone();
-    let days = rule
-        .time_slot
-        .days
-        .iter()
-        .filter_map(|day| DAY_LABELS.get((*day as usize).saturating_sub(1)))
-        .copied()
-        .collect::<Vec<_>>()
-        .join("、");
+fn manager_section(title: impl Into<SharedString>, detail: &'static str) -> Div {
     div()
-        .min_h(px(48.0))
-        .flex()
-        .items_center()
-        .gap_3()
-        .border_b_1()
-        .border_color(rgb(BORDER))
-        .text_size(px(12.0))
-        .child(
-            div()
-                .w(px(120.0))
-                .text_color(rgb(TEXT))
-                .child(format!("{}–{}", rule.time_slot.start, rule.time_slot.end)),
-        )
-        .child(div().flex_1().text_color(rgb(MUTED)).child(days))
-        .child(div().w(px(190.0)).text_color(rgb(TEXT)).child(format!(
-            "↓ {}  ↑ {}",
-            limit_rate(rule.wan_rx_rate_limit),
-            limit_rate(rule.wan_tx_rate_limit)
-        )))
-        .child(
-            div()
-                .id(format!("delete-schedule-{id}"))
-                .px_3()
-                .h(px(28.0))
-                .rounded_md()
-                .cursor_pointer()
-                .flex()
-                .items_center()
-                .bg(rgb(RED).opacity(0.1))
-                .text_color(rgb(RED))
-                .on_click(cx.listener(move |app, _, window, cx| {
-                    app.delete_schedule_rule(id.clone(), window, cx)
-                }))
-                .child("删除"),
-        )
-}
-
-fn quota_section(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> impl IntoElement {
-    let quota = manager.quota.clone();
-    manager_section(
-        "流量配额",
-        "WAN 上传与下载合计；支持 B、KB、MB、GB、TB，0 表示不限",
-    )
-    .child(
-        div().flex().flex_wrap().gap_2().children(
-            QUOTA_LABELS.into_iter().enumerate().map(|(index, label)| {
-                labeled_input(label, &manager.quota_inputs[index], px(222.0))
-            }),
-        ),
-    )
-    .child(
-        div()
-            .mt_3()
-            .flex()
-            .items_center()
-            .gap_2()
-            .child(
-                div()
-                    .flex_1()
-                    .text_size(px(11.0))
-                    .text_color(rgb(if quota.as_ref().is_some_and(|q| q.blocked) {
-                        RED
-                    } else {
-                        MUTED
-                    }))
-                    .child(quota_status_text(quota.as_ref())),
-            )
-            .when(quota.is_some(), |view| {
-                view.child(action_button(
-                    "delete-quota",
-                    "删除配额",
-                    RED,
-                    cx,
-                    |app, window, cx| app.remove_traffic_quota(window, cx),
-                ))
-            })
-            .child(action_button(
-                "save-quota",
-                "保存配额",
-                ACCENT,
-                cx,
-                |app, window, cx| app.save_traffic_quota(window, cx),
-            )),
-    )
-}
-
-fn manager_section(title: &'static str, detail: &'static str) -> Div {
-    div()
-        .mb_3()
-        .p_4()
+        .mb_4()
+        .p_5()
         .rounded_xl()
-        .bg(rgb(BG).opacity(0.45))
+        .bg(rgb(SURFACE))
         .border_1()
         .border_color(rgb(BORDER))
         .child(
-            div()
-                .mb_3()
-                .child(
-                    div()
-                        .text_size(px(14.0))
-                        .font_weight(FontWeight::SEMIBOLD)
-                        .text_color(rgb(TEXT))
-                        .child(title),
-                )
-                .child(
-                    div()
-                        .mt_1()
-                        .text_size(px(10.0))
-                        .text_color(rgb(MUTED))
-                        .child(detail),
-                ),
+            div().mb_4().flex().items_center().gap_4().child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .child(
+                        div()
+                            .text_size(px(14.0))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .text_color(rgb(TEXT))
+                            .child(title.into()),
+                    )
+                    .child(
+                        div()
+                            .mt_1()
+                            .text_size(px(11.0))
+                            .text_color(rgb(MUTED))
+                            .child(detail),
+                    ),
+            ),
         )
 }
 
-fn labeled_input(label: &'static str, state: &Entity<InputState>, width: Pixels) -> Div {
+fn manager_form_footer() -> Div {
     div()
-        .w(width)
-        .child(
-            div()
-                .mb_1()
-                .text_size(px(10.0))
-                .text_color(rgb(MUTED))
-                .child(label),
-        )
-        .child(input_box(state))
+        .mt_4()
+        .pt_4()
+        .border_t_1()
+        .border_color(rgb(BORDER))
+        .flex()
+        .items_center()
+        .justify_end()
+        .gap_2()
 }
 
 fn input_box(state: &Entity<InputState>) -> Div {
@@ -903,6 +768,8 @@ fn empty_line(message: &'static str) -> impl IntoElement {
 
 fn delete_confirmation(state: &DeleteDeviceState, cx: &mut Context<BandixApp>) -> impl IntoElement {
     div()
+        .id("delete-device-overlay")
+        .occlude()
         .absolute()
         .top_0()
         .left_0()
@@ -990,30 +857,6 @@ fn delete_confirmation(state: &DeleteDeviceState, cx: &mut Context<BandixApp>) -
         )
 }
 
-fn quota_status_text(quota: Option<&TrafficQuotaStatus>) -> String {
-    let Some(quota) = quota else {
-        return "尚未配置配额".to_string();
-    };
-    if quota.blocked {
-        return format!("已阻断 · 超限：{}", quota.exceeded_periods.join("、"));
-    }
-    let used = quota.used();
-    let limits = quota.limits();
-    let configured = QUOTA_LABELS
-        .into_iter()
-        .zip(used.into_iter().zip(limits))
-        .filter(|(_, (_, limit))| *limit > 0)
-        .map(|(label, (used, limit))| {
-            format!("{label} {} / {}", format_bytes(used), format_bytes(limit))
-        })
-        .collect::<Vec<_>>();
-    if configured.is_empty() {
-        "已配置，但所有周期均不限".to_string()
-    } else {
-        configured.join(" · ")
-    }
-}
-
 fn valid_time(value: &str) -> bool {
     let Some((hour, minute)) = value.split_once(':') else {
         return false;
@@ -1022,54 +865,6 @@ fn valid_time(value: &str) -> bool {
         && minute.len() == 2
         && hour.parse::<u8>().is_ok_and(|value| value < 24)
         && minute.parse::<u8>().is_ok_and(|value| value < 60)
-}
-
-fn parse_kib_rate(value: &str) -> Result<u64, String> {
-    let value = value.trim();
-    if value.is_empty() {
-        return Ok(0);
-    }
-    let value = value
-        .parse::<f64>()
-        .map_err(|_| "限速必须是数字（单位 KB/s）".to_string())?;
-    if !value.is_finite() || value < 0.0 {
-        return Err("限速不能为负数".to_string());
-    }
-    Ok((value * 1024.0).round().min(u64::MAX as f64) as u64)
-}
-
-fn parse_byte_size(value: &str) -> Result<u64, String> {
-    let normalized = value.trim().to_ascii_uppercase().replace(' ', "");
-    if normalized.is_empty() {
-        return Ok(0);
-    }
-    let split = normalized
-        .find(|character: char| !character.is_ascii_digit() && character != '.')
-        .unwrap_or(normalized.len());
-    let number = normalized[..split]
-        .parse::<f64>()
-        .map_err(|_| "请输入数字和单位，例如 500 MB".to_string())?;
-    if !number.is_finite() || number < 0.0 {
-        return Err("配额不能为负数".to_string());
-    }
-    let unit = &normalized[split..];
-    let multiplier = match unit {
-        "" | "B" => 1_f64,
-        "K" | "KB" | "KIB" => 1024_f64,
-        "M" | "MB" | "MIB" => 1024_f64.powi(2),
-        "G" | "GB" | "GIB" => 1024_f64.powi(3),
-        "T" | "TB" | "TIB" => 1024_f64.powi(4),
-        _ => return Err("支持 B、KB、MB、GB、TB".to_string()),
-    };
-    Ok((number * multiplier).round().min(u64::MAX as f64) as u64)
-}
-
-fn format_edit_bytes(bytes: u64) -> String {
-    if bytes == 0 {
-        "0".to_string()
-    } else {
-        format_bytes(bytes)
-    }
 }
 
 fn limit_rate(rate: u64) -> String {
@@ -1082,18 +877,7 @@ fn limit_rate(rate: u64) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{parse_byte_size, valid_time};
-
-    #[test]
-    fn parses_human_readable_quota_sizes() {
-        assert_eq!(parse_byte_size("500 MB").unwrap(), 500 * 1024 * 1024);
-        assert_eq!(
-            parse_byte_size("1.5GB").unwrap(),
-            3 * 1024 * 1024 * 1024 / 2
-        );
-        assert_eq!(parse_byte_size("0").unwrap(), 0);
-        assert!(parse_byte_size("12 XB").is_err());
-    }
+    use super::valid_time;
 
     #[test]
     fn validates_schedule_time() {

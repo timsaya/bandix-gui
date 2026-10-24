@@ -15,6 +15,15 @@ pub(super) struct AdaptiveListState {
 }
 
 impl AdaptiveListState {
+    pub fn reset_scroll(&self) {
+        self.overview_scroll.set_offset(Point::default());
+        self.reset_expanded_scroll();
+    }
+
+    pub fn reset_expanded_scroll(&self) {
+        self.expanded_scroll.set_offset(Point::default());
+    }
+
     pub fn toggle_expanded(&mut self) {
         if !self.expanded {
             self.expanded_scroll

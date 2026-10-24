@@ -7,6 +7,8 @@ pub type ApiResult<T> = Result<T, String>;
 #[derive(Clone, Debug)]
 pub struct DashboardData {
     pub devices: ApiResult<Vec<Device>>,
+    pub schedules: ApiResult<Vec<ScheduledRateLimit>>,
+    pub quotas: ApiResult<Vec<TrafficQuotaStatus>>,
     pub metrics: ApiResult<Metrics>,
     pub connection_stats: ApiResult<ConnectionStats>,
     pub connection_flows: ApiResult<ConnectionFlows>,
@@ -20,6 +22,12 @@ pub fn fetch_dashboard(endpoint: &str) -> DashboardData {
             devices: endpoint
                 .get_json::<DevicesResponse>("/api/traffic/devices")
                 .map(|data| data.devices),
+            schedules: endpoint
+                .get_json::<ScheduledRateLimitsResponse>("/api/traffic/limits/schedule")
+                .map(|data| data.limits),
+            quotas: endpoint
+                .get_json::<TrafficQuotasResponse>("/api/traffic/quotas")
+                .map(|data| data.quotas),
             metrics: endpoint.get_json("/api/traffic/metrics"),
             connection_stats: endpoint.get_json("/api/connection/devices"),
             connection_flows: endpoint.get_json("/api/connection/flows?page=1&page_size=50"),
@@ -36,6 +44,8 @@ impl DashboardData {
     fn failed(error: String) -> Self {
         Self {
             devices: Err(error.clone()),
+            schedules: Err(error.clone()),
+            quotas: Err(error.clone()),
             metrics: Err(error.clone()),
             connection_stats: Err(error.clone()),
             connection_flows: Err(error.clone()),
@@ -172,6 +182,8 @@ struct DevicesResponse {
 pub struct Device {
     #[serde(rename = "ip4")]
     pub ip: String,
+    #[serde(rename = "ip6", default)]
+    pub ipv6_addresses: Vec<String>,
     pub mac: String,
     #[serde(rename = "host")]
     pub hostname: String,
@@ -180,43 +192,68 @@ pub struct Device {
     pub uplink: String,
     #[serde(rename = "w_ch")]
     pub wifi_channel: u32,
-    #[serde(rename = "t_rx_b")]
-    pub total_rx_bytes: u64,
-    #[serde(rename = "t_tx_b")]
-    pub total_tx_bytes: u64,
-    #[serde(rename = "t_rx_r")]
-    pub total_rx_rate: u64,
-    #[serde(rename = "t_tx_r")]
-    pub total_tx_rate: u64,
+    #[serde(rename = "l_rx_b", default)]
+    pub lan_rx_bytes: u64,
+    #[serde(rename = "l_tx_b", default)]
+    pub lan_tx_bytes: u64,
+    #[serde(rename = "l_rx_r", default)]
+    pub lan_rx_rate: u64,
+    #[serde(rename = "l_tx_r", default)]
+    pub lan_tx_rate: u64,
+    #[serde(rename = "w_rx_b", default)]
+    pub wan_rx_bytes: u64,
+    #[serde(rename = "w_tx_b", default)]
+    pub wan_tx_bytes: u64,
+    #[serde(rename = "w_rx_r", default)]
+    pub wan_rx_rate: u64,
+    #[serde(rename = "w_tx_r", default)]
+    pub wan_tx_rate: u64,
     #[serde(rename = "last")]
     pub last_online_ts: u64,
 }
 
 impl Device {
     pub fn display_name(&self) -> String {
-        if self.hostname.is_empty() {
+        if !self.hostname.is_empty() {
+            self.hostname.clone()
+        } else if !self.ip.is_empty() {
             self.ip.clone()
         } else {
-            self.hostname.clone()
+            self.mac.clone()
         }
     }
 
     pub fn is_online(&self) -> bool {
-        self.last_online_ts > 0 && now_ms().saturating_sub(self.last_online_ts) <= 5 * 60 * 1000
+        self.last_online_ts > 0 && now_ms().saturating_sub(self.last_online_ms()) <= 5 * 60 * 1000
+    }
+
+    pub fn last_online_ms(&self) -> u64 {
+        if self.last_online_ts < 1_000_000_000_000 {
+            self.last_online_ts.saturating_mul(1000)
+        } else {
+            self.last_online_ts
+        }
+    }
+
+    pub fn wifi_band(&self) -> Option<&'static str> {
+        if self.connection_type != "wifi" {
+            return None;
+        }
+        match self.wifi_channel {
+            1..=14 => Some("2.4G"),
+            15..=165 => Some("5G"),
+            _ => None,
+        }
     }
 
     pub fn connection_label(&self) -> String {
         match self.connection_type.as_str() {
-            "wifi" if self.wifi_channel > 0 => format!("Wi-Fi · ch {}", self.wifi_channel),
-            "wifi" => "Wi-Fi".to_string(),
-            "wired" => {
-                if self.uplink.is_empty() {
-                    "有线".to_string()
-                } else {
-                    format!("有线 · {}", self.uplink)
-                }
-            }
+            "wifi" => self
+                .wifi_band()
+                .map_or_else(|| "Wi-Fi".to_string(), |band| format!("Wi-Fi {band}")),
+            "wired" => "有线".to_string(),
             "" => "未知".to_string(),
+            "router" => "路由器".to_string(),
             value => value.to_string(),
         }
     }
@@ -375,6 +412,36 @@ pub struct UsageTimeline {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct UsageIncrement {
+    #[serde(rename = "start", default)]
+    pub start_ms: Option<u64>,
+    #[serde(rename = "end", default)]
+    pub end_ms: Option<u64>,
+    #[serde(rename = "ts_ms", default)]
+    pub timestamp_ms: Option<u64>,
+    #[serde(rename = "w_rx_avg", default)]
+    pub wan_rx_avg: Option<u64>,
+    #[serde(rename = "w_rx_p95", default)]
+    pub wan_rx_p95: Option<u64>,
+    #[serde(rename = "w_rx_max", default)]
+    pub wan_rx_max: Option<u64>,
+    #[serde(rename = "w_tx_avg", default)]
+    pub wan_tx_avg: Option<u64>,
+    #[serde(rename = "w_tx_p95", default)]
+    pub wan_tx_p95: Option<u64>,
+    #[serde(rename = "w_tx_max", default)]
+    pub wan_tx_max: Option<u64>,
+    #[serde(rename = "l_rx_avg", default)]
+    pub lan_rx_avg: Option<u64>,
+    #[serde(rename = "l_rx_p95", default)]
+    pub lan_rx_p95: Option<u64>,
+    #[serde(rename = "l_rx_max", default)]
+    pub lan_rx_max: Option<u64>,
+    #[serde(rename = "l_tx_avg", default)]
+    pub lan_tx_avg: Option<u64>,
+    #[serde(rename = "l_tx_p95", default)]
+    pub lan_tx_p95: Option<u64>,
+    #[serde(rename = "l_tx_max", default)]
+    pub lan_tx_max: Option<u64>,
     #[serde(rename = "w_rx_b")]
     pub wan_rx_bytes: u64,
     #[serde(rename = "w_tx_b")]
@@ -527,6 +594,61 @@ mod tests {
     use super::*;
 
     #[test]
+    fn devices_decode_lan_and_wan_traffic_independently_from_total_traffic() {
+        let response: DevicesResponse = serde_json::from_value(serde_json::json!({"d": [{
+            "ip4": "192.168.1.2", "ip6": ["fd00::2"], "mac": "00:11:22:33:44:55",
+            "host": "test", "conn": "wifi", "uplink": "wlan0", "w_ch": 36,
+            "t_rx_b": 1000, "t_tx_b": 2000, "t_rx_r": 100, "t_tx_r": 200,
+            "w_rx_b": 30, "w_tx_b": 40, "w_rx_r": 3, "w_tx_r": 4,
+            "l_rx_b": 300, "l_tx_b": 400, "l_rx_r": 30, "l_tx_r": 40,
+            "last": 1792800000_u64
+        }]}))
+        .unwrap();
+        let device = &response.devices[0];
+        assert_eq!((device.lan_rx_bytes, device.lan_tx_bytes), (300, 400));
+        assert_eq!((device.lan_rx_rate, device.lan_tx_rate), (30, 40));
+        assert_eq!((device.wan_rx_bytes, device.wan_tx_bytes), (30, 40));
+        assert_eq!((device.wan_rx_rate, device.wan_tx_rate), (3, 4));
+        assert_eq!(device.ipv6_addresses, ["fd00::2"]);
+        assert_eq!(device.last_online_ms(), 1_792_800_000_000);
+        let mut milliseconds = device.clone();
+        milliseconds.last_online_ts = device.last_online_ms();
+        assert_eq!(milliseconds.last_online_ms(), device.last_online_ms());
+    }
+
+    #[test]
+    fn live_existing_nickname_can_be_saved_without_changing_its_value_when_configured() {
+        // Opt in separately: the ordinary live dashboard test remains read-only.
+        let Ok(address) = std::env::var("BANDIX_GUI_TEST_BINDING_ENDPOINT") else {
+            return;
+        };
+        let endpoint = Endpoint::parse(&address).unwrap();
+        let before: serde_json::Value = endpoint.get_json("/api/traffic/bindings").unwrap();
+        let binding = before["bindings"]
+            .as_array()
+            .unwrap()
+            .first()
+            .expect("an existing nickname binding is required");
+        let mac = binding["mac"].as_str().unwrap();
+        let hostname = binding["hostname"].as_str().unwrap();
+        for _ in 0..3 {
+            set_device_hostname(&address, mac, hostname).unwrap();
+        }
+        let after: serde_json::Value = endpoint.get_json("/api/traffic/bindings").unwrap();
+        let saved = after["bindings"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|binding| binding["mac"].as_str() == Some(mac))
+            .unwrap();
+        assert_eq!(saved["hostname"].as_str(), Some(hostname));
+        assert_eq!(
+            before["bindings"].as_array().unwrap().len(),
+            after["bindings"].as_array().unwrap().len()
+        );
+    }
+
+    #[test]
     fn live_endpoint_decodes_all_dashboard_responses_when_configured() {
         let Ok(endpoint) = std::env::var("BANDIX_GUI_TEST_ENDPOINT") else {
             return;
@@ -534,6 +656,12 @@ mod tests {
         let data = fetch_dashboard(&endpoint);
         assert!(data.devices.is_ok(), "devices: {:?}", data.devices.err());
         assert!(data.metrics.is_ok(), "metrics: {:?}", data.metrics.err());
+        assert!(
+            data.schedules.is_ok(),
+            "schedules: {:?}",
+            data.schedules.err()
+        );
+        assert!(data.quotas.is_ok(), "quotas: {:?}", data.quotas.err());
         let end_ms = now_ms();
         let start_ms = end_ms.saturating_sub(24 * 60 * 60 * 1000);
         let ranking = fetch_usage_ranking(&endpoint, start_ms, end_ms, "wan");

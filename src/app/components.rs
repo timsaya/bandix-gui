@@ -1,7 +1,7 @@
 //! Reusable, presentation-only building blocks shared by page modules.
 
-use super::{BandixApp, theme::*};
-use crate::services::api::{Device, format_bytes, format_rate};
+use super::theme::*;
+use crate::services::api::{format_bytes, format_rate};
 use gpui_kit::*;
 
 pub(super) fn stat_card(
@@ -94,12 +94,12 @@ pub(super) fn traffic_summary_card(
                 .flex()
                 .flex_col()
                 .gap_1()
-                .child(traffic_summary_row("↑", upload_rate, upload_bytes, ORANGE))
+                .child(traffic_summary_row("↑", upload_rate, upload_bytes, UPLOAD))
                 .child(traffic_summary_row(
                     "↓",
                     download_rate,
                     download_bytes,
-                    BLUE,
+                    DOWNLOAD,
                 )),
         )
 }
@@ -195,153 +195,6 @@ pub(super) fn data_notice(title: &'static str, detail: String, color: u32) -> im
                 .text_size(px(11.0))
                 .text_color(rgb(MUTED))
                 .child(detail),
-        )
-}
-
-pub(super) fn device_row(device: Device, cx: &mut Context<BandixApp>) -> impl IntoElement {
-    let online = device.is_online();
-    let status_color = if online { ACCENT } else { MUTED };
-    let manage_device = device.clone();
-    let delete_device = device.clone();
-    let manage_id = format!("manage-device-{}", device.mac);
-    let delete_id = format!("delete-device-{}", device.mac);
-    let icon = match device.connection_type.as_str() {
-        "wifi" => "⌁",
-        "wired" => "⇄",
-        _ => "◇",
-    };
-    div()
-        .id(format!("device-row-{}", device.mac))
-        .flex()
-        .items_center()
-        .h(px(46.0))
-        .px_2()
-        .border_b_1()
-        .border_color(rgb(BORDER).opacity(0.72))
-        .text_size(px(12.0))
-        .child(
-            div()
-                .flex_1()
-                .min_w(px(205.0))
-                .flex()
-                .items_center()
-                .gap_2()
-                .child(
-                    div()
-                        .size(px(26.0))
-                        .flex_none()
-                        .rounded_md()
-                        .flex()
-                        .items_center()
-                        .justify_center()
-                        .bg(rgb(SURFACE_2))
-                        .text_color(rgb(BLUE))
-                        .text_size(px(14.0))
-                        .child(icon),
-                )
-                .child(
-                    div()
-                        .min_w_0()
-                        .overflow_hidden()
-                        .flex()
-                        .flex_col()
-                        .gap(px(1.0))
-                        .child(
-                            div()
-                                .whitespace_nowrap()
-                                .text_ellipsis()
-                                .text_color(rgb(TEXT))
-                                .font_weight(FontWeight::MEDIUM)
-                                .child(device.display_name()),
-                        )
-                        .child(
-                            div()
-                                .whitespace_nowrap()
-                                .text_ellipsis()
-                                .text_size(px(10.0))
-                                .text_color(rgb(MUTED))
-                                .child(format!("{} · {}", device.ip, device.mac)),
-                        ),
-                ),
-        )
-        .child(
-            div()
-                .w(px(76.0))
-                .overflow_hidden()
-                .text_color(rgb(MUTED))
-                .child(device.connection_label()),
-        )
-        .child(
-            div()
-                .w(px(75.0))
-                .overflow_hidden()
-                .text_color(if online { rgb(BLUE) } else { rgb(MUTED) })
-                .child(format_rate(device.total_rx_rate)),
-        )
-        .child(
-            div()
-                .w(px(75.0))
-                .overflow_hidden()
-                .text_color(if online { rgb(ACCENT) } else { rgb(MUTED) })
-                .child(format_rate(device.total_tx_rate)),
-        )
-        .child(div().w(px(80.0)).text_color(rgb(TEXT)).child(format_bytes(
-            device.total_rx_bytes.saturating_add(device.total_tx_bytes),
-        )))
-        .child(
-            div()
-                .w(px(55.0))
-                .flex()
-                .items_center()
-                .justify_end()
-                .gap_2()
-                .text_color(rgb(status_color))
-                .text_size(px(11.0))
-                .child(div().size(px(6.0)).rounded_full().bg(rgb(status_color)))
-                .child(if online { "在线" } else { "离线" }),
-        )
-        .child(
-            div()
-                .w(px(105.0))
-                .flex()
-                .justify_end()
-                .gap_1()
-                .child(
-                    div()
-                        .id(manage_id)
-                        .h(px(24.0))
-                        .px_2()
-                        .rounded_md()
-                        .cursor_pointer()
-                        .flex()
-                        .items_center()
-                        .bg(rgb(BLUE).opacity(0.12))
-                        .text_size(px(10.0))
-                        .text_color(rgb(BLUE))
-                        .hover(|style| style.bg(rgb(BLUE).opacity(0.22)))
-                        .on_click(cx.listener(move |app, _, window, cx| {
-                            app.open_device_manager(manage_device.clone(), window, cx)
-                        }))
-                        .child("管理"),
-                )
-                .child(
-                    div()
-                        .id(delete_id)
-                        .h(px(24.0))
-                        .px_2()
-                        .rounded_md()
-                        .cursor_pointer()
-                        .flex()
-                        .items_center()
-                        .bg(rgb(RED).opacity(0.1))
-                        .text_size(px(10.0))
-                        .text_color(rgb(RED))
-                        .hover(|style| style.bg(rgb(RED).opacity(0.2)))
-                        .on_click(cx.listener(move |app, _, _, cx| {
-                            app.request_delete_device(delete_device.clone(), cx)
-                        }))
-                        .child("删除"),
-                ),
         )
 }
 

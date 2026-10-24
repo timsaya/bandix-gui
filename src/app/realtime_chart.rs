@@ -6,7 +6,7 @@ mod tooltip;
 
 pub(super) use interaction::RealtimeChartState;
 
-use super::{BandixApp, components::panel_title, theme::*};
+use super::{BandixApp, chart_zoom::wheel_capture, components::panel_title, theme::*};
 use crate::services::api::{Metrics, format_rate};
 use chrono::{Local, TimeZone};
 use gpui_kit::*;
@@ -98,7 +98,8 @@ pub(super) fn render(
             let chart = RealtimePlot::new(
                 samples,
                 axis_maximum,
-                app.realtime_chart.plot_bounds.clone(),
+                app.realtime_chart.controls.bounds.clone(),
+                app.charts_interactive(),
             );
 
             div()
@@ -132,9 +133,6 @@ pub(super) fn render(
                         .on_hover(cx.listener(|app, hovered, _, cx| {
                             app.set_realtime_chart_hover(*hovered, cx);
                         }))
-                        .on_scroll_wheel(cx.listener(move |app, event, window, cx| {
-                            app.zoom_realtime_chart(event, sample_count, window, cx);
-                        }))
                         .on_mouse_down(
                             MouseButton::Left,
                             cx.listener(|app, event: &MouseDownEvent, _, cx| {
@@ -152,7 +150,10 @@ pub(super) fn render(
                                 .border_t_1()
                                 .border_color(rgb(BORDER).opacity(0.55))
                         }))
-                        .child(chart),
+                        .child(chart)
+                        .child(wheel_capture(cx, move |app, event, window, cx| {
+                            app.zoom_realtime_chart(event, sample_count, window, cx);
+                        })),
                 )
                 .into_any_element()
         };
@@ -173,8 +174,8 @@ pub(super) fn render(
                     .flex_wrap()
                     .items_center()
                     .gap_3()
-                    .child(legend(ORANGE, format!("上传 {}", format_rate(upload))))
-                    .child(legend(BLUE, format!("下载 {}", format_rate(download))))
+                    .child(legend(UPLOAD, format!("上传 {}", format_rate(upload))))
+                    .child(legend(DOWNLOAD, format!("下载 {}", format_rate(download))))
                     .child(
                         div()
                             .text_size(px(10.0))
@@ -193,11 +194,6 @@ pub(super) fn render(
                 .text_size(px(10.0))
                 .text_color(rgb(MUTED))
                 .child(first_time)
-                .child(if app.realtime_chart.zoom > 1.0 {
-                    format!("{:.1}× · 双击重置", app.realtime_chart.zoom)
-                } else {
-                    "悬停 1 秒后滚轮缩放".to_string()
-                })
                 .child(last_time),
         )
 }

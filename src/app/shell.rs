@@ -28,6 +28,8 @@ fn nav_item(
         })
         .on_click(cx.listener(move |app, _, _, cx| {
             app.realtime_chart.resume();
+            app.realtime_chart.resume();
+            app.timeline_chart.end_hover();
             app.page = page;
             cx.notify();
         }))

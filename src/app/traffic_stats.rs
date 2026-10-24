@@ -111,6 +111,17 @@ impl TrafficNetworkType {
     }
 }
 
+impl gpui_kit::component::select::SelectItem for TrafficNetworkType {
+    type Value = Self;
+
+    fn title(&self) -> gpui_kit::SharedString {
+        self.label().into()
+    }
+    fn value(&self) -> &Self {
+        self
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum TrafficAggregation {
     Hourly,
@@ -135,11 +146,91 @@ impl TrafficAggregation {
     }
 }
 
+impl gpui_kit::component::select::SelectItem for TrafficAggregation {
+    type Value = Self;
+
+    fn title(&self) -> gpui_kit::SharedString {
+        self.label().into()
+    }
+    fn value(&self) -> &Self {
+        self
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct TimelineDeviceOption {
+    pub mac: Option<String>,
+    label: String,
+}
+
+impl TimelineDeviceOption {
+    pub fn all() -> Self {
+        Self {
+            mac: None,
+            label: "全部设备".into(),
+        }
+    }
+}
+
+impl gpui_kit::component::select::SelectItem for TimelineDeviceOption {
+    type Value = Option<String>;
+
+    fn title(&self) -> gpui_kit::SharedString {
+        self.label.clone().into()
+    }
+    fn value(&self) -> &Self::Value {
+        &self.mac
+    }
+}
+
+pub(super) fn timeline_device_options(
+    devices: &[crate::services::api::Device],
+) -> Vec<TimelineDeviceOption> {
+    let mut devices = devices
+        .iter()
+        .filter(|device| !device.mac.trim().is_empty())
+        .collect::<Vec<_>>();
+    devices.sort_by_cached_key(|device| {
+        (
+            !device.is_online(),
+            device
+                .ip
+                .parse::<std::net::Ipv4Addr>()
+                .map(u32::from)
+                .unwrap_or(0),
+            device.mac.to_ascii_lowercase(),
+        )
+    });
+    std::iter::once(TimelineDeviceOption::all())
+        .chain(devices.into_iter().map(|device| {
+            let name = if !device.hostname.trim().is_empty() {
+                device.hostname.trim()
+            } else if !device.ip.is_empty() {
+                &device.ip
+            } else {
+                &device.mac
+            };
+            let ip = if !device.ip.is_empty() && name != device.ip {
+                format!(" ({})", device.ip)
+            } else {
+                String::new()
+            };
+            TimelineDeviceOption {
+                mac: Some(device.mac.to_ascii_lowercase()),
+                label: format!("{name}{ip} [{}]", device.mac),
+            }
+        }))
+        .collect()
+}
+
 pub(super) fn today() -> NaiveDate {
     Local::now().date_naive()
 }
 
 pub(super) fn date_range_ms(start: NaiveDate, end: NaiveDate) -> Option<(u64, u64)> {
+    if start > end {
+        return None;
+    }
     let start = Local
         .from_local_datetime(&start.and_hms_milli_opt(0, 0, 0, 0)?)
         .earliest()?;
@@ -163,6 +254,65 @@ pub(super) fn format_timestamp(timestamp_ms: u64) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn timeline_device_options_sort_online_then_numeric_ip_and_keep_searchable_identity() {
+        let device = |host: &str, ip: &str, mac: &str, online: bool| {
+            serde_json::from_value(serde_json::json!({
+                "host": host, "ip4": ip, "mac": mac, "conn": "wifi", "uplink": "phy0-ap0",
+                "w_ch": 1, "last": if online { Local::now().timestamp_millis() as u64 } else { 0 },
+            }))
+            .unwrap()
+        };
+        let devices = [
+            device("", "192.168.2.10", "AA:BB:CC:DD:EE:10", false),
+            device("平板", "192.168.2.2", "AA:BB:CC:DD:EE:02", false),
+            device("工作电脑", "192.168.2.100", "AA:BB:CC:DD:EE:64", true),
+            device("无效设备", "192.168.2.1", "", true),
+        ];
+        let options = timeline_device_options(&devices);
+        assert_eq!(options[0], TimelineDeviceOption::all());
+        assert_eq!(
+            options
+                .iter()
+                .skip(1)
+                .map(|option| option.mac.as_deref().unwrap())
+                .collect::<Vec<_>>(),
+            [
+                "aa:bb:cc:dd:ee:64",
+                "aa:bb:cc:dd:ee:02",
+                "aa:bb:cc:dd:ee:10"
+            ]
+        );
+        assert_eq!(
+            options[1].label,
+            "工作电脑 (192.168.2.100) [AA:BB:CC:DD:EE:64]"
+        );
+        assert_eq!(options[3].label.matches("192.168.2.10").count(), 1);
+        assert_eq!(
+            timeline_device_options(&[]),
+            vec![TimelineDeviceOption::all()]
+        );
+    }
+
+    #[test]
+    fn separate_dates_cover_complete_days_and_reject_reversed_ranges() {
+        let start = NaiveDate::from_ymd_opt(2026, 9, 30).unwrap();
+        let end = NaiveDate::from_ymd_opt(2026, 10, 2).unwrap();
+        for end in [start, end] {
+            let (start_ms, end_ms) = date_range_ms(start, end).unwrap();
+            let start_time = Local.timestamp_millis_opt(start_ms as i64).unwrap();
+            let end_time = Local.timestamp_millis_opt(end_ms as i64).unwrap();
+            assert_eq!(start_time.date_naive(), start);
+            assert_eq!(end_time.date_naive(), end);
+            assert_eq!(start_time.time(), chrono::NaiveTime::MIN);
+            assert_eq!(
+                end_time.time(),
+                chrono::NaiveTime::from_hms_milli_opt(23, 59, 59, 999).unwrap()
+            );
+        }
+        assert!(date_range_ms(end, start).is_none());
+    }
 
     #[test]
     fn luci_style_ranges_are_inclusive_calendar_days() {

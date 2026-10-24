@@ -1,11 +1,14 @@
 mod adaptive_list;
+mod chart_zoom;
 mod components;
 mod device_list;
 mod device_management;
 mod page;
+mod quota_usage;
 mod realtime_chart;
 mod shell;
 mod theme;
+mod timeline_chart;
 mod traffic_stats;
 mod usage_ranking;
 mod views;
@@ -18,6 +21,10 @@ use device_management::{DeleteDeviceState, DeviceManagerState};
 use gpui_kit::component::date_picker::{DatePickerEvent, DatePickerState};
 use gpui_kit::component::input::InputState;
 use gpui_kit::component::scroll::ScrollableElement;
+use gpui_kit::component::{
+    IndexPath,
+    select::{SearchableVec, SelectEvent, SelectState},
+};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use page::Page;
@@ -25,28 +32,34 @@ use realtime_chart::RealtimeChartState;
 use std::time::Duration;
 use theme::BG;
 use traffic_stats::{
-    TrafficAggregation, TrafficNetworkType, TrafficRangePreset, date_range_ms, today,
+    TimelineDeviceOption, TrafficAggregation, TrafficNetworkType, TrafficRangePreset,
+    date_range_ms, timeline_device_options, today,
 };
 
 pub struct BandixApp {
     page: Page,
     service_address: Entity<InputState>,
-    ranking_date_range: Entity<DatePickerState>,
-    timeline_date_range: Entity<DatePickerState>,
+    ranking_start_date: Entity<DatePickerState>,
+    ranking_end_date: Entity<DatePickerState>,
+    timeline_start_date: Entity<DatePickerState>,
+    timeline_end_date: Entity<DatePickerState>,
     ranking_range_preset: Option<TrafficRangePreset>,
     timeline_range_preset: Option<TrafficRangePreset>,
-    ranking_network_type: TrafficNetworkType,
-    timeline_network_type: TrafficNetworkType,
-    timeline_aggregation: TrafficAggregation,
-    timeline_mac: Option<String>,
+    ranking_network_type: Entity<SelectState<Vec<TrafficNetworkType>>>,
+    timeline_network_type: Entity<SelectState<Vec<TrafficNetworkType>>>,
+    timeline_aggregation: Entity<SelectState<Vec<TrafficAggregation>>>,
+    timeline_device: Entity<SelectState<SearchableVec<TimelineDeviceOption>>>,
+    timeline_device_options: Vec<TimelineDeviceOption>,
     usage_ranking: Option<ApiResult<UsageRanking>>,
     usage_timeline: Option<ApiResult<UsageTimeline>>,
     ranking_loading: bool,
     timeline_loading: bool,
     ranking_generation: u64,
     timeline_generation: u64,
-    _ranking_date_subscription: Subscription,
-    _timeline_date_subscription: Subscription,
+    _ranking_date_subscriptions: [Subscription; 2],
+    _ranking_network_subscription: Subscription,
+    _timeline_date_subscriptions: [Subscription; 2],
+    _timeline_filter_subscriptions: [Subscription; 3],
     discovery: DiscoveryState,
     probe_generation: u64,
     data: Option<DashboardData>,
@@ -57,6 +70,7 @@ pub struct BandixApp {
     device_list: DeviceListState,
     ranking_list: AdaptiveListState,
     realtime_chart: RealtimeChartState,
+    timeline_chart: chart_zoom::ChartZoomState,
     device_manager: Option<DeviceManagerState>,
     delete_device: Option<DeleteDeviceState>,
 }
@@ -64,26 +78,107 @@ pub struct BandixApp {
 impl BandixApp {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         let today = today();
-        let ranking_date_range = cx.new(|cx| {
-            let mut state = DatePickerState::range(window, cx).date_format("%Y-%m-%d");
-            state.set_date((today, today), window, cx);
+        let ranking_start_date = cx.new(|cx| {
+            let mut state = DatePickerState::new(window, cx).date_format("%Y-%m-%d");
+            state.set_date(today, window, cx);
             state
         });
-        let timeline_date_range = cx.new(|cx| {
-            let mut state = DatePickerState::range(window, cx).date_format("%Y-%m-%d");
-            state.set_date((today, today), window, cx);
+        let ranking_end_date = cx.new(|cx| {
+            let mut state = DatePickerState::new(window, cx).date_format("%Y-%m-%d");
+            state.set_date(today, window, cx);
             state
         });
-        let ranking_date_subscription =
-            cx.subscribe(&ranking_date_range, |app, _, _: &DatePickerEvent, cx| {
+        let ranking_network_type = cx.new(|cx| {
+            SelectState::new(
+                TrafficNetworkType::ALL.to_vec(),
+                Some(IndexPath::new(0)),
+                window,
+                cx,
+            )
+        });
+        let timeline_start_date = cx.new(|cx| {
+            let mut state = DatePickerState::new(window, cx).date_format("%Y-%m-%d");
+            state.set_date(today, window, cx);
+            state
+        });
+        let timeline_end_date = cx.new(|cx| {
+            let mut state = DatePickerState::new(window, cx).date_format("%Y-%m-%d");
+            state.set_date(today, window, cx);
+            state
+        });
+        let timeline_network_type = cx.new(|cx| {
+            SelectState::new(
+                TrafficNetworkType::ALL.to_vec(),
+                Some(IndexPath::new(0)),
+                window,
+                cx,
+            )
+        });
+        let timeline_aggregation = cx.new(|cx| {
+            SelectState::new(
+                TrafficAggregation::ALL.to_vec(),
+                Some(IndexPath::new(0)),
+                window,
+                cx,
+            )
+        });
+        let timeline_device_options = vec![TimelineDeviceOption::all()];
+        let timeline_device = cx.new(|cx| {
+            SelectState::new(
+                SearchableVec::new(timeline_device_options.clone()),
+                Some(IndexPath::new(0)),
+                window,
+                cx,
+            )
+            .searchable(true)
+        });
+        let ranking_date_subscriptions = [&ranking_start_date, &ranking_end_date].map(|picker| {
+            cx.subscribe(picker, |app, _, _: &DatePickerEvent, cx| {
                 app.ranking_range_preset = None;
                 cx.notify();
+            })
+        });
+        let ranking_network_subscription = cx.subscribe(
+            &ranking_network_type,
+            |app, _, event: &SelectEvent<Vec<TrafficNetworkType>>, cx| {
+                if let SelectEvent::Confirm(Some(_)) = event {
+                    app.refresh_ranking(cx);
+                }
+            },
+        );
+        let timeline_date_subscriptions =
+            [&timeline_start_date, &timeline_end_date].map(|picker| {
+                cx.subscribe(picker, |app, _, _: &DatePickerEvent, cx| {
+                    app.timeline_range_preset = None;
+                    cx.notify();
+                })
             });
-        let timeline_date_subscription =
-            cx.subscribe(&timeline_date_range, |app, _, _: &DatePickerEvent, cx| {
-                app.timeline_range_preset = None;
-                cx.notify();
-            });
+        let timeline_filter_subscriptions = [
+            cx.subscribe(
+                &timeline_network_type,
+                |app, _, event: &SelectEvent<Vec<TrafficNetworkType>>, cx| {
+                    if let SelectEvent::Confirm(Some(_)) = event {
+                        app.refresh_timeline(cx);
+                    }
+                },
+            ),
+            cx.subscribe(
+                &timeline_aggregation,
+                |app, _, event: &SelectEvent<Vec<TrafficAggregation>>, cx| {
+                    if let SelectEvent::Confirm(Some(_)) = event {
+                        app.refresh_timeline(cx);
+                    }
+                },
+            ),
+            cx.subscribe(
+                &timeline_device,
+                |app, _, event: &SelectEvent<SearchableVec<TimelineDeviceOption>>, cx| {
+                    if let SelectEvent::Confirm(Some(_)) = event {
+                        app.refresh_timeline(cx);
+                    }
+                },
+            ),
+        ];
 
         Self {
             page: Page::Traffic,
@@ -92,22 +187,27 @@ impl BandixApp {
                     .default_value("http://127.0.0.1:8686")
                     .placeholder("例如 http://192.168.1.1:8686")
             }),
-            ranking_date_range,
-            timeline_date_range,
+            ranking_start_date,
+            ranking_end_date,
+            timeline_start_date,
+            timeline_end_date,
             ranking_range_preset: Some(TrafficRangePreset::Today),
             timeline_range_preset: Some(TrafficRangePreset::Today),
-            ranking_network_type: TrafficNetworkType::Wan,
-            timeline_network_type: TrafficNetworkType::All,
-            timeline_aggregation: TrafficAggregation::Hourly,
-            timeline_mac: None,
+            ranking_network_type,
+            timeline_network_type,
+            timeline_aggregation,
+            timeline_device,
+            timeline_device_options,
             usage_ranking: None,
             usage_timeline: None,
             ranking_loading: false,
             timeline_loading: false,
             ranking_generation: 0,
             timeline_generation: 0,
-            _ranking_date_subscription: ranking_date_subscription,
-            _timeline_date_subscription: timeline_date_subscription,
+            _ranking_date_subscriptions: ranking_date_subscriptions,
+            _ranking_network_subscription: ranking_network_subscription,
+            _timeline_date_subscriptions: timeline_date_subscriptions,
+            _timeline_filter_subscriptions: timeline_filter_subscriptions,
             discovery: DiscoveryState::Idle,
             probe_generation: 0,
             data: None,
@@ -115,9 +215,10 @@ impl BandixApp {
             data_generation: 0,
             refresh_interval_secs: 1,
             auto_refresh_generation: 0,
-            device_list: DeviceListState::default(),
+            device_list: DeviceListState::load_preferences(),
             ranking_list: AdaptiveListState::default(),
             realtime_chart: RealtimeChartState::default(),
+            timeline_chart: chart_zoom::ChartZoomState::new(1),
             device_manager: None,
             delete_device: None,
         }
@@ -159,9 +260,10 @@ impl BandixApp {
         self.usage_timeline = None;
         self.ranking_loading = false;
         self.timeline_loading = false;
-        self.device_list = DeviceListState::default();
+        self.device_list.reset();
         self.ranking_list = AdaptiveListState::default();
         self.realtime_chart = RealtimeChartState::default();
+        self.timeline_chart = chart_zoom::ChartZoomState::new(1);
         self.device_manager = None;
         self.delete_device = None;
         cx.notify();
@@ -268,8 +370,10 @@ impl BandixApp {
         cx: &mut Context<Self>,
     ) {
         let (start, end) = preset.dates(today());
-        self.ranking_date_range
-            .update(cx, |state, cx| state.set_date((start, end), window, cx));
+        self.ranking_start_date
+            .update(cx, |state, cx| state.set_date(start, window, cx));
+        self.ranking_end_date
+            .update(cx, |state, cx| state.set_date(end, window, cx));
         self.ranking_range_preset = Some(preset);
         self.refresh_ranking(cx);
     }
@@ -281,59 +385,89 @@ impl BandixApp {
         cx: &mut Context<Self>,
     ) {
         let (start, end) = preset.dates(today());
-        self.timeline_date_range
-            .update(cx, |state, cx| state.set_date((start, end), window, cx));
+        self.timeline_start_date
+            .update(cx, |state, cx| state.set_date(start, window, cx));
+        self.timeline_end_date
+            .update(cx, |state, cx| state.set_date(end, window, cx));
         self.timeline_range_preset = Some(preset);
         self.refresh_timeline(cx);
     }
 
     pub(super) fn query_ranking(&mut self, cx: &mut Context<Self>) {
-        self.ranking_range_preset = None;
-        self.refresh_ranking(cx);
+        if !self.ranking_loading {
+            self.refresh_ranking(cx);
+        }
     }
 
     pub(super) fn query_timeline(&mut self, cx: &mut Context<Self>) {
-        self.timeline_range_preset = None;
+        if self.timeline_loading {
+            return;
+        }
         self.refresh_timeline(cx);
     }
 
-    fn set_ranking_network_type(
-        &mut self,
-        network_type: TrafficNetworkType,
-        cx: &mut Context<Self>,
-    ) {
-        self.ranking_network_type = network_type;
-        self.refresh_ranking(cx);
+    fn sync_timeline_devices(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        let options = match self.data.as_ref().map(|data| &data.devices) {
+            Some(Ok(devices)) => timeline_device_options(devices),
+            Some(Err(_)) => return,
+            None => vec![TimelineDeviceOption::all()],
+        };
+        if options == self.timeline_device_options {
+            return;
+        }
+        let previous = self
+            .timeline_device
+            .read(cx)
+            .selected_value()
+            .cloned()
+            .flatten();
+        self.timeline_device.update(cx, |state, cx| {
+            state.set_items(SearchableVec::new(options.clone()), window, cx);
+            if state.selected_value().is_none() {
+                state.set_selected_value(&None, window, cx);
+            }
+        });
+        self.timeline_device_options = options;
+        let selected = self
+            .timeline_device
+            .read(cx)
+            .selected_value()
+            .cloned()
+            .flatten();
+        if previous != selected {
+            self.refresh_timeline(cx);
+        }
     }
 
-    fn set_timeline_network_type(
-        &mut self,
-        network_type: TrafficNetworkType,
-        cx: &mut Context<Self>,
-    ) {
-        self.timeline_network_type = network_type;
-        self.refresh_timeline(cx);
+    fn selected_ranking_range(&self, cx: &App) -> Result<(u64, u64), &'static str> {
+        Self::selected_date_range(&self.ranking_start_date, &self.ranking_end_date, cx)
     }
 
-    fn set_timeline_aggregation(
-        &mut self,
-        aggregation: TrafficAggregation,
-        cx: &mut Context<Self>,
-    ) {
-        self.timeline_aggregation = aggregation;
-        self.refresh_timeline(cx);
+    fn selected_timeline_range(&self, cx: &App) -> Result<(u64, u64), &'static str> {
+        Self::selected_date_range(&self.timeline_start_date, &self.timeline_end_date, cx)
     }
 
-    pub(super) fn set_timeline_mac(&mut self, mac: Option<String>, cx: &mut Context<Self>) {
-        self.timeline_mac = mac;
-        self.refresh_timeline(cx);
-    }
-
-    fn selected_range(picker: &Entity<DatePickerState>, cx: &Context<Self>) -> Option<(u64, u64)> {
-        let value = picker.read(cx).date_time();
-        let start = value.start()?.date();
-        let end = value.end().unwrap_or_else(|| value.start().unwrap()).date();
-        date_range_ms(start, end)
+    fn selected_date_range(
+        start_picker: &Entity<DatePickerState>,
+        end_picker: &Entity<DatePickerState>,
+        cx: &App,
+    ) -> Result<(u64, u64), &'static str> {
+        let start = start_picker
+            .read(cx)
+            .date_time()
+            .start()
+            .ok_or("请选择开始日期")?
+            .date();
+        let end = end_picker
+            .read(cx)
+            .date_time()
+            .start()
+            .ok_or("请选择结束日期")?
+            .date();
+        if start > end {
+            return Err("开始日期不能晚于结束日期");
+        }
+        date_range_ms(start, end).ok_or("所选日期范围无效")
     }
 
     fn connected_endpoint(&self) -> Option<String> {
@@ -344,13 +478,23 @@ impl BandixApp {
     }
 
     fn refresh_ranking(&mut self, cx: &mut Context<Self>) {
+        let Ok((start_ms, end_ms)) = self.selected_ranking_range(cx) else {
+            self.ranking_generation += 1;
+            self.ranking_loading = false;
+            cx.notify();
+            return;
+        };
         let Some(endpoint) = self.connected_endpoint() else {
+            cx.notify();
             return;
         };
-        let Some((start_ms, end_ms)) = Self::selected_range(&self.ranking_date_range, cx) else {
-            return;
-        };
-        let network_type = self.ranking_network_type.value();
+        let network_type = self
+            .ranking_network_type
+            .read(cx)
+            .selected_value()
+            .copied()
+            .unwrap_or(TrafficNetworkType::Wan)
+            .value();
         self.ranking_generation += 1;
         let generation = self.ranking_generation;
         self.ranking_loading = true;
@@ -376,15 +520,36 @@ impl BandixApp {
     }
 
     fn refresh_timeline(&mut self, cx: &mut Context<Self>) {
+        let Ok((start_ms, end_ms)) = self.selected_timeline_range(cx) else {
+            self.timeline_generation += 1;
+            self.timeline_loading = false;
+            cx.notify();
+            return;
+        };
         let Some(endpoint) = self.connected_endpoint() else {
+            cx.notify();
             return;
         };
-        let Some((start_ms, end_ms)) = Self::selected_range(&self.timeline_date_range, cx) else {
-            return;
-        };
-        let aggregation = self.timeline_aggregation.value();
-        let network_type = self.timeline_network_type.value();
-        let mac = self.timeline_mac.clone();
+        let aggregation = self
+            .timeline_aggregation
+            .read(cx)
+            .selected_value()
+            .copied()
+            .unwrap_or(TrafficAggregation::Hourly)
+            .value();
+        let network_type = self
+            .timeline_network_type
+            .read(cx)
+            .selected_value()
+            .copied()
+            .unwrap_or(TrafficNetworkType::Wan)
+            .value();
+        let mac = self
+            .timeline_device
+            .read(cx)
+            .selected_value()
+            .cloned()
+            .flatten();
         self.timeline_generation += 1;
         let generation = self.timeline_generation;
         self.timeline_loading = true;
@@ -407,6 +572,7 @@ impl BandixApp {
                 if app.timeline_generation != generation {
                     return;
                 }
+                app.timeline_chart.end_hover();
                 app.usage_timeline = Some(result);
                 app.timeline_loading = false;
                 cx.notify();
@@ -418,11 +584,14 @@ impl BandixApp {
 }
 
 impl Render for BandixApp {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        self.sync_timeline_devices(window, cx);
         let page = self.page;
 
-        div()
-            .size_full()
+        let content = div()
+            .w_full()
+            .flex_1()
+            .min_h_0()
             .relative()
             .flex()
             .bg(rgb(BG))
@@ -456,6 +625,29 @@ impl Render for BandixApp {
                         |view| view.child(views::render_expanded_ranking(self, cx)),
                     ),
             )
-            .child(device_management::render_overlay(self, cx))
+            .child(device_management::render_overlay(self, cx));
+
+        div()
+            .size_full()
+            .flex()
+            .flex_col()
+            // Wayland may require client decorations even when server decorations
+            // were requested. Only draw a title bar when the system isn't drawing one.
+            .when(
+                cfg!(target_os = "linux")
+                    && matches!(window.window_decorations(), Decorations::Client { .. })
+                    && !window.is_fullscreen(),
+                |frame| {
+                    frame.child(
+                        gpui_kit::component::TitleBar::new()
+                            .bg(rgb(theme::SIDEBAR))
+                            .border_color(rgb(theme::BORDER))
+                            .text_color(rgb(theme::TEXT))
+                            .text_size(px(13.0))
+                            .child("Bandix"),
+                    )
+                },
+            )
+            .child(content)
     }
 }

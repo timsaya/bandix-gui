@@ -11,3 +11,7 @@ pub(super) const ACCENT: u32 = 0x6ee7b7;
 pub(super) const BLUE: u32 = 0x60a5fa;
 pub(super) const ORANGE: u32 = 0xfbbf24;
 pub(super) const RED: u32 = 0xfb7185;
+
+// Match LuCI's direction colors across traffic values, charts and tooltips.
+pub(super) const UPLOAD: u32 = 0xf97316;
+pub(super) const DOWNLOAD: u32 = 0x06b6d4;

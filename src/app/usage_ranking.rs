@@ -16,6 +16,8 @@ impl BandixApp {
     fn toggle_ranking_list_expanded(&mut self, cx: &mut Context<Self>) {
         if !self.ranking_list.expanded {
             self.device_list.view.expanded = false;
+            self.realtime_chart.resume();
+            self.timeline_chart.end_hover();
         }
         self.ranking_list.toggle_expanded();
         cx.notify();
@@ -148,77 +150,104 @@ fn table_header() -> impl IntoElement {
 }
 
 fn ranking_row(item: UsageItem) -> impl IntoElement {
+    let percentage = if item.percentage.is_finite() {
+        item.percentage.clamp(0.0, 100.0)
+    } else {
+        0.0
+    };
     div()
         .id(format!("usage-ranking-row-{}", item.mac))
-        .flex()
-        .items_center()
+        .relative()
+        .w_full()
         .h(px(ROW_HEIGHT))
-        .px_2()
+        .overflow_hidden()
         .border_b_1()
         .border_color(rgb(BORDER).opacity(0.72))
-        .text_size(px(13.0))
         .child(
             div()
-                .w(px(54.0))
-                .font_weight(FontWeight::SEMIBOLD)
-                .text_color(rgb(if item.rank <= 3 { ORANGE } else { MUTED }))
-                .child(format!("#{}", item.rank)),
+                .id(format!("usage-ranking-share-{}", item.mac))
+                .absolute()
+                .left_0()
+                .top_0()
+                .bottom(px(1.0))
+                .w(relative((percentage / 100.0) as f32))
+                .bg(linear_gradient(
+                    90.0,
+                    linear_color_stop(rgb(BLUE).opacity(0.18), 0.0),
+                    linear_color_stop(rgb(BLUE).opacity(0.10), 1.0),
+                )),
         )
         .child(
             div()
-                .flex_1()
-                .min_w_0()
-                .overflow_hidden()
+                .relative()
+                .size_full()
                 .flex()
-                .flex_col()
-                .gap(px(1.0))
+                .items_center()
+                .px_2()
+                .text_size(px(13.0))
                 .child(
                     div()
-                        .whitespace_nowrap()
-                        .text_ellipsis()
-                        .text_color(rgb(TEXT))
-                        .font_weight(FontWeight::MEDIUM)
-                        .child(item.display_name()),
+                        .w(px(54.0))
+                        .font_weight(FontWeight::SEMIBOLD)
+                        .text_color(rgb(if item.rank <= 3 { ORANGE } else { MUTED }))
+                        .child(format!("#{}", item.rank)),
                 )
                 .child(
                     div()
+                        .flex_1()
+                        .min_w_0()
+                        .overflow_hidden()
+                        .flex()
+                        .flex_col()
+                        .gap(px(1.0))
+                        .child(
+                            div()
+                                .whitespace_nowrap()
+                                .text_ellipsis()
+                                .text_color(rgb(TEXT))
+                                .font_weight(FontWeight::MEDIUM)
+                                .child(item.display_name()),
+                        )
+                        .child(
+                            div()
+                                .whitespace_nowrap()
+                                .text_ellipsis()
+                                .text_size(px(11.0))
+                                .text_color(rgb(MUTED))
+                                .child(item.mac),
+                        ),
+                )
+                .child(
+                    div()
+                        .w(px(120.0))
+                        .text_right()
                         .whitespace_nowrap()
-                        .text_ellipsis()
-                        .text_size(px(11.0))
+                        .text_color(rgb(DOWNLOAD))
+                        .child(format_bytes(item.rx_bytes)),
+                )
+                .child(
+                    div()
+                        .w(px(120.0))
+                        .text_right()
+                        .whitespace_nowrap()
+                        .text_color(rgb(UPLOAD))
+                        .child(format_bytes(item.tx_bytes)),
+                )
+                .child(
+                    div()
+                        .w(px(120.0))
+                        .text_right()
+                        .whitespace_nowrap()
+                        .text_color(rgb(TEXT))
+                        .child(format_bytes(item.total_bytes)),
+                )
+                .child(
+                    div()
+                        .w(px(76.0))
+                        .text_right()
+                        .whitespace_nowrap()
                         .text_color(rgb(MUTED))
-                        .child(item.mac),
+                        .child(format!("{percentage:.1}%")),
                 ),
-        )
-        .child(
-            div()
-                .w(px(120.0))
-                .text_right()
-                .whitespace_nowrap()
-                .text_color(rgb(BLUE))
-                .child(format_bytes(item.rx_bytes)),
-        )
-        .child(
-            div()
-                .w(px(120.0))
-                .text_right()
-                .whitespace_nowrap()
-                .text_color(rgb(ACCENT))
-                .child(format_bytes(item.tx_bytes)),
-        )
-        .child(
-            div()
-                .w(px(120.0))
-                .text_right()
-                .whitespace_nowrap()
-                .text_color(rgb(TEXT))
-                .child(format_bytes(item.total_bytes)),
-        )
-        .child(
-            div()
-                .w(px(76.0))
-                .text_right()
-                .whitespace_nowrap()
-                .text_color(rgb(MUTED))
-                .child(format!("{:.1}%", item.percentage)),
         )
 }

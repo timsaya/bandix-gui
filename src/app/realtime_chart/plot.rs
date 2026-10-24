@@ -6,7 +6,7 @@ use gpui_kit::component::{
     chart::AreaChart,
     plot::{
         Plot, PlotElement,
-        tooltip::{CrossLine, Dot, Tooltip, TooltipState},
+        tooltip::{Dot, Tooltip, TooltipState},
     },
 };
 use gpui_kit::*;
@@ -16,6 +16,7 @@ pub(super) struct RealtimePlot {
     area: AreaChart<TrafficSample, String, f64>,
     samples: Vec<TrafficSample>,
     bounds: Rc<Cell<Option<Bounds<Pixels>>>>,
+    interactive: bool,
 }
 
 impl RealtimePlot {
@@ -23,6 +24,7 @@ impl RealtimePlot {
         samples: Vec<TrafficSample>,
         axis_maximum: u64,
         bounds: Rc<Cell<Option<Bounds<Pixels>>>>,
+        interactive: bool,
     ) -> Self {
         let area = AreaChart::new(samples.iter().copied())
             .appear(false)
@@ -33,17 +35,18 @@ impl RealtimePlot {
             .y_domain(0.0, axis_maximum as f64)
             .y_padding(0.0, 0.0)
             .y(|sample| sample.wan.upload_rate as f64)
-            .stroke(rgb(ORANGE))
-            .fill(series_fill(ORANGE, 0.16))
+            .stroke(rgb(UPLOAD))
+            .fill(series_fill(UPLOAD, 0.16))
             .linear()
             .y(|sample| sample.wan.download_rate as f64)
-            .stroke(rgb(BLUE))
-            .fill(series_fill(BLUE, 0.12))
+            .stroke(rgb(DOWNLOAD))
+            .fill(series_fill(DOWNLOAD, 0.12))
             .linear();
         Self {
             area,
             samples,
             bounds,
+            interactive,
         }
     }
 }
@@ -57,6 +60,10 @@ impl IntoElement for RealtimePlot {
 }
 
 impl Plot for RealtimePlot {
+    fn interactive(&self) -> bool {
+        self.interactive
+    }
+
     fn id(&self) -> Option<ElementId> {
         Some("realtime-traffic-lines".into())
     }
@@ -89,36 +96,56 @@ impl Plot for RealtimePlot {
         state: &TooltipState,
         cursor: Point<Pixels>,
         bounds: Bounds<Pixels>,
-        window: &mut Window,
+        _window: &mut Window,
         _cx: &mut App,
     ) -> Option<AnyElement> {
         let sample = self.samples.get(state.index)?;
-        let cursor = bounds.origin + cursor;
-        let right_side = cursor.x < window.viewport_size().width / 2.0;
-        let anchor = if right_side {
-            Anchor::TopLeft
-        } else {
-            Anchor::TopRight
-        };
-        let position = cursor + point(px(if right_side { 16.0 } else { -16.0 }), px(16.0));
+        let position = bounds.origin + cursor + point(px(12.0), px(-12.0));
 
         Some(
-            Tooltip::new(cursor - bounds.origin, bounds.size)
-                .appearance(false)
-                .glide(false)
-                .cross_line(CrossLine::new(state.cross_line).height(bounds.size.height.as_f32()))
-                .dots(state.dots.iter().enumerate().map(|(index, point)| {
-                    Dot::new(*point)
-                        .size(px(5.0))
-                        .stroke(rgb(SURFACE).into())
-                        .fill(rgb(if index == 0 { ORANGE } else { BLUE }).into())
-                }))
+            div()
+                .size_full()
+                .absolute()
+                .top_0()
+                .left_0()
                 .child(
-                    anchored()
-                        .anchor(anchor)
-                        .position(position)
-                        .snap_to_window_with_margin(px(8.0))
-                        .child(tooltip::render(sample)),
+                    div()
+                        .id("realtime-cursor-vertical")
+                        .absolute()
+                        .left(cursor.x)
+                        .top_0()
+                        .h_full()
+                        .border_l_1()
+                        .border_dashed()
+                        .border_color(rgb(MUTED).opacity(0.85)),
+                )
+                .child(
+                    div()
+                        .id("realtime-cursor-horizontal")
+                        .absolute()
+                        .left_0()
+                        .top(cursor.y)
+                        .w_full()
+                        .border_t_1()
+                        .border_dashed()
+                        .border_color(rgb(MUTED).opacity(0.85)),
+                )
+                .child(
+                    Tooltip::new(cursor, bounds.size)
+                        .appearance(false)
+                        .glide(false)
+                        .dots(state.dots.iter().enumerate().map(|(index, point)| {
+                            Dot::new(*point)
+                                .size(px(5.0))
+                                .stroke(rgb(SURFACE).into())
+                                .fill(rgb(if index == 0 { UPLOAD } else { DOWNLOAD }).into())
+                        }))
+                        .child(
+                            anchored()
+                                .anchor(Anchor::BottomLeft)
+                                .position(position)
+                                .child(tooltip::render(sample)),
+                        ),
                 )
                 .into_any_element(),
         )

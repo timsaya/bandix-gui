@@ -1,12 +1,16 @@
 mod app;
+mod assets;
 mod services;
 
 use app::BandixApp;
+use assets::Assets;
+use gpui_kit::component::{Theme, ThemeMode};
 use gpui_kit::*;
 
 fn main() {
-    gpui_kit::application().run(|cx| {
+    gpui_kit::application().with_assets(Assets).run(|cx| {
         gpui_kit::init(cx);
+        Theme::change(ThemeMode::Dark, None, cx);
 
         let bounds = Bounds::centered(None, size(px(1280.0), px(820.0)), cx);
         let options = WindowOptions {
