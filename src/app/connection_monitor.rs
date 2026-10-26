@@ -1,6 +1,7 @@
 //! Per-device connection details, server-side filters and pagination.
 
 use super::{BandixApp, theme::*};
+use crate::i18n::{tf, tr};
 use crate::services::api::{self, ApiResult, ConnectionFlows, DeviceConnection};
 use gpui_kit::component::{
     Disableable, IndexPath, Sizable,
@@ -19,7 +20,7 @@ pub(super) struct ConnectionPage {
 impl ConnectionPage {
     pub fn new(window: &mut Window, cx: &mut Context<BandixApp>) -> Self {
         use gpui_kit::component::input::{InputEvent, InputState};
-        let search = cx.new(|cx| InputState::new(window, cx).placeholder("昵称 / IP / MAC"));
+        let search = cx.new(|cx| InputState::new(window, cx).placeholder(tr("昵称 / IP / MAC")));
         let subscription = cx.subscribe(&search, |app, _, event: &InputEvent, cx| {
             if matches!(event, InputEvent::Change) {
                 app.connection_page.scroll.set_offset(Point::default());
@@ -42,7 +43,7 @@ struct Choice {
 impl SelectItem for Choice {
     type Value = &'static str;
     fn title(&self) -> SharedString {
-        self.label.into()
+        crate::i18n::tr(self.label).into()
     }
     fn value(&self) -> &Self::Value {
         &self.value
@@ -275,7 +276,10 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                                 .flex_col()
                                 .gap_1()
                                 .child(text(
-                                    format!("连接详情 · {}", details.device.display_name()),
+                                    tf(
+                                        "连接详情 · {0}",
+                                        &[format!("{}", details.device.display_name())],
+                                    ),
                                     TEXT,
                                     16.0,
                                 ))
@@ -296,7 +300,7 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                         .child(
                             Button::new("close-connection-details")
                                 .small()
-                                .label("关闭")
+                                .label(tr("关闭"))
                                 .on_click(cx.listener(|app, _, window, cx| {
                                     app.connection_details = None;
                                     window.blur(cx);
@@ -328,9 +332,9 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                             Button::new("refresh-connection-details")
                                 .small()
                                 .label(if details.loading {
-                                    "正在查询…"
+                                    tr("正在查询…")
                                 } else {
-                                    "刷新"
+                                    tr("刷新")
                                 })
                                 .disabled(details.loading)
                                 .on_click(cx.listener(|app, _, _, cx| {
@@ -339,9 +343,9 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                         )
                         .child(div().ml_auto().child(text(
                             if details.loading {
-                                "正在读取连接快照"
+                                tr("正在读取连接快照")
                             } else {
-                                "连接快照 · 点击刷新获取最新数据"
+                                tr("连接快照 · 点击刷新获取最新数据")
                             },
                             MUTED,
                             11.0,
@@ -362,7 +366,10 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                             data.map_or_else(
                                 || "—".into(),
                                 |data| {
-                                    format!("共 {} 条连接 · 每页 {} 条", data.total, data.page_size)
+                                    tf(
+                                        "共 {0} 条连接 · 每页 {1} 条",
+                                        &[format!("{}", data.total), format!("{}", data.page_size)],
+                                    )
                                 },
                             ),
                             MUTED,
@@ -377,7 +384,7 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                         .child(
                             Button::new("connection-prev-page")
                                 .small()
-                                .label("上一页")
+                                .label(tr("上一页"))
                                 .disabled(details.loading || details.page <= 1 || data.is_none())
                                 .on_click(
                                     cx.listener(|app, _, _, cx| {
@@ -397,7 +404,7 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                         .child(
                             Button::new("connection-next-page")
                                 .small()
-                                .label("下一页")
+                                .label(tr("下一页"))
                                 .disabled(
                                     details.loading
                                         || details.page >= total_pages
@@ -422,9 +429,9 @@ fn filter(
         Select::new(state)
             .id(id)
             .accessibility_label(match id {
-                "connection-protocol" => "连接协议",
-                "connection-state" => "连接状态",
-                _ => "每页连接条数",
+                "connection-protocol" => tr("连接协议"),
+                "connection-state" => tr("连接状态"),
+                _ => tr("每页连接条数"),
             })
             .small()
             .w_full()

@@ -6,6 +6,7 @@ use super::{
     theme::*,
     traffic_stats::format_timestamp,
 };
+use crate::i18n::{tf, tr};
 use crate::services::api::{UsageItem, format_bytes};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
@@ -46,14 +47,14 @@ pub(super) fn render(
             .justify_center()
             .text_size(px(11.0))
             .text_color(rgb(MUTED))
-            .child("暂无排行数据")
+            .child(tr("暂无排行数据"))
             .into_any_element(),
         Some(Err(error)) => {
-            data_notice("流量用量排行接口请求失败", error.clone(), RED).into_any_element()
+            data_notice(tr("流量用量排行接口请求失败"), error.clone(), RED).into_any_element()
         }
         None => data_notice(
-            "暂无排行数据",
-            "选择时间范围和网络类型后查询。".to_string(),
+            tr("暂无排行数据"),
+            tr("选择时间范围和网络类型后查询。").to_string(),
             MUTED,
         )
         .into_any_element(),
@@ -72,7 +73,7 @@ pub(super) fn render(
         .p_4()
         .when(expanded, |view| view.h_full().min_h_0().flex().flex_col())
         .child(
-            panel_title("流量用量排行").flex_none().child(
+            panel_title(tr("流量用量排行")).flex_none().child(
                 div()
                     .flex()
                     .items_center()
@@ -81,7 +82,7 @@ pub(super) fn render(
                         div()
                             .text_size(px(11.0))
                             .text_color(rgb(MUTED))
-                            .child(format!("{item_count} 台设备")),
+                            .child(tf("{0} 台设备", &[format!("{}", item_count)])),
                     )
                     .child(
                         div()
@@ -102,7 +103,11 @@ pub(super) fn render(
                             .on_click(
                                 cx.listener(|app, _, _, cx| app.toggle_ranking_list_expanded(cx)),
                             )
-                            .child(if expanded { "收起" } else { "展开查看" }),
+                            .child(if expanded {
+                                tr("收起")
+                            } else {
+                                tr("展开查看")
+                            }),
                     ),
             ),
         )
@@ -114,14 +119,16 @@ pub(super) fn render(
                     .mb_2()
                     .text_size(px(10.0))
                     .text_color(rgb(MUTED))
-                    .child(format!(
-                        "{} → {} · {} · 总计 {}（↓ {} / ↑ {}）",
-                        format_timestamp(ranking.start_ms),
-                        format_timestamp(ranking.end_ms),
-                        ranking.network_type.to_uppercase(),
-                        format_bytes(ranking.total_bytes),
-                        format_bytes(ranking.total_rx_bytes),
-                        format_bytes(ranking.total_tx_bytes),
+                    .child(tf(
+                        "{0} → {1} · {2} · 总计 {3}（↓ {4} / ↑ {5}）",
+                        &[
+                            format!("{}", format_timestamp(ranking.start_ms)),
+                            format!("{}", format_timestamp(ranking.end_ms)),
+                            format!("{}", ranking.network_type.to_uppercase()),
+                            format!("{}", format_bytes(ranking.total_bytes)),
+                            format!("{}", format_bytes(ranking.total_rx_bytes)),
+                            format!("{}", format_bytes(ranking.total_tx_bytes)),
+                        ],
                     )),
             )
         })
@@ -141,12 +148,12 @@ fn table_header() -> impl IntoElement {
         .bg(rgb(0x0d131d))
         .text_size(px(11.0))
         .text_color(rgb(MUTED))
-        .child(div().w(px(54.0)).child("排名"))
-        .child(div().flex_1().min_w_0().child("设备"))
-        .child(div().w(px(120.0)).text_right().child("下载"))
-        .child(div().w(px(120.0)).text_right().child("上传"))
-        .child(div().w(px(120.0)).text_right().child("总流量"))
-        .child(div().w(px(76.0)).text_right().child("占比"))
+        .child(div().w(px(54.0)).child(tr("排名")))
+        .child(div().flex_1().min_w_0().child(tr("设备")))
+        .child(div().w(px(120.0)).text_right().child(tr("下载")))
+        .child(div().w(px(120.0)).text_right().child(tr("上传")))
+        .child(div().w(px(120.0)).text_right().child(tr("总流量")))
+        .child(div().w(px(76.0)).text_right().child(tr("占比")))
 }
 
 fn ranking_row(item: UsageItem) -> impl IntoElement {

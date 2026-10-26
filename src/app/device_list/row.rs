@@ -1,6 +1,8 @@
 use super::{DeviceListMode, details::lan_ipv6, policy};
+use crate::app::preferences::SpeedUnit;
 use crate::app::{BandixApp, theme::*, traffic_stats::format_timestamp};
-use crate::services::api::{Device, format_bytes, format_rate};
+use crate::i18n::{tf, tr};
+use crate::services::api::{Device, format_bytes};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::Icon;
 use gpui_kit::component::tooltip::Tooltip;
@@ -51,6 +53,7 @@ pub(super) fn render(
             device.lan_rx_rate,
             device.lan_rx_bytes,
             online,
+            app.speed_unit,
         ))
         .child(traffic_cell(
             "wan",
@@ -59,8 +62,14 @@ pub(super) fn render(
             device.wan_rx_rate,
             device.wan_rx_bytes,
             online,
+            app.speed_unit,
         ))
-        .child(policy::render(app.data.as_ref(), &device.mac, mode))
+        .child(policy::render(
+            app.data.as_ref(),
+            &device.mac,
+            mode,
+            app.speed_unit,
+        ))
         .child(actions(device, cx))
 }
 
@@ -71,6 +80,7 @@ fn traffic_cell(
     download_rate: u64,
     download_bytes: u64,
     online: bool,
+    speed_unit: SpeedUnit,
 ) -> impl IntoElement {
     cell(1.2)
         .id(network)
@@ -79,12 +89,14 @@ fn traffic_cell(
             upload_rate,
             upload_bytes,
             if online { UPLOAD } else { MUTED },
+            speed_unit,
         ))
         .child(traffic_line(
             "↓",
             download_rate,
             download_bytes,
             if online { DOWNLOAD } else { MUTED },
+            speed_unit,
         ))
 }
 
@@ -104,33 +116,41 @@ fn device_info(device: &Device, mode: DeviceListMode) -> impl IntoElement {
     let nickname = if nickname.is_empty() { "-" } else { nickname };
     let interface = device.uplink.trim();
     let interface = if interface.is_empty() {
-        "接口未知"
+        tr("接口未知")
     } else {
         interface
     };
     let interface_detail = if device.uplink.trim().is_empty() {
         interface.to_string()
     } else {
-        format!("接口 {interface}")
+        tf("接口 {0}", &[format!("{}", interface)])
     };
-    let tooltip = format!(
-        "{} · {}\n{} · {}\n{}\n{}\nIPv6 {}\n最后在线 {}",
-        nickname,
-        if device.is_online() {
-            "在线"
-        } else {
-            "离线"
-        },
-        device.ip,
-        device.connection_label(),
-        interface_detail,
-        device.mac,
-        if device.ipv6_addresses.is_empty() {
-            "—".to_string()
-        } else {
-            device.ipv6_addresses.join(", ")
-        },
-        last_online_text(device),
+    let tooltip = tf(
+        "{0} · {1}\n{2} · {3}\n{4}\n{5}\nIPv6 {6}\n最后在线 {7}",
+        &[
+            format!("{}", nickname),
+            format!(
+                "{}",
+                if device.is_online() {
+                    crate::i18n::tr("在线")
+                } else {
+                    crate::i18n::tr("离线")
+                }
+            ),
+            format!("{}", device.ip),
+            format!("{}", device.connection_label()),
+            format!("{}", interface_detail),
+            format!("{}", device.mac),
+            format!(
+                "{}",
+                if device.ipv6_addresses.is_empty() {
+                    "—".to_string()
+                } else {
+                    device.ipv6_addresses.join(", ")
+                }
+            ),
+            format!("{}", last_online_text(device)),
+        ],
     );
     cell(1.9)
         .id(format!("device-info-{}", device.mac))
@@ -204,7 +224,7 @@ fn device_info(device: &Device, mode: DeviceListMode) -> impl IntoElement {
                     .h(px(16.0)),
             )
             .child(
-                line(format!("最后在线 {last_online}"), MUTED)
+                line(tf("最后在线 {0}", &[format!("{}", last_online)]), MUTED)
                     .pl(px(DEVICE_META_INDENT))
                     .h(px(16.0)),
             )
@@ -262,14 +282,20 @@ fn connection_tag(label: impl Into<SharedString>, color: u32) -> Div {
 
 fn last_online_text(device: &Device) -> String {
     if device.last_online_ts == 0 {
-        "从未在线".to_string()
+        tr("从未在线").to_string()
     } else {
         format_timestamp(device.last_online_ms())
     }
 }
 
-fn traffic_line(arrow: &'static str, rate: u64, bytes: u64, color: u32) -> impl IntoElement {
-    let rate = format_rate(rate);
+fn traffic_line(
+    arrow: &'static str,
+    rate: u64,
+    bytes: u64,
+    color: u32,
+    speed_unit: SpeedUnit,
+) -> impl IntoElement {
+    let rate = speed_unit.format(rate);
     let usage = format!("({})", format_bytes(bytes));
     let detail = format!("{arrow} {rate} {usage}");
     div()
@@ -300,14 +326,14 @@ fn actions(device: Device, cx: &mut Context<BandixApp>) -> impl IntoElement {
         .justify_end()
         .gap_2()
         .child(
-            action_button(format!("settings-device-{}", device.mac), "设置", BLUE).on_click(
+            action_button(format!("settings-device-{}", device.mac), tr("设置"), BLUE).on_click(
                 cx.listener(move |app, _, window, cx| {
                     app.open_device_manager(settings.clone(), window, cx);
                 }),
             ),
         )
         .child(
-            action_button(format!("delete-device-{}", device.mac), "删除", RED).on_click(
+            action_button(format!("delete-device-{}", device.mac), tr("删除"), RED).on_click(
                 cx.listener(move |app, _, _, cx| {
                     app.request_delete_device(device.clone(), cx);
                 }),
@@ -329,5 +355,5 @@ fn action_button(id: String, label: &'static str, color: u32) -> Stateful<Div> {
         .text_size(px(11.0))
         .text_color(rgb(color))
         .hover(move |style| style.bg(rgb(color).opacity(0.22)))
-        .child(label)
+        .child(crate::i18n::text(&label))
 }

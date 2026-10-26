@@ -4,7 +4,9 @@ use super::{
     BandixApp, DAY_LABELS, DeviceManagerState, action_button, empty_line, limit_rate,
     manager_form_footer, manager_section,
 };
+use crate::app::preferences::SpeedUnit;
 use crate::app::theme::*;
+use crate::i18n::{tf, tr};
 use crate::services::api::ScheduledRateLimit;
 use gpui_kit::component::{
     IndexPath,
@@ -109,13 +111,21 @@ impl TimeSelection {
     }
 
     pub fn value(&self, cx: &App) -> Result<String, String> {
-        let hour = self.hour.read(cx).selected_value().ok_or("请选择小时")?;
-        let minute = self.minute.read(cx).selected_value().ok_or("请选择分钟")?;
+        let hour = self
+            .hour
+            .read(cx)
+            .selected_value()
+            .ok_or(tr("请选择小时"))?;
+        let minute = self
+            .minute
+            .read(cx)
+            .selected_value()
+            .ok_or(tr("请选择分钟"))?;
         let value = format!("{hour}:{minute}");
         if super::valid_time(&value) {
             Ok(value)
         } else {
-            Err("时间应在 00:00–23:59 之间".into())
+            Err(tr("时间应在 00:00–23:59 之间").into())
         }
     }
 
@@ -129,7 +139,10 @@ impl TimeSelection {
                     div().w(px(76.0)).h(px(36.0)).flex_none().child(
                         Select::new(&self.hour)
                             .id(format!("{id}-hour"))
-                            .accessibility_label(format!("{label}：小时"))
+                            .accessibility_label(tf(
+                                "{0}：小时",
+                                &[format!("{}", crate::i18n::tr(&(label)))],
+                            ))
                             .disabled(disabled)
                             .w_full()
                             .h(px(36.0))
@@ -142,7 +155,10 @@ impl TimeSelection {
                     div().w(px(76.0)).h(px(36.0)).flex_none().child(
                         Select::new(&self.minute)
                             .id(format!("{id}-minute"))
-                            .accessibility_label(format!("{label}：分钟"))
+                            .accessibility_label(tf(
+                                "{0}：分钟",
+                                &[format!("{}", crate::i18n::tr(&(label)))],
+                            ))
                             .disabled(disabled)
                             .w_full()
                             .h(px(36.0))
@@ -180,16 +196,16 @@ pub(in crate::app) fn parse_rate(value: &str, unit: RateUnit) -> Result<u64, Str
     }
     let number = value
         .parse::<f64>()
-        .map_err(|_| "限速必须是有效数字".to_string())?;
+        .map_err(|_| tr("限速必须是有效数字").to_string())?;
     if !number.is_finite() || number < 0.0 {
-        return Err("限速必须是非负的有限数字".into());
+        return Err(tr("限速必须是非负的有限数字").into());
     }
     let bytes = number * unit.bytes_per_second();
     if !bytes.is_finite() || bytes >= u64::MAX as f64 {
-        return Err("限速数值过大".into());
+        return Err(tr("限速数值过大").into());
     }
     if number > 0.0 && bytes.round() < 1.0 {
-        return Err("限速换算后不能小于 1 B/s".into());
+        return Err(tr("限速换算后不能小于 1 B/s").into());
     }
     Ok(bytes.round() as u64)
 }
@@ -199,7 +215,7 @@ fn field_label(label: &'static str) -> Div {
         .mb_1()
         .text_size(px(11.0))
         .text_color(rgb(MUTED))
-        .child(label)
+        .child(crate::i18n::text(&label))
 }
 
 pub(in crate::app) fn rate_field(
@@ -222,7 +238,7 @@ pub(in crate::app) fn rate_field(
                     .h(px(36.0))
                     .child(
                         Input::new(value)
-                            .aria_label(label)
+                            .aria_label(crate::i18n::text(&label))
                             .disabled(disabled)
                             .w_full()
                             .h(px(36.0))
@@ -233,7 +249,10 @@ pub(in crate::app) fn rate_field(
                 div().w(px(106.0)).h(px(36.0)).flex_none().child(
                     Select::new(unit)
                         .id(id)
-                        .accessibility_label(format!("{label}单位"))
+                        .accessibility_label(tf(
+                            "{0}单位",
+                            &[format!("{}", crate::i18n::tr(&(label)))],
+                        ))
                         .disabled(disabled)
                         .w_full()
                         .h(px(36.0))
@@ -245,18 +264,19 @@ pub(in crate::app) fn rate_field(
 
 pub(super) fn render(
     manager: &DeviceManagerState,
+    speed_unit: SpeedUnit,
     cx: &mut Context<BandixApp>,
 ) -> impl IntoElement {
     div().child(editor_card(manager, cx)).child(
         manager_section(
-            format!("限速规则（{}）", manager.schedules.len()),
-            "按重复日期和时间段执行，仅限制 WAN 流量",
+            tf("限速规则（{0}）", &[format!("{}", manager.schedules.len())]),
+            tr("按重复日期和时间段执行，仅限制 WAN 流量"),
         )
         .when(manager.loading, |view| {
-            view.child(empty_line("正在读取规则…"))
+            view.child(empty_line(tr("正在读取规则…")))
         })
         .when(!manager.loading && manager.schedules.is_empty(), |view| {
-            view.child(empty_line("尚无限速规则，可在上方卡片添加"))
+            view.child(empty_line(tr("尚无限速规则，可在上方卡片添加")))
         })
         .children(
             manager
@@ -264,15 +284,17 @@ pub(super) fn render(
                 .iter()
                 .cloned()
                 .enumerate()
-                .map(|(index, rule)| schedule_rule_row(index, rule, cx).into_any_element()),
+                .map(|(index, rule)| {
+                    schedule_rule_row(index, rule, speed_unit, cx).into_any_element()
+                }),
         ),
     )
 }
 
 fn editor_card(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> impl IntoElement {
     manager_section(
-        "新增限速规则",
-        "24 小时制，支持跨午夜；速度设为 0 表示不限速",
+        tr("新增限速规则"),
+        tr("24 小时制，支持跨午夜；速度设为 0 表示不限速"),
     )
     .child(
         div()
@@ -281,16 +303,16 @@ fn editor_card(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> imp
             .child(
                 manager
                     .rate_start
-                    .picker("schedule-start", "开始时间", manager.busy),
+                    .picker("schedule-start", tr("开始时间"), manager.busy),
             )
             .child(
                 manager
                     .rate_end
-                    .picker("schedule-end", "结束时间", manager.busy),
+                    .picker("schedule-end", tr("结束时间"), manager.busy),
             ),
     )
     .child(
-        div().mt_4().child(field_label("重复日期")).child(
+        div().mt_4().child(field_label(tr("重复日期"))).child(
             div()
                 .flex()
                 .items_center()
@@ -325,7 +347,7 @@ fn editor_card(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> imp
                         .on_click(
                             cx.listener(move |app, _, _, cx| app.toggle_schedule_day(index, cx)),
                         )
-                        .child(label)
+                        .child(crate::i18n::text(&label))
                 })),
         ),
     )
@@ -336,14 +358,14 @@ fn editor_card(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> imp
             .gap_4()
             .child(rate_field(
                 "schedule-download-unit",
-                "下载限速",
+                tr("下载限速"),
                 &manager.download_rate,
                 &manager.download_unit,
                 manager.busy,
             ))
             .child(rate_field(
                 "schedule-upload-unit",
-                "上传限速",
+                tr("上传限速"),
                 &manager.upload_rate,
                 &manager.upload_unit,
                 manager.busy,
@@ -352,9 +374,9 @@ fn editor_card(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> imp
     .child(manager_form_footer().child(action_button(
         "add-schedule",
         if manager.busy {
-            "正在添加…"
+            tr("正在添加…")
         } else {
-            "添加规则"
+            tr("添加规则")
         },
         ACCENT,
         cx,
@@ -365,11 +387,12 @@ fn editor_card(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> imp
 fn schedule_rule_row(
     index: usize,
     rule: ScheduledRateLimit,
+    speed_unit: SpeedUnit,
     cx: &mut Context<BandixApp>,
 ) -> impl IntoElement {
     let id = rule.id.clone();
     let days = if (1..=7).all(|day| rule.time_slot.days.contains(&day)) {
-        "每天".to_string()
+        tr("每天").to_string()
     } else {
         rule.time_slot
             .days
@@ -378,12 +401,12 @@ fn schedule_rule_row(
                 day.checked_sub(1)
                     .and_then(|index| DAY_LABELS.get(index as usize))
             })
-            .map(|day| format!("周{day}"))
+            .map(|day| tf("周{0}", &[format!("{}", crate::i18n::tr(&(day)))]))
             .collect::<Vec<_>>()
             .join("、")
     };
     let days = if rule.time_slot.start > rule.time_slot.end {
-        format!("{days} · 跨午夜")
+        tf("{0} · 跨午夜", &[format!("{}", days)])
     } else {
         days
     };
@@ -416,12 +439,20 @@ fn schedule_rule_row(
                 .w(px(190.0))
                 .text_size(px(11.0))
                 .text_color(rgb(MUTED))
-                .child(div().child(format!("下载  {}", limit_rate(rule.wan_rx_rate_limit))))
-                .child(
-                    div()
-                        .mt_1()
-                        .child(format!("上传  {}", limit_rate(rule.wan_tx_rate_limit))),
-                ),
+                .child(div().child(tf(
+                    "下载  {0}",
+                    &[format!(
+                        "{}",
+                        limit_rate(rule.wan_rx_rate_limit, speed_unit)
+                    )],
+                )))
+                .child(div().mt_1().child(tf(
+                    "上传  {0}",
+                    &[format!(
+                        "{}",
+                        limit_rate(rule.wan_tx_rate_limit, speed_unit)
+                    )],
+                ))),
         )
         .child(
             div()
@@ -438,7 +469,7 @@ fn schedule_rule_row(
                 .on_click(cx.listener(move |app, _, window, cx| {
                     app.delete_schedule_rule(id.clone(), window, cx)
                 }))
-                .child("删除"),
+                .child(tr("删除")),
         )
 }
 

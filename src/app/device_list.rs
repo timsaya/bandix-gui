@@ -6,6 +6,7 @@ use super::{
     components::{data_notice, panel_title},
     theme::*,
 };
+use crate::i18n::{tf, tr};
 use crate::services::api::Device;
 use gpui_kit::component::Sizable;
 use gpui_kit::component::input::{Input, InputEvent, InputState};
@@ -72,7 +73,10 @@ impl DeviceListState {
             Ok(sort) => (sort, None),
             Err(error) => (
                 DeviceSort::default(),
-                Some(format!("无法读取已保存的排序，已使用默认设置：{error}")),
+                Some(tf(
+                    "无法读取已保存的排序，已使用默认设置：{0}",
+                    &[format!("{}", error)],
+                )),
             ),
         };
         Self {
@@ -88,10 +92,10 @@ impl DeviceListState {
         self.sort_storage_error = self
             .sort_storage
             .as_ref()
-            .ok_or_else(|| "无法获取用户配置目录".to_string())
+            .ok_or_else(|| tr("无法获取用户配置目录").to_string())
             .and_then(|storage| storage.save_period(self.period))
             .err()
-            .map(|error| format!("无法保存统计周期：{error}"));
+            .map(|error| tf("无法保存统计周期：{0}", &[format!("{}", error)]));
     }
 
     pub fn reset(&mut self) {
@@ -126,10 +130,19 @@ impl DeviceListState {
 }
 
 impl BandixApp {
+    pub(super) fn localize_device_search(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if let Some(input) = &self.device_list.search_input {
+            input.update(cx, |input, cx| {
+                input.set_placeholder(tr("昵称 / IP / MAC"), window, cx)
+            });
+        }
+    }
+
     fn toggle_device_list_expanded(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if !self.device_list.view.expanded {
             if self.device_list.search_input.is_none() {
-                let input = cx.new(|cx| InputState::new(window, cx).placeholder("昵称 / IP / MAC"));
+                let input =
+                    cx.new(|cx| InputState::new(window, cx).placeholder(tr("昵称 / IP / MAC")));
                 let subscription = cx.subscribe(&input, |app, _, event: &InputEvent, cx| {
                     if matches!(event, InputEvent::Change) {
                         app.search_devices(cx);
@@ -159,8 +172,8 @@ impl BandixApp {
             Some(storage) => storage
                 .save(self.device_list.sort)
                 .err()
-                .map(|error| format!("无法保存排序设置：{error}")),
-            None => Some("无法保存排序设置：无法获取用户配置目录".into()),
+                .map(|error| tf("无法保存排序设置：{0}", &[format!("{}", error)])),
+            None => Some(tr("无法保存排序设置：无法获取用户配置目录").into()),
         };
         self.device_list.view.reset_scroll();
         cx.notify();
@@ -212,14 +225,14 @@ pub(super) fn render(
             .justify_center()
             .text_size(px(11.0))
             .text_color(rgb(MUTED))
-            .child("正在读取所选周期用量…")
+            .child(tr("正在读取所选周期用量…"))
             .when(expanded, |view| view.flex_1())
             .into_any_element()
     } else if let Some(error) = error {
         div()
             .flex_1()
             .min_h_0()
-            .child(data_notice("设备接口请求失败", error.clone(), RED))
+            .child(data_notice(tr("设备接口请求失败"), error.clone(), RED))
             .into_any_element()
     } else if visible_count == 0 {
         div()
@@ -230,9 +243,9 @@ pub(super) fn render(
             .text_size(px(11.0))
             .text_color(rgb(MUTED))
             .child(if devices.is_empty() {
-                "暂无设备数据"
+                tr("暂无设备数据")
             } else {
-                "没有匹配的设备"
+                tr("没有匹配的设备")
             })
             .when(expanded, |view| view.flex_1())
             .into_any_element()
@@ -256,7 +269,7 @@ pub(super) fn render(
         .p_4()
         .when(expanded, |view| view.h_full().min_h_0().flex().flex_col())
         .child(
-            panel_title("设备列表")
+            panel_title(tr("设备列表"))
                 .flex_none()
                 .flex_nowrap()
                 .when(expanded, |view| view.child(search_controls(app)))
@@ -272,9 +285,12 @@ pub(super) fn render(
                         .child(mode_switch(mode, cx))
                         .child(div().text_size(px(11.0)).text_color(rgb(MUTED)).child(
                             if query.is_empty() {
-                                format!("{} 台设备", devices.len())
+                                tf("{0} 台设备", &[format!("{}", devices.len())])
                             } else {
-                                format!("{} / {} 台设备", visible_count, devices.len())
+                                tf(
+                                    "{0} / {1} 台设备",
+                                    &[format!("{}", visible_count), format!("{}", devices.len())],
+                                )
                             },
                         ))
                         .child(
@@ -296,7 +312,11 @@ pub(super) fn render(
                                 .on_click(cx.listener(|app, _, window, cx| {
                                     app.toggle_device_list_expanded(window, cx)
                                 }))
-                                .child(if expanded { "收起" } else { "展开查看" }),
+                                .child(if expanded {
+                                    tr("收起")
+                                } else {
+                                    tr("展开查看")
+                                }),
                         ),
                 ),
         )
@@ -332,7 +352,7 @@ fn search_controls(app: &BandixApp) -> AnyElement {
                         .h(px(28.0))
                         .appearance(false)
                         .cleanable(true)
-                        .aria_label("搜索设备"),
+                        .aria_label(tr("搜索设备")),
                 ),
         )
         .into_any_element()
@@ -349,11 +369,17 @@ fn table_header() -> impl IntoElement {
         .bg(rgb(0x0d131d))
         .text_size(px(11.0))
         .text_color(rgb(MUTED))
-        .child(row::cell(1.9).child("设备信息"))
-        .child(row::cell(1.2).child("LAN 流量"))
-        .child(row::cell(1.2).child("WAN 流量"))
-        .child(row::cell(1.6).child("策略状态"))
-        .child(div().w(px(128.0)).flex_none().text_right().child("操作"))
+        .child(row::cell(1.9).child(tr("设备信息")))
+        .child(row::cell(1.2).child(tr("LAN 流量")))
+        .child(row::cell(1.2).child(tr("WAN 流量")))
+        .child(row::cell(1.6).child(tr("策略状态")))
+        .child(
+            div()
+                .w(px(128.0))
+                .flex_none()
+                .text_right()
+                .child(tr("操作")),
+        )
 }
 
 fn mode_switch(mode: DeviceListMode, cx: &mut Context<BandixApp>) -> impl IntoElement {
@@ -387,7 +413,7 @@ fn mode_switch(mode: DeviceListMode, cx: &mut Context<BandixApp>) -> impl IntoEl
                         app.device_list.mode = option;
                         cx.notify();
                     }))
-                    .child(label)
+                    .child(crate::i18n::text(&label))
             }),
         )
 }

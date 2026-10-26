@@ -5,7 +5,9 @@ use super::{
     device_management::schedule::{self, RateUnit, UnitSelect},
     theme::*,
 };
-use crate::services::api::{self, GlobalRateLimit, format_rate};
+use crate::app::preferences::SpeedUnit;
+use crate::i18n::{tf, tr};
+use crate::services::api::{self, GlobalRateLimit};
 use gpui_kit::component::{
     Disableable, Sizable,
     button::Button,
@@ -104,7 +106,8 @@ impl BandixApp {
             device: cx.new(|cx| {
                 SelectState::new(SearchableVec::new(options), None, window, cx).searchable(true)
             }),
-            mac: cx.new(|cx| InputState::new(window, cx).placeholder("或填写 aa:bb:cc:dd:ee:ff")),
+            mac: cx
+                .new(|cx| InputState::new(window, cx).placeholder(tr("或填写 aa:bb:cc:dd:ee:ff"))),
             scroll: ScrollHandle::default(),
             loaded: false,
             busy: false,
@@ -176,7 +179,7 @@ impl BandixApp {
                                 .update(cx, |input, cx| input.set_selected_index(None, window, cx));
                         }
                         state.policy = Some(policy.clone());
-                        state.message = changed.then(|| ("设置已保存".into(), false));
+                        state.message = changed.then(|| (tr("设置已保存").into(), false));
                         let endpoint = state.endpoint.clone();
                         if let Some(data) = &mut app.data {
                             data.global_rate_limit = Ok(policy);
@@ -247,7 +250,7 @@ impl BandixApp {
             .as_ref()
             .is_some_and(|policy| policy.is_exempt(&mac))
         {
-            state.message = Some(("该设备已在白名单中".into(), true));
+            state.message = Some((tr("该设备已在白名单中").into(), true));
             cx.notify();
             return;
         }
@@ -274,16 +277,18 @@ fn normalize_mac(value: &str) -> Result<String, &'static str> {
             .iter()
             .any(|part| part.len() != 2 || !part.bytes().all(|byte| byte.is_ascii_hexdigit()))
     {
-        return Err("请选择设备或填写有效的 MAC 地址，例如 aa:bb:cc:dd:ee:ff");
+        return Err(tr(
+            "请选择设备或填写有效的 MAC 地址，例如 aa:bb:cc:dd:ee:ff",
+        ));
     }
     Ok(value.to_ascii_lowercase())
 }
 
-fn limit_label(bytes: u64) -> String {
+fn limit_label(bytes: u64, speed_unit: SpeedUnit) -> String {
     if bytes == 0 {
-        "不限速".into()
+        tr("不限速").into()
     } else {
-        format_rate(bytes)
+        speed_unit.format(bytes)
     }
 }
 
@@ -299,27 +304,41 @@ pub(super) fn header_button(
     let (color, tooltip) = match policy {
         Some(Ok(policy)) => (
             if policy.enabled { ACCENT } else { MUTED },
-            format!(
-                "全局限速：{} · 豁免 {} 台\n每台设备上限：↓ {} · ↑ {}",
-                if policy.enabled {
-                    "已启用"
-                } else {
-                    "已关闭"
-                },
-                policy.macs.len(),
-                limit_label(policy.default_wan_rx_rate_limit),
-                limit_label(policy.default_wan_tx_rate_limit)
+            tf(
+                "全局限速：{0} · 豁免 {1} 台\n每台设备上限：↓ {2} · ↑ {3}",
+                &[
+                    format!(
+                        "{}",
+                        if policy.enabled {
+                            crate::i18n::tr("已启用")
+                        } else {
+                            crate::i18n::tr("已关闭")
+                        }
+                    ),
+                    format!("{}", policy.macs.len()),
+                    format!(
+                        "{}",
+                        limit_label(policy.default_wan_rx_rate_limit, app.speed_unit)
+                    ),
+                    format!(
+                        "{}",
+                        limit_label(policy.default_wan_tx_rate_limit, app.speed_unit)
+                    ),
+                ],
             ),
         ),
-        Some(Err(error)) => (RED, format!("全局限速状态不可用：{error}；点击重试")),
-        None => (MUTED, "全局限速".into()),
+        Some(Err(error)) => (
+            RED,
+            tf("全局限速状态不可用：{0}；点击重试", &[format!("{}", error)]),
+        ),
+        None => (MUTED, tr("全局限速").into()),
     };
     Button::new("global-rate-limit")
         .small()
         .h(px(28.0))
         .px_2()
         .text_size(px(11.0))
-        .label("全局限速")
+        .label(tr("全局限速"))
         .text_color(rgb(color))
         .tooltip(tooltip)
         .on_click(cx.listener(|app, _, window, cx| app.open_global_rate_limit(window, cx)))
@@ -335,24 +354,24 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
         .flex().items_center().justify_center().child(
         div().w(px(680.0)).h(relative(0.88)).max_h(px(760.0)).flex().flex_col().rounded_xl().bg(rgb(SURFACE)).border_1().border_color(rgb(BORDER))
             .child(div().flex().items_center().justify_between().p_4().border_b_1().border_color(rgb(BORDER))
-                .child(div().text_size(px(16.0)).text_color(rgb(TEXT)).child("全局限速"))
-                .child(Button::new("close-global-rate").small().label("关闭").disabled(state.busy).on_click(cx.listener(|app,_,window,cx| {app.global_rate_limit=None;window.blur(cx);cx.notify();}))))
+                .child(div().text_size(px(16.0)).text_color(rgb(TEXT)).child(tr("全局限速")))
+                .child(Button::new("close-global-rate").small().label(tr("关闭")).disabled(state.busy).on_click(cx.listener(|app,_,window,cx| {app.global_rate_limit=None;window.blur(cx);cx.notify();}))))
             .child(div().id("global-rate-scroll").flex_1().min_h_0().overflow_y_scroll().track_scroll(&state.scroll).p_4()
                 .child(div().flex().flex_col().gap_4()
-                    .when(state.busy, |view| view.child(note(if state.loaded { "正在保存…" } else { "正在读取全局限速设置…" },MUTED)))
+                    .when(state.busy, |view| view.child(note(if state.loaded { tr("正在保存…") } else { tr("正在读取全局限速设置…") },MUTED)))
                     .when_some(state.message.as_ref(), |view,(message,error)| view.child(note(message,if *error {RED}else{ACCENT})))
-                    .child(Switch::new("global-rate-enabled").small().label("启用全局限速").checked(state.policy.as_ref().is_some_and(|policy|policy.enabled)).disabled(disabled).color(rgb(ACCENT))
+                    .child(Switch::new("global-rate-enabled").small().label(tr("启用全局限速")).checked(state.policy.as_ref().is_some_and(|policy|policy.enabled)).disabled(disabled).color(rgb(ACCENT))
                         .on_change(cx.listener(|app,enabled,window,cx| app.change_global_rate_limit(Change::Enabled(*enabled),window,cx))))
-                    .child(note("对每台非豁免设备的 WAN 流量分别限速；白名单不豁免独立规则和流量配额。",MUTED))
+                    .child(note(tr("对每台非豁免设备的 WAN 流量分别限速；白名单不豁免独立规则和流量配额。"),MUTED))
                     .child(div().rounded_lg().bg(rgb(SURFACE_2)).p_3().flex().flex_col().gap_3()
-                        .child(note("默认限速",TEXT))
+                        .child(note(tr("默认限速"),TEXT))
                         .child(div().flex().gap_3()
-                            .child(schedule::rate_field("global-upload-unit","上传上限",&state.upload,&state.upload_unit,disabled))
-                            .child(schedule::rate_field("global-download-unit","下载上限",&state.download,&state.download_unit,disabled)))
-                        .child(note("0 表示不限速",MUTED))
-                        .child(Button::new("save-global-rate").small().label("保存限速").disabled(disabled).on_click(cx.listener(|app,_,window,cx|app.save_global_limits(window,cx)))))
+                            .child(schedule::rate_field("global-upload-unit",tr("上传上限"),&state.upload,&state.upload_unit,disabled))
+                            .child(schedule::rate_field("global-download-unit",tr("下载上限"),&state.download,&state.download_unit,disabled)))
+                        .child(note(tr("0 表示不限速"),MUTED))
+                        .child(Button::new("save-global-rate").small().label(tr("保存限速")).disabled(disabled).on_click(cx.listener(|app,_,window,cx|app.save_global_limits(window,cx)))))
                     .child(whitelist(app,state,cx))
-                    .when(!state.loaded && !state.busy,|view|view.child(Button::new("reload-global-rate").small().label("重新读取").on_click(cx.listener(|app,_,window,cx|app.change_global_rate_limit(Change::Reload,window,cx)))))
+                    .when(!state.loaded && !state.busy,|view|view.child(Button::new("reload-global-rate").small().label(tr("重新读取")).on_click(cx.listener(|app,_,window,cx|app.change_global_rate_limit(Change::Reload,window,cx)))))
                 )
             )
         ).into_any_element()
@@ -377,11 +396,11 @@ fn whitelist(
         .flex_col()
         .gap_3()
         .child(note(
-            &format!("豁免设备（白名单）· {} 台", macs.len()),
+            &tf("豁免设备（白名单）· {0} 台", &[format!("{}", macs.len())]),
             TEXT,
         ))
         .when(macs.is_empty(), |view| {
-            view.child(note("暂无豁免设备", MUTED))
+            view.child(note(tr("暂无豁免设备"), MUTED))
         })
         .children(macs.iter().map(|mac| {
             let device = app
@@ -414,7 +433,7 @@ fn whitelist(
                 .child(
                     Button::new(SharedString::from(format!("remove-exemption-{mac}")))
                         .small()
-                        .label("移除")
+                        .label(tr("移除"))
                         .disabled(disabled)
                         .on_click(cx.listener(move |app, _, window, cx| {
                             app.change_global_rate_limit(Change::Remove(mac.clone()), window, cx)
@@ -431,8 +450,8 @@ fn whitelist(
                         Select::new(&state.device)
                             .id("exemption-device")
                             .small()
-                            .placeholder("选择豁免设备")
-                            .accessibility_label("豁免设备")
+                            .placeholder(tr("选择豁免设备"))
+                            .accessibility_label(tr("豁免设备"))
                             .w_full()
                             .h(px(32.0))
                             .menu_width(px(420.0))
@@ -444,14 +463,14 @@ fn whitelist(
                         Input::new(&state.mac)
                             .small()
                             .h(px(32.0))
-                            .aria_label("手动填写豁免 MAC 地址")
+                            .aria_label(tr("手动填写豁免 MAC 地址"))
                             .disabled(disabled),
                     ),
                 )
                 .child(
                     Button::new("add-exemption")
                         .small()
-                        .label("添加")
+                        .label(tr("添加"))
                         .disabled(disabled)
                         .on_click(
                             cx.listener(|app, _, window, cx| app.add_global_exemption(window, cx)),

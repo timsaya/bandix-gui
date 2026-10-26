@@ -1,13 +1,20 @@
 //! LuCI's per-bucket usage and average/P95/maximum rate statistics.
 
+use crate::app::preferences::SpeedUnit;
+use crate::i18n::tr;
 use crate::{
     app::theme::*,
-    services::api::{UsageIncrement, format_bytes, format_rate},
+    services::api::{UsageIncrement, format_bytes},
 };
 use chrono::{Local, TimeZone};
 use gpui_kit::*;
 
-pub(super) fn render(item: &UsageIncrement, aggregation: &str, network: &str) -> impl IntoElement {
+pub(super) fn render(
+    item: &UsageIncrement,
+    aggregation: &str,
+    network: &str,
+    speed_unit: SpeedUnit,
+) -> impl IntoElement {
     div()
         .w(px(300.0))
         .p_2()
@@ -26,7 +33,7 @@ pub(super) fn render(item: &UsageIncrement, aggregation: &str, network: &str) ->
         .children(
             network_sections(network)
                 .iter()
-                .map(|wan| network_section(item, *wan)),
+                .map(|wan| network_section(item, *wan, speed_unit)),
         )
 }
 
@@ -38,7 +45,7 @@ fn network_sections(network: &str) -> &'static [bool] {
     }
 }
 
-fn network_section(item: &UsageIncrement, wan: bool) -> impl IntoElement {
+fn network_section(item: &UsageIncrement, wan: bool, speed_unit: SpeedUnit) -> impl IntoElement {
     let (upload, download, statistics) = if wan {
         (
             item.wan_tx_bytes,
@@ -71,21 +78,23 @@ fn network_section(item: &UsageIncrement, wan: bool) -> impl IntoElement {
                 .flex()
                 .items_center()
                 .text_color(rgb(MUTED))
-                .child(
-                    div()
-                        .w(px(64.0))
-                        .child(if wan { "WAN 流量" } else { "LAN 流量" }),
-                )
-                .child(div().flex_1().text_right().child("上传"))
-                .child(div().flex_1().text_right().child("下载")),
+                .child(div().w(px(64.0)).child(if wan {
+                    tr("WAN 流量")
+                } else {
+                    tr("LAN 流量")
+                }))
+                .child(div().flex_1().text_right().child(tr("上传")))
+                .child(div().flex_1().text_right().child(tr("下载"))),
         )
         .child(value_row(
-            "用量",
+            tr("用量"),
             format_bytes(upload),
             format_bytes(download),
             true,
         ))
-        .children(statistics.map(|(label, tx, rx)| value_row(label, rate(tx), rate(rx), false)))
+        .children(statistics.map(|(label, tx, rx)| {
+            value_row(label, rate(tx, speed_unit), rate(rx, speed_unit), false)
+        }))
 }
 
 fn value_row(
@@ -98,7 +107,12 @@ fn value_row(
         .h(px(if emphasized { 22.0 } else { 16.0 }))
         .flex()
         .items_center()
-        .child(div().w(px(64.0)).text_color(rgb(MUTED)).child(label))
+        .child(
+            div()
+                .w(px(64.0))
+                .text_color(rgb(MUTED))
+                .child(crate::i18n::text(&label)),
+        )
         .child(
             div()
                 .flex_1()
@@ -119,8 +133,10 @@ fn value_row(
         )
 }
 
-fn rate(value: Option<u64>) -> String {
-    value.map(format_rate).unwrap_or_else(|| "—".to_string())
+fn rate(value: Option<u64>, speed_unit: SpeedUnit) -> String {
+    value
+        .map(|rate| speed_unit.format(rate))
+        .unwrap_or_else(|| "—".to_string())
 }
 
 fn time_range(item: &UsageIncrement, aggregation: &str) -> String {
@@ -137,7 +153,7 @@ fn time_range(item: &UsageIncrement, aggregation: &str) -> String {
         ))
     });
     let Some((start, end)) = dates else {
-        return "时间段未提供".to_string();
+        return tr("时间段未提供").to_string();
     };
     if aggregation == "daily" {
         if start.date_naive() == end.date_naive() {
@@ -175,9 +191,12 @@ mod tests {
     #[::core::prelude::v1::test]
     fn missing_statistics_are_distinct_from_zero_and_networks_stay_separate() {
         let item = fixture();
-        assert_eq!(rate(item.wan_tx_avg), "0 B/s");
-        assert_eq!(rate(item.wan_rx_avg), "1.0 KB/s");
-        assert_eq!(rate(item.wan_tx_p95), "—");
+        assert_eq!(rate(item.wan_tx_avg, SpeedUnit::Bytes), "0 B/s");
+        assert_eq!(rate(item.wan_rx_avg, SpeedUnit::Bytes), "1.0 KB/s");
+        assert_eq!(rate(item.wan_tx_p95, SpeedUnit::Bytes), "—");
+        assert_eq!(rate(item.wan_tx_avg, SpeedUnit::Bits), "0 bps");
+        assert_eq!(rate(item.wan_rx_avg, SpeedUnit::Bits), "8.2 Kbps");
+        assert_eq!(rate(item.wan_tx_p95, SpeedUnit::Bits), "—");
         assert_eq!(item.rx_bytes("wan"), 100);
         assert_eq!(item.rx_bytes("lan"), 80);
         assert_eq!(item.rx_bytes("all"), 180);

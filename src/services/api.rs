@@ -1,4 +1,5 @@
 use super::http::Endpoint;
+use crate::i18n::tr;
 use serde::Deserialize;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -307,9 +308,9 @@ impl Device {
             "wifi" => self
                 .wifi_band()
                 .map_or_else(|| "Wi-Fi".to_string(), |band| format!("Wi-Fi {band}")),
-            "wired" => "有线".to_string(),
-            "" => "未知".to_string(),
-            "router" => "路由器".to_string(),
+            "wired" => tr("有线").to_string(),
+            "" => tr("未知").to_string(),
+            "router" => tr("路由器").to_string(),
             value => value.to_string(),
         }
     }
@@ -581,7 +582,7 @@ impl DeviceConnection {
         } else if !self.mac.is_empty() {
             &self.mac
         } else {
-            "未知设备"
+            tr("未知设备")
         }
     }
 }

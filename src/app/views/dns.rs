@@ -4,6 +4,7 @@ use super::super::{
     dns_monitor::{DnsPage, Filter, Ranking},
     theme::*,
 };
+use crate::i18n::{tf, tr};
 use crate::services::api::{DnsStats, DnsTopItem};
 use gpui_kit::component::{
     Disableable, Sizable,
@@ -20,8 +21,12 @@ mod table;
 
 pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
     let Some(data) = &app.data else {
-        return data_notice("暂无 DNS 数据", "请先连接 Bandix 服务。".into(), MUTED)
-            .into_any_element();
+        return data_notice(
+            tr("暂无 DNS 数据"),
+            tr("请先连接 Bandix 服务。").into(),
+            MUTED,
+        )
+        .into_any_element();
     };
     div()
         .size_full()
@@ -39,7 +44,7 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement
                 .child(rankings(app, stats, cx))
                 .into_any_element(),
             Err(error) => {
-                data_notice("DNS 统计接口请求失败", error.clone(), RED).into_any_element()
+                data_notice(tr("DNS 统计接口请求失败"), error.clone(), RED).into_any_element()
             }
         })
         .child(queries(app, cx))
@@ -51,49 +56,67 @@ fn summary(stats: &DnsStats) -> Div {
         .gap_3()
         .child(
             card()
-                .child(text("查询与响应", MUTED, 11.0))
-                .child(value(
-                    stats
-                        .total_queries
-                        .saturating_add(stats.total_responses)
-                        .to_string(),
-                ))
+                .id("dns-query-summary")
+                .py_3()
                 .child(
                     div()
-                        .mt_2()
+                        .flex()
+                        .items_baseline()
+                        .gap_2()
+                        .child(value(
+                            stats
+                                .total_queries
+                                .saturating_add(stats.total_responses)
+                                .to_string(),
+                        ))
+                        .child(text(tr("查询与响应"), MUTED, 11.0)),
+                )
+                .child(
+                    div()
+                        .mt_1()
                         .flex()
                         .flex_wrap()
                         .gap_3()
-                        .child(text(format!("查询 {}", stats.total_queries), BLUE, 11.0))
                         .child(text(
-                            format!("响应 {}", stats.total_responses),
+                            tf("{0} 查询", &[format!("{}", stats.total_queries)]),
+                            BLUE,
+                            11.0,
+                        ))
+                        .child(text(
+                            tf("{0} 响应", &[format!("{}", stats.total_responses)]),
                             ACCENT,
                             11.0,
                         ))
                         .child(text(
-                            format!("{} 台设备", stats.unique_devices),
+                            tf("{0} 台设备", &[format!("{}", stats.unique_devices)]),
                             MUTED,
                             11.0,
                         )),
                 )
                 .child(
                     div()
-                        .mt_2()
+                        .mt_1()
                         .flex()
                         .flex_wrap()
                         .gap_3()
                         .child(text(
-                            format!("成功率 {:.2}%", stats.success_rate * 100.0),
+                            tf(
+                                "{0}% 成功率",
+                                &[format!("{:.2}", stats.success_rate * 100.0)],
+                            ),
                             ACCENT,
                             10.0,
                         ))
                         .child(text(
-                            format!("失败 {}", stats.failure_count),
+                            tf("{0} 失败", &[format!("{}", stats.failure_count)]),
                             if stats.failure_count > 0 { RED } else { MUTED },
                             10.0,
                         ))
                         .child(text(
-                            format!("无响应 {}", stats.queries_without_response),
+                            tf(
+                                "{0} 无响应",
+                                &[format!("{}", stats.queries_without_response)],
+                            ),
                             MUTED,
                             10.0,
                         )),
@@ -101,41 +124,52 @@ fn summary(stats: &DnsStats) -> Div {
         )
         .child(
             card()
-                .child(text("响应时间", MUTED, 11.0))
-                .child(value(
-                    stats
-                        .latest_response_time_ms
-                        .map_or_else(|| "—".into(), |ms| format!("{ms} ms")),
-                ))
+                .id("dns-latency-summary")
+                .py_3()
                 .child(
                     div()
-                        .mt_2()
+                        .flex()
+                        .items_baseline()
+                        .gap_2()
+                        .child(value(
+                            stats
+                                .latest_response_time_ms
+                                .map_or_else(|| "—".into(), |ms| format!("{ms} ms")),
+                        ))
+                        .child(text(tr("响应时间"), MUTED, 11.0)),
+                )
+                .child(
+                    div()
+                        .mt_1()
                         .flex()
                         .flex_wrap()
                         .gap_3()
                         .child(text(
-                            format!("平均 {:.2} ms", stats.avg_response_time_ms),
+                            tf(
+                                "{0} ms 平均",
+                                &[format!("{:.2}", stats.avg_response_time_ms)],
+                            ),
                             TEXT,
                             11.0,
                         ))
                         .child(text(
-                            format!("最快 {} ms", stats.min_response_time_ms),
+                            tf("{0} ms 最快", &[format!("{}", stats.min_response_time_ms)]),
                             ACCENT,
                             11.0,
                         ))
                         .child(text(
-                            format!("最慢 {} ms", stats.max_response_time_ms),
+                            tf("{0} ms 最慢", &[format!("{}", stats.max_response_time_ms)]),
                             ORANGE,
                             11.0,
                         )),
                 )
                 .child(
                     text(
-                        format!("P95 {} ms", stats.response_time_percentiles.p95),
+                        format!("{} ms P95", stats.response_time_percentiles.p95),
                         MUTED,
                         10.0,
                     )
-                    .mt_2(),
+                    .mt_1(),
                 ),
         )
 }
@@ -155,8 +189,8 @@ fn rankings(app: &BandixApp, stats: &DnsStats, cx: &mut Context<BandixApp>) -> D
                 .items_center()
                 .gap_3()
                 .pb_3()
-                .child(text("查询排行", TEXT, 14.0))
-                .child(text("全局查询次数", MUTED, 10.0))
+                .child(text(tr("查询排行"), TEXT, 14.0))
+                .child(text(tr("全局查询次数"), MUTED, 10.0))
                 .child(
                     div().ml_auto().flex().gap_1().children(
                         Ranking::ALL
@@ -166,7 +200,7 @@ fn rankings(app: &BandixApp, stats: &DnsStats, cx: &mut Context<BandixApp>) -> D
                                 Button::new(("dns-ranking", index))
                                     .small()
                                     .h(px(26.0))
-                                    .label(label)
+                                    .label(crate::i18n::text(&label))
                                     .when(selected == ranking, |button| {
                                         button.bg(rgb(SURFACE_2)).text_color(rgb(BLUE))
                                     })
@@ -185,7 +219,7 @@ fn rankings(app: &BandixApp, stats: &DnsStats, cx: &mut Context<BandixApp>) -> D
                 .flex()
                 .items_center()
                 .justify_center()
-                .child(text("暂无排行数据", MUTED, 11.0))
+                .child(text(tr("暂无排行数据"), MUTED, 11.0))
                 .into_any_element()
         } else {
             div()
@@ -275,8 +309,8 @@ fn queries(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
                 .items_center()
                 .gap_3()
                 .pb_3()
-                .child(text("DNS 查询记录", TEXT, 14.0))
-                .child(text("不包含 DoH 和 DoT", MUTED, 10.0)),
+                .child(text(tr("DNS 查询记录"), TEXT, 14.0))
+                .child(text(tr("不包含 DoH 和 DoT"), MUTED, 10.0)),
         )
         .child(
             div()
@@ -285,29 +319,35 @@ fn queries(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
                 .items_center()
                 .gap_2()
                 .pb_3()
-                .child(select("dns-kind", "查询或响应", &state.kind, 112.0, false))
-                .child(input("dns-domain", "按域名筛选", &state.domain))
+                .child(select(
+                    "dns-kind",
+                    tr("查询或响应"),
+                    &state.kind,
+                    112.0,
+                    false,
+                ))
+                .child(input("dns-domain", tr("按域名筛选"), &state.domain))
                 .child(select(
                     "dns-query-type",
-                    "DNS 记录类型",
+                    tr("DNS 记录类型"),
                     &state.query_type,
                     104.0,
                     false,
                 ))
                 .child(input(
                     "dns-device",
-                    "按设备名、IP 或 MAC 筛选",
+                    tr("按设备名、IP 或 MAC 筛选"),
                     &state.device,
                 ))
-                .child(input("dns-server", "按 DNS 服务器筛选", &state.server))
+                .child(input("dns-server", tr("按 DNS 服务器筛选"), &state.server))
                 .child(
                     Button::new("refresh-dns-queries")
                         .small()
                         .h(px(30.0))
                         .label(if state.loading {
-                            "查询中…"
+                            tr("查询中…")
                         } else {
-                            "刷新"
+                            tr("刷新")
                         })
                         .disabled(state.loading)
                         .on_click(cx.listener(|app, _, _, cx| app.refresh_dns(cx))),
@@ -323,16 +363,19 @@ fn queries(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
                 .pt_3()
                 .child(text(
                     if state.loading {
-                        "正在读取…".into()
+                        tr("正在读取…").into()
                     } else {
-                        data.map_or_else(|| "—".into(), |data| format!("共 {} 条记录", data.total))
+                        data.map_or_else(
+                            || "—".into(),
+                            |data| tf("共 {0} 条记录", &[format!("{}", data.total)]),
+                        )
                     },
                     MUTED,
                     11.0,
                 ))
                 .child(div().ml_auto().child(select(
                     "dns-page-size",
-                    "每页记录数",
+                    tr("每页记录数"),
                     &state.page_size,
                     126.0,
                     state.loading,
@@ -340,7 +383,7 @@ fn queries(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
                 .child(
                     Button::new("dns-prev-page")
                         .small()
-                        .label("上一页")
+                        .label(tr("上一页"))
                         .disabled(state.loading || state.page <= 1 || data.is_none())
                         .on_click(cx.listener(|app, _, _, cx| app.move_dns_page(false, cx))),
                 )
@@ -359,7 +402,7 @@ fn queries(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
                 .child(
                     Button::new("dns-next-page")
                         .small()
-                        .label("下一页")
+                        .label(tr("下一页"))
                         .disabled(
                             state.loading || data.is_none_or(|data| state.page >= data.total_pages),
                         )
@@ -378,7 +421,7 @@ fn select(
     div().w(px(width)).flex_none().child(
         Select::new(state)
             .id(id)
-            .accessibility_label(label)
+            .accessibility_label(crate::i18n::text(&label))
             .small()
             .h(px(30.0))
             .w_full()
@@ -393,7 +436,7 @@ fn input(id: &'static str, label: &'static str, state: &Entity<InputState>) -> i
             .h(px(30.0))
             .w_full()
             .cleanable(true)
-            .aria_label(label),
+            .aria_label(crate::i18n::text(&label)),
     )
 }
 fn card() -> Div {
@@ -407,8 +450,8 @@ fn card() -> Div {
         .p_4()
 }
 fn value(value: String) -> Div {
-    text(value, TEXT, 23.0)
-        .mt_2()
+    text(value, TEXT, 20.0)
+        .whitespace_nowrap()
         .font_weight(FontWeight::SEMIBOLD)
 }
 fn text(value: impl Into<SharedString>, color: u32, size: f32) -> Div {

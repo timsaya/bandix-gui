@@ -1,5 +1,6 @@
 use super::{DnsPage, text};
 use crate::app::theme::*;
+use crate::i18n::{tf, tr};
 use crate::services::api::DnsQuery;
 use chrono::{Local, TimeZone};
 use gpui_kit::component::{
@@ -48,7 +49,11 @@ pub(super) fn render(state: &DnsPage, cx: &Context<crate::app::BandixApp>) -> An
                                         .rounded_md()
                                         .bg(rgb(0x0d131d))
                                         .children(COLUMNS.iter().map(|(label, width)| {
-                                            cell(*width).child(text(*label, MUTED, 11.0))
+                                            cell(*width).child(text(
+                                                crate::i18n::tr(label),
+                                                MUTED,
+                                                11.0,
+                                            ))
                                         })),
                                 )
                                 .children(
@@ -62,9 +67,9 @@ pub(super) fn render(state: &DnsPage, cx: &Context<crate::app::BandixApp>) -> An
                 .scrollbar(&state.scroll, ScrollbarAxis::Both)
                 .child(crate::app::dns_monitor::scroll_capture(cx, false))
                 .into_any_element(),
-            Some(Ok(_)) => notice("没有符合条件的 DNS 记录", MUTED),
-            Some(Err(error)) => notice(&format!("DNS 查询读取失败：{error}"), RED),
-            None => notice("暂无 DNS 记录", MUTED),
+            Some(Ok(_)) => notice(tr("没有符合条件的 DNS 记录"), MUTED),
+            Some(Err(error)) => notice(&tf("DNS 查询读取失败：{0}", &[format!("{}", error)]), RED),
+            None => notice(tr("暂无 DNS 记录"), MUTED),
         })
         .when(state.loading, |view| {
             view.child(
@@ -77,7 +82,7 @@ pub(super) fn render(state: &DnsPage, cx: &Context<crate::app::BandixApp>) -> An
                     .flex()
                     .items_center()
                     .justify_center()
-                    .child(text("正在查询…", MUTED, 12.0)),
+                    .child(text(tr("正在查询…"), MUTED, 12.0)),
             )
         })
         .into_any_element()
@@ -124,7 +129,11 @@ fn row(index: usize, query: &DnsQuery) -> impl IntoElement {
                     .rounded_md()
                     .bg(rgb(color).opacity(0.08))
                     .child(text(
-                        if query.is_query { "查询" } else { "响应" },
+                        if query.is_query {
+                            tr("查询")
+                        } else {
+                            tr("响应")
+                        },
                         color,
                         10.0,
                     )),
@@ -167,9 +176,9 @@ fn results(query: &DnsQuery) -> impl IntoElement {
         "Success" | "NoError" | "NOERROR"
     );
     let status = if query.is_query {
-        "查询"
+        tr("查询")
     } else if success {
-        "成功"
+        tr("成功")
     } else {
         empty(&query.response_code)
     };
@@ -200,7 +209,11 @@ fn results(query: &DnsQuery) -> impl IntoElement {
                 .map(|record| text(record.clone(), TEXT, 10.0).text_ellipsis()),
         )
         .when(records.len() > 5, |view| {
-            view.child(text(format!("另有 {} 条", records.len() - 5), BLUE, 10.0))
+            view.child(text(
+                tf("另有 {0} 条", &[format!("{}", records.len() - 5)]),
+                BLUE,
+                10.0,
+            ))
         })
         .tooltip(move |window, cx| Tooltip::new(detail.clone()).build(window, cx))
 }

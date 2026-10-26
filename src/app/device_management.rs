@@ -1,5 +1,7 @@
+use super::preferences::SpeedUnit;
 use super::{BandixApp, quota_usage::QUOTA_LABELS, theme::*};
-use crate::services::api::{self, Device, ScheduledRateLimit, TrafficQuotaStatus, format_rate};
+use crate::i18n::{tf, tr};
+use crate::services::api::{self, Device, ScheduledRateLimit, TrafficQuotaStatus};
 use gpui_kit::component::input::{Input, InputState};
 use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::prelude::FluentBuilder;
@@ -54,7 +56,7 @@ impl DeviceManagerState {
         window: &mut Window,
         cx: &mut Context<BandixApp>,
     ) -> Self {
-        let nickname = text_input(&device.hostname, "设备昵称", window, cx);
+        let nickname = text_input(&device.hostname, tr("设备昵称"), window, cx);
         let rate_start = TimeSelection::new(0, 0, window, cx);
         let rate_end = TimeSelection::new(23, 59, window, cx);
         let download_rate = schedule::number_state(window, cx);
@@ -203,7 +205,7 @@ impl BandixApp {
                 match result {
                     Ok(hostname) => {
                         manager.device.hostname = hostname;
-                        manager.message = Some(("昵称已保存".to_string(), false));
+                        manager.message = Some((tr("昵称已保存").to_string(), false));
                         let endpoint = manager.endpoint.clone();
                         app.start_data_refresh(endpoint, cx);
                     }
@@ -225,7 +227,7 @@ impl BandixApp {
         let (start, end) = match (manager.rate_start.value(cx), manager.rate_end.value(cx)) {
             (Ok(start), Ok(end)) => (start, end),
             _ => {
-                manager.message = Some(("请选择开始和结束时间".to_string(), true));
+                manager.message = Some((tr("请选择开始和结束时间").to_string(), true));
                 cx.notify();
                 return;
             }
@@ -259,7 +261,7 @@ impl BandixApp {
             }
         };
         if days.is_empty() {
-            manager.message = Some(("请至少选择一天".to_string(), true));
+            manager.message = Some((tr("请至少选择一天").to_string(), true));
             cx.notify();
             return;
         }
@@ -276,7 +278,7 @@ impl BandixApp {
         cx.spawn_in(window, async move |this, window| {
             let result = operation.await;
             _ = this.update_in(window, |app, window, cx| {
-                finish_control_reload(app, result, "限速规则已添加", window, cx);
+                finish_control_reload(app, result, tr("限速规则已添加"), window, cx);
             });
         })
         .detach();
@@ -306,7 +308,7 @@ impl BandixApp {
         cx.spawn_in(window, async move |this, window| {
             let result = operation.await;
             _ = this.update_in(window, |app, window, cx| {
-                finish_control_reload(app, result, "限速规则已删除", window, cx);
+                finish_control_reload(app, result, tr("限速规则已删除"), window, cx);
             });
         })
         .detach();
@@ -342,7 +344,7 @@ impl BandixApp {
         cx.spawn_in(window, async move |this, window| {
             let result = operation.await;
             _ = this.update_in(window, |app, window, cx| {
-                finish_control_reload(app, result, "流量配额已保存", window, cx);
+                finish_control_reload(app, result, tr("流量配额已保存"), window, cx);
             });
         })
         .detach();
@@ -367,7 +369,7 @@ impl BandixApp {
         cx.spawn_in(window, async move |this, window| {
             let result = operation.await;
             _ = this.update_in(window, |app, window, cx| {
-                finish_control_reload(app, result, "流量配额已删除", window, cx);
+                finish_control_reload(app, result, tr("流量配额已删除"), window, cx);
             });
         })
         .detach();
@@ -527,7 +529,7 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                                     .child(message),
                             )
                         })
-                        .child(manager_tab_content(manager, cx)),
+                        .child(manager_tab_content(manager, app.speed_unit, cx)),
                 ),
         )
         .into_any_element()
@@ -552,7 +554,7 @@ fn manager_header(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> 
                         .text_size(px(16.0))
                         .font_weight(FontWeight::SEMIBOLD)
                         .text_color(rgb(TEXT))
-                        .child("设备设置"),
+                        .child(tr("设备设置")),
                 )
                 .child(
                     div()
@@ -591,21 +593,21 @@ fn manager_tabs(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> im
         .border_color(rgb(BORDER))
         .child(manager_tab(
             "device-manager-tab-nickname",
-            "昵称",
+            tr("昵称"),
             DeviceManagerTab::Nickname,
             manager.active_tab,
             cx,
         ))
         .child(manager_tab(
             "device-manager-tab-rate-limit",
-            "限速",
+            tr("限速"),
             DeviceManagerTab::RateLimit,
             manager.active_tab,
             cx,
         ))
         .child(manager_tab(
             "device-manager-tab-quota",
-            "配额",
+            tr("配额"),
             DeviceManagerTab::Quota,
             manager.active_tab,
             cx,
@@ -650,19 +652,23 @@ fn manager_tab(
             )
         })
         .on_click(cx.listener(move |app, _, _, cx| app.select_device_manager_tab(tab, cx)))
-        .child(label)
+        .child(crate::i18n::text(&label))
 }
 
-fn manager_tab_content(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> AnyElement {
+fn manager_tab_content(
+    manager: &DeviceManagerState,
+    speed_unit: SpeedUnit,
+    cx: &mut Context<BandixApp>,
+) -> AnyElement {
     match manager.active_tab {
         DeviceManagerTab::Nickname => nickname_section(manager, cx).into_any_element(),
-        DeviceManagerTab::RateLimit => schedule::render(manager, cx).into_any_element(),
+        DeviceManagerTab::RateLimit => schedule::render(manager, speed_unit, cx).into_any_element(),
         DeviceManagerTab::Quota => quota::render(manager, cx).into_any_element(),
     }
 }
 
 fn nickname_section(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> impl IntoElement {
-    manager_section("昵称", "给设备设置容易识别的名称").child(
+    manager_section(tr("昵称"), tr("给设备设置容易识别的名称")).child(
         div()
             .flex()
             .items_center()
@@ -670,7 +676,7 @@ fn nickname_section(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -
             .child(input_box(&manager.nickname).flex_1())
             .child(action_button(
                 "save-device-nickname",
-                "保存昵称",
+                tr("保存昵称"),
                 ACCENT,
                 cx,
                 |app, window, cx| app.save_device_nickname(window, cx),
@@ -755,7 +761,7 @@ fn action_button(
         .text_color(rgb(color))
         .hover(move |style| style.bg(rgb(color).opacity(0.24)))
         .on_click(cx.listener(move |app, _, window, cx| handler(app, window, cx)))
-        .child(label)
+        .child(crate::i18n::text(&label))
 }
 
 fn empty_line(message: &'static str) -> impl IntoElement {
@@ -791,17 +797,19 @@ fn delete_confirmation(state: &DeleteDeviceState, cx: &mut Context<BandixApp>) -
                         .text_size(px(16.0))
                         .font_weight(FontWeight::SEMIBOLD)
                         .text_color(rgb(TEXT))
-                        .child("删除设备？"),
+                        .child(tr("删除设备？")),
                 )
                 .child(
                     div()
                         .mt_3()
                         .text_size(px(12.0))
                         .text_color(rgb(MUTED))
-                        .child(format!(
-                            "将删除 {}（{}）的流量历史、昵称、限速规则和配额，此操作无法撤销。",
-                            state.device.display_name(),
-                            state.device.mac
+                        .child(tf(
+                            "将删除 {0}（{1}）的流量历史、昵称、限速规则和配额，此操作无法撤销。",
+                            &[
+                                format!("{}", state.device.display_name()),
+                                format!("{}", state.device.mac),
+                            ],
                         )),
                 )
                 .when_some(state.error.clone(), |view, error| {
@@ -831,7 +839,7 @@ fn delete_confirmation(state: &DeleteDeviceState, cx: &mut Context<BandixApp>) -
                                 .bg(rgb(SURFACE_2))
                                 .text_color(rgb(TEXT))
                                 .on_click(cx.listener(|app, _, _, cx| app.cancel_delete_device(cx)))
-                                .child("取消"),
+                                .child(tr("取消")),
                         )
                         .child(
                             div()
@@ -848,9 +856,9 @@ fn delete_confirmation(state: &DeleteDeviceState, cx: &mut Context<BandixApp>) -
                                     app.confirm_delete_device(window, cx)
                                 }))
                                 .child(if state.busy {
-                                    "正在删除…"
+                                    tr("正在删除…")
                                 } else {
-                                    "确认删除"
+                                    tr("确认删除")
                                 }),
                         ),
                 ),
@@ -867,11 +875,11 @@ fn valid_time(value: &str) -> bool {
         && minute.parse::<u8>().is_ok_and(|value| value < 60)
 }
 
-fn limit_rate(rate: u64) -> String {
+fn limit_rate(rate: u64, speed_unit: SpeedUnit) -> String {
     if rate == 0 {
-        "不限".to_string()
+        tr("不限").to_string()
     } else {
-        format_rate(rate)
+        speed_unit.format(rate)
     }
 }
 

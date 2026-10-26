@@ -1,5 +1,6 @@
 //! User-selected ordering applies to the visible list, not the dashboard data.
 
+use crate::i18n::{tf, tr};
 use crate::services::api::Device;
 use serde::{Deserialize, Serialize};
 use std::{cmp::Ordering, net::IpAddr};
@@ -37,31 +38,31 @@ impl SortField {
 
     pub fn label(self) -> &'static str {
         match self {
-            Self::Default => "默认顺序",
-            Self::Ip => "IP 地址",
-            Self::Nickname => "昵称",
-            Self::LastOnline => "最近在线时间",
-            Self::WanDownload => "WAN 下载速度",
-            Self::WanUpload => "WAN 上传速度",
-            Self::WanUsage => "WAN 累计用量",
-            Self::LanDownload => "LAN 下载速度",
-            Self::LanUpload => "LAN 上传速度",
-            Self::LanUsage => "LAN 累计用量",
+            Self::Default => tr("默认顺序"),
+            Self::Ip => tr("IP 地址"),
+            Self::Nickname => tr("昵称"),
+            Self::LastOnline => tr("最近在线时间"),
+            Self::WanDownload => tr("WAN 下载速度"),
+            Self::WanUpload => tr("WAN 上传速度"),
+            Self::WanUsage => tr("WAN 累计用量"),
+            Self::LanDownload => tr("LAN 下载速度"),
+            Self::LanUpload => tr("LAN 上传速度"),
+            Self::LanUsage => tr("LAN 累计用量"),
         }
     }
 
     fn short_label(self) -> &'static str {
         match self {
-            Self::Default => "默认顺序",
+            Self::Default => tr("默认顺序"),
             Self::Ip => "IP",
-            Self::Nickname => "昵称",
-            Self::LastOnline => "最近在线",
-            Self::WanDownload => "WAN 下载",
-            Self::WanUpload => "WAN 上传",
-            Self::WanUsage => "WAN 用量",
-            Self::LanDownload => "LAN 下载",
-            Self::LanUpload => "LAN 上传",
-            Self::LanUsage => "LAN 用量",
+            Self::Nickname => tr("昵称"),
+            Self::LastOnline => tr("最近在线"),
+            Self::WanDownload => tr("WAN 下载"),
+            Self::WanUpload => tr("WAN 上传"),
+            Self::WanUsage => tr("WAN 用量"),
+            Self::LanDownload => tr("LAN 下载"),
+            Self::LanUpload => tr("LAN 上传"),
+            Self::LanUsage => tr("LAN 用量"),
         }
     }
 
@@ -85,8 +86,8 @@ pub(super) enum SortDirection {
 impl SortDirection {
     pub fn label(self) -> &'static str {
         match self {
-            Self::Ascending => "↑ 升序",
-            Self::Descending => "↓ 降序",
+            Self::Ascending => tr("↑ 升序"),
+            Self::Descending => tr("↓ 降序"),
         }
     }
 
@@ -115,7 +116,7 @@ pub(super) struct DeviceSort {
 impl DeviceSort {
     pub fn summary(self) -> String {
         if self.field == SortField::Default {
-            return "⇅ 默认顺序".into();
+            return tr("⇅ 默认顺序").into();
         }
         let arrow = match self.direction {
             SortDirection::Ascending => "↑",
@@ -130,13 +131,19 @@ impl DeviceSort {
         } else {
             format!("{} · {}", self.field.label(), self.direction.label())
         };
-        format!(
-            "{order}\n在线始终在前：{}",
-            if self.online_first {
-                "已开启"
-            } else {
-                "已关闭"
-            }
+        tf(
+            "{0}\n在线始终在前：{1}",
+            &[
+                format!("{}", order),
+                format!(
+                    "{}",
+                    if self.online_first {
+                        crate::i18n::tr("已开启")
+                    } else {
+                        crate::i18n::tr("已关闭")
+                    }
+                ),
+            ],
         )
     }
 

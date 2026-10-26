@@ -1,6 +1,7 @@
 //! Native area plot with bounds for zooming and a window-constrained tooltip.
 
 use super::{TrafficSample, series_fill, tooltip};
+use crate::app::preferences::SpeedUnit;
 use crate::app::theme::*;
 use gpui_kit::component::{
     chart::AreaChart,
@@ -17,6 +18,7 @@ pub(super) struct RealtimePlot {
     samples: Vec<TrafficSample>,
     bounds: Rc<Cell<Option<Bounds<Pixels>>>>,
     interactive: bool,
+    speed_unit: SpeedUnit,
 }
 
 impl RealtimePlot {
@@ -25,6 +27,7 @@ impl RealtimePlot {
         axis_maximum: u64,
         bounds: Rc<Cell<Option<Bounds<Pixels>>>>,
         interactive: bool,
+        speed_unit: SpeedUnit,
     ) -> Self {
         let area = AreaChart::new(samples.iter().copied())
             .appear(false)
@@ -47,6 +50,7 @@ impl RealtimePlot {
             samples,
             bounds,
             interactive,
+            speed_unit,
         }
     }
 }
@@ -144,7 +148,7 @@ impl Plot for RealtimePlot {
                             anchored()
                                 .anchor(Anchor::BottomLeft)
                                 .position(position)
-                                .child(tooltip::render(sample)),
+                                .child(tooltip::render(sample, self.speed_unit)),
                         ),
                 )
                 .into_any_element(),

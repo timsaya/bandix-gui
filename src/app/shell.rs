@@ -1,5 +1,4 @@
 use super::{BandixApp, page::Page, theme::*};
-use crate::services::discovery::DiscoveryState;
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
@@ -44,7 +43,7 @@ fn nav_item(
                 .text_color(if active { rgb(ACCENT) } else { rgb(MUTED) })
                 .child(icon),
         )
-        .child(label)
+        .child(crate::i18n::text(&label))
         .when(active, |el| {
             el.child(
                 div()
@@ -60,12 +59,6 @@ fn nav_item(
 pub(super) fn sidebar(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
     let nav = Page::NAV_ITEMS
         .map(|(page, icon, label)| nav_item(app, page, icon, label, cx).into_any_element());
-    let (service_label, service_detail, service_color) = match &app.discovery {
-        DiscoveryState::Idle => ("等待服务发现", "打开设置进行探测".to_string(), MUTED),
-        DiscoveryState::Searching(_) => ("正在搜索服务", "探测网关 :8686".to_string(), BLUE),
-        DiscoveryState::Connected(report) => ("服务已连接", report.endpoint.clone(), ACCENT),
-        DiscoveryState::Failed(_) => ("服务未连接", "打开设置重试".to_string(), RED),
-    };
 
     div()
         .w(px(224.0))
@@ -77,74 +70,25 @@ pub(super) fn sidebar(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl Into
         .border_r_1()
         .border_color(rgb(BORDER))
         .pt_4()
+        .pb_4()
         .px_3()
         .child(
             div()
                 .flex()
                 .items_center()
-                .gap_3()
+                .gap(px(10.0))
                 .px_2()
-                .pb_7()
+                .pb_5()
+                .child(img(crate::assets::APP_ICON).size(px(40.0)).flex_none())
                 .child(
                     div()
-                        .size(px(34.0))
-                        .rounded_lg()
-                        .flex()
-                        .items_center()
-                        .justify_center()
-                        .bg(rgb(ACCENT))
-                        .text_color(rgb(0x07110d))
-                        .font_weight(FontWeight::BOLD)
+                        .text_color(rgb(TEXT))
                         .text_size(px(18.0))
-                        .child("B"),
-                )
-                .child(
-                    div()
-                        .flex()
-                        .flex_col()
-                        .gap(px(1.0))
-                        .child(
-                            div()
-                                .text_color(rgb(TEXT))
-                                .font_weight(FontWeight::SEMIBOLD)
-                                .child("Bandix"),
-                        )
-                        .child(
-                            div()
-                                .text_size(px(10.0))
-                                .text_color(rgb(MUTED))
-                                .child("NETWORK OBSERVER"),
-                        ),
+                        .font_weight(FontWeight::SEMIBOLD)
+                        .child("Bandix"),
                 ),
         )
         .child(div().flex().flex_col().gap_1().children(nav))
         .child(div().flex_1())
         .child(nav_item(app, Page::Settings, "⚙", "设置", cx))
-        .child(
-            div()
-                .mt_4()
-                .mb_4()
-                .p_3()
-                .rounded_lg()
-                .bg(rgb(0x0f171b))
-                .border_1()
-                .border_color(rgb(0x1b3029))
-                .child(
-                    div()
-                        .flex()
-                        .items_center()
-                        .gap_2()
-                        .text_size(px(11.0))
-                        .text_color(rgb(service_color))
-                        .child(div().size(px(7.0)).rounded_full().bg(rgb(service_color)))
-                        .child(service_label),
-                )
-                .child(
-                    div()
-                        .mt_2()
-                        .text_size(px(10.0))
-                        .text_color(rgb(MUTED))
-                        .child(service_detail),
-                ),
-        )
 }

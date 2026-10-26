@@ -1,0 +1,19 @@
+{
+  "generator": "built-in image_gen",
+  "transparent_background": true,
+  "reference": "20-parallel-duplex.png",
+  "concepts": [
+    {
+      "key": "24-parallel-ivory",
+      "name": "并行双向 · 暖白",
+      "prompt": "Use case: precise-object-edit.\nEdit target: the referenced Bandix parallel bidirectional app icon.\nChange ONLY the navy rounded-square background tile color as specified below. Preserve the two existing orange upward and cyan downward arrows EXACTLY: same contours, inward-curving edges, proportions, positions, spacing, subtle shading and colors. Preserve tile silhouette, rounded corners, placement, canvas, and genuinely transparent margin outside the tile. Background should be pristine smooth matte, no texture, no pattern, no glow, no external shadow. Do not redesign the arrows. No text, new symbols, borders or stray pixels.\nReplace the navy tile with warm off-white / ivory (#F5F2EB), a restrained bright neutral background. Preserve original orange and cyan arrows unchanged.",
+      "file": "24-parallel-ivory.png"
+    },
+    {
+      "key": "25-parallel-charcoal",
+      "name": "并行双向 · 炭黑",
+      "prompt": "Use case: precise-object-edit.\nEdit target: the referenced Bandix parallel bidirectional app icon.\nChange ONLY the navy rounded-square background tile color as specified below. Preserve the two existing orange upward and cyan downward arrows EXACTLY: same contours, inward-curving edges, proportions, positions, spacing, subtle shading and colors. Preserve tile silhouette, rounded corners, placement, canvas, and genuinely transparent margin outside the tile. Background should be pristine smooth matte, no texture, no pattern, no glow, no external shadow. Do not redesign the arrows. No text, new symbols, borders or stray pixels.\nReplace the navy tile with neutral charcoal black (#232426), absolutely neutral, no blue tint. Preserve original orange and cyan arrows unchanged.",
+      "file": "25-parallel-charcoal.png"
+    }
+  ]
+}

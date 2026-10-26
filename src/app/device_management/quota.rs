@@ -8,6 +8,7 @@ use crate::app::{
     quota_usage::{blocking_periods, configured_periods},
     theme::*,
 };
+use crate::i18n::{tf, tr};
 use crate::services::api::format_bytes;
 use gpui_kit::component::{
     IndexPath,
@@ -103,7 +104,7 @@ impl QuotaField {
             .read(cx)
             .selected_value()
             .copied()
-            .ok_or("请选择配额单位")?;
+            .ok_or(tr("请选择配额单位"))?;
         parse_bytes(&self.number.read(cx).value(), unit)
     }
 
@@ -131,7 +132,7 @@ impl QuotaField {
                     .mb_1()
                     .text_size(px(11.0))
                     .text_color(rgb(MUTED))
-                    .child(label),
+                    .child(crate::i18n::text(&label)),
             )
             .child(
                 div()
@@ -141,7 +142,10 @@ impl QuotaField {
                     .child(
                         div().flex_1().min_w_0().h(px(36.0)).child(
                             Input::new(&self.number)
-                                .aria_label(format!("{label}配额"))
+                                .aria_label(tf(
+                                    "{0}配额",
+                                    &[format!("{}", crate::i18n::tr(&(label)))],
+                                ))
                                 .disabled(disabled)
                                 .w_full()
                                 .h(px(36.0))
@@ -152,7 +156,10 @@ impl QuotaField {
                         div().w(px(76.0)).h(px(36.0)).flex_none().child(
                             Select::new(&self.unit)
                                 .id(format!("quota-unit-{index}"))
-                                .accessibility_label(format!("{label}配额单位"))
+                                .accessibility_label(tf(
+                                    "{0}配额单位",
+                                    &[format!("{}", crate::i18n::tr(&(label)))],
+                                ))
                                 .disabled(disabled)
                                 .w_full()
                                 .h(px(36.0))
@@ -193,20 +200,20 @@ fn parse_bytes(value: &str, unit: QuotaUnit) -> Result<u64, String> {
     if let Ok(number) = value.parse::<u64>() {
         return number
             .checked_mul(unit.multiplier())
-            .ok_or_else(|| "配额数值过大".into());
+            .ok_or_else(|| tr("配额数值过大").into());
     }
     let number = value
         .parse::<f64>()
-        .map_err(|_| "配额必须是有效数字".to_string())?;
+        .map_err(|_| tr("配额必须是有效数字").to_string())?;
     if !number.is_finite() || number < 0.0 {
-        return Err("配额必须是非负的有限数字".into());
+        return Err(tr("配额必须是非负的有限数字").into());
     }
     let bytes = number * unit.multiplier() as f64;
     if !bytes.is_finite() || bytes >= u64::MAX as f64 {
-        return Err("配额数值过大".into());
+        return Err(tr("配额数值过大").into());
     }
     if number > 0.0 && bytes.round() < 1.0 {
-        return Err("配额换算后不能小于 1 B".into());
+        return Err(tr("配额换算后不能小于 1 B").into());
     }
     Ok(bytes.round() as u64)
 }
@@ -215,21 +222,21 @@ pub(super) fn render(
     manager: &DeviceManagerState,
     cx: &mut Context<BandixApp>,
 ) -> impl IntoElement {
-    let mut status_card = manager_section("配额状态", "统计 WAN 上传与下载的合计流量");
+    let mut status_card = manager_section(tr("配额状态"), tr("统计 WAN 上传与下载的合计流量"));
     if manager.loading {
-        status_card = status_card.child(empty_line("正在读取配额…"));
+        status_card = status_card.child(empty_line(tr("正在读取配额…")));
     } else if let Some(quota) = manager.quota.as_ref() {
         let blocked = blocking_periods(quota);
         let periods = configured_periods(quota).collect::<Vec<_>>();
         let color = if quota.blocked { RED } else { ACCENT };
         let status = if quota.blocked {
             if blocked.is_empty() {
-                "超限阻断".to_string()
+                tr("超限阻断").to_string()
             } else {
-                format!("超限阻断 · {} 个周期", blocked.len())
+                tf("超限阻断 · {0} 个周期", &[format!("{}", blocked.len())])
             }
         } else {
-            "配额正常".to_string()
+            tr("配额正常").to_string()
         };
         status_card = status_card.child(
             div().mb_3().flex().child(
@@ -244,10 +251,10 @@ pub(super) fn render(
             ),
         );
         if quota.blocked && blocked.is_empty() {
-            status_card = status_card.child(empty_line("超限周期与用量暂不可用"));
+            status_card = status_card.child(empty_line(tr("超限周期与用量暂不可用")));
         }
         if periods.is_empty() {
-            status_card = status_card.child(empty_line("所有周期均不限额"));
+            status_card = status_card.child(empty_line(tr("所有周期均不限额")));
         } else {
             status_card = status_card
                 .child(
@@ -256,8 +263,8 @@ pub(super) fn render(
                         .flex()
                         .text_size(px(10.0))
                         .text_color(rgb(MUTED))
-                        .child(div().flex_1().child("配额周期"))
-                        .child(div().child("已用流量 / 配额"))
+                        .child(div().flex_1().child(tr("配额周期")))
+                        .child(div().child(tr("已用流量 / 配额")))
                         .child(div().w(px(60.0))),
                 )
                 .children(periods.into_iter().map(|period| {
@@ -285,19 +292,19 @@ pub(super) fn render(
                                 .text_right()
                                 .text_size(px(10.0))
                                 .text_color(rgb(RED))
-                                .child(if exceeded { "已超限" } else { "" }),
+                                .child(if exceeded { tr("已超限") } else { "" }),
                         )
                 }));
         }
         status_card = status_card.child(manager_form_footer().child(action_button(
             "delete-quota",
-            "删除配额",
+            tr("删除配额"),
             RED,
             cx,
             |app, window, cx| app.remove_traffic_quota(window, cx),
         )));
     } else {
-        status_card = status_card.child(empty_line("尚未设置配额，可在上方卡片设置"));
+        status_card = status_card.child(empty_line(tr("尚未设置配额，可在上方卡片设置")));
     }
     div().child(editor_card(manager, cx)).child(status_card)
 }
@@ -305,11 +312,11 @@ pub(super) fn render(
 fn editor_card(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> impl IntoElement {
     manager_section(
         if manager.quota.is_some() {
-            "编辑配额"
+            tr("编辑配额")
         } else {
-            "新增配额"
+            tr("新增配额")
         },
-        "每个周期独立设置数值和单位；0 表示不限额",
+        tr("每个周期独立设置数值和单位；0 表示不限额"),
     )
     .children((0..3).map(|row| {
         div()
@@ -323,9 +330,9 @@ fn editor_card(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> imp
     .child(manager_form_footer().child(action_button(
         "save-quota",
         if manager.busy {
-            "正在保存…"
+            tr("正在保存…")
         } else {
-            "保存配额"
+            tr("保存配额")
         },
         ACCENT,
         cx,

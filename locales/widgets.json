@@ -1,0 +1,472 @@
+{
+  "Calendar.week.0": [
+    "日",
+    "Su",
+    "日",
+    "日",
+    "dim.",
+    "dom.",
+    "ndz.",
+    "вс"
+  ],
+  "Calendar.week.1": [
+    "一",
+    "Mo",
+    "一",
+    "月",
+    "lun.",
+    "lun.",
+    "pon.",
+    "пн"
+  ],
+  "Calendar.week.2": [
+    "二",
+    "Tu",
+    "二",
+    "火",
+    "mar.",
+    "mar.",
+    "wt.",
+    "вт"
+  ],
+  "Calendar.week.3": [
+    "三",
+    "We",
+    "三",
+    "水",
+    "mer.",
+    "mié.",
+    "śr.",
+    "ср"
+  ],
+  "Calendar.week.4": [
+    "四",
+    "Th",
+    "四",
+    "木",
+    "jeu.",
+    "jue.",
+    "czw.",
+    "чт"
+  ],
+  "Calendar.week.5": [
+    "五",
+    "Fr",
+    "五",
+    "金",
+    "ven.",
+    "vie.",
+    "pt.",
+    "пт"
+  ],
+  "Calendar.week.6": [
+    "六",
+    "Sa",
+    "六",
+    "土",
+    "sam.",
+    "sáb.",
+    "sob.",
+    "сб"
+  ],
+  "Calendar.month.January": [
+    "一月",
+    "January",
+    "一月",
+    "1月",
+    "janvier",
+    "enero",
+    "styczeń",
+    "январь"
+  ],
+  "Calendar.month.February": [
+    "二月",
+    "February",
+    "二月",
+    "2月",
+    "février",
+    "febrero",
+    "luty",
+    "февраль"
+  ],
+  "Calendar.month.March": [
+    "三月",
+    "March",
+    "三月",
+    "3月",
+    "mars",
+    "marzo",
+    "marzec",
+    "март"
+  ],
+  "Calendar.month.April": [
+    "四月",
+    "April",
+    "四月",
+    "4月",
+    "avril",
+    "abril",
+    "kwiecień",
+    "апрель"
+  ],
+  "Calendar.month.May": [
+    "五月",
+    "May",
+    "五月",
+    "5月",
+    "mai",
+    "mayo",
+    "maj",
+    "май"
+  ],
+  "Calendar.month.June": [
+    "六月",
+    "June",
+    "六月",
+    "6月",
+    "juin",
+    "junio",
+    "czerwiec",
+    "июнь"
+  ],
+  "Calendar.month.July": [
+    "七月",
+    "July",
+    "七月",
+    "7月",
+    "juillet",
+    "julio",
+    "lipiec",
+    "июль"
+  ],
+  "Calendar.month.August": [
+    "八月",
+    "August",
+    "八月",
+    "8月",
+    "août",
+    "agosto",
+    "sierpień",
+    "август"
+  ],
+  "Calendar.month.September": [
+    "九月",
+    "September",
+    "九月",
+    "9月",
+    "septembre",
+    "septiembre",
+    "wrzesień",
+    "сентябрь"
+  ],
+  "Calendar.month.October": [
+    "十月",
+    "October",
+    "十月",
+    "10月",
+    "octobre",
+    "octubre",
+    "październik",
+    "октябрь"
+  ],
+  "Calendar.month.November": [
+    "十一月",
+    "November",
+    "十一月",
+    "11月",
+    "novembre",
+    "noviembre",
+    "listopad",
+    "ноябрь"
+  ],
+  "Calendar.month.December": [
+    "十二月",
+    "December",
+    "十二月",
+    "12月",
+    "décembre",
+    "diciembre",
+    "grudzień",
+    "декабрь"
+  ],
+  "DatePicker.placeholder": [
+    "选择日期",
+    "Select date",
+    "選取日期",
+    "日付を選択",
+    "Choisir une date",
+    "Seleccionar fecha",
+    "Wybierz datę",
+    "Выберите дату"
+  ],
+  "Select.placeholder": [
+    "请选择",
+    "Please select",
+    "請選擇",
+    "選択してください",
+    "Veuillez choisir",
+    "Seleccione",
+    "Wybierz",
+    "Выберите"
+  ],
+  "ComboBox.search_placeholder": [
+    "搜索...",
+    "Search...",
+    "搜尋...",
+    "検索…",
+    "Rechercher…",
+    "Buscar…",
+    "Szukaj…",
+    "Поиск…"
+  ],
+  "ComboBox.empty": [
+    "暂无数据",
+    "No results",
+    "沒有結果",
+    "結果なし",
+    "Aucun résultat",
+    "Sin resultados",
+    "Brak wyników",
+    "Нет результатов"
+  ],
+  "DropdownButton.more_options": [
+    "更多选项",
+    "More options",
+    "更多選項",
+    "その他のオプション",
+    "Plus d’options",
+    "Más opciones",
+    "Więcej opcji",
+    "Другие параметры"
+  ],
+  "Input.Decrement": [
+    "减少",
+    "Decrement",
+    "減少",
+    "減らす",
+    "Diminuer",
+    "Disminuir",
+    "Zmniejsz",
+    "Уменьшить"
+  ],
+  "Input.Increment": [
+    "增加",
+    "Increment",
+    "增加",
+    "増やす",
+    "Augmenter",
+    "Aumentar",
+    "Zwiększ",
+    "Увеличить"
+  ],
+  "Input.Replace": [
+    "替换",
+    "Replace",
+    "取代",
+    "置換",
+    "Remplacer",
+    "Reemplazar",
+    "Zastąp",
+    "Заменить"
+  ],
+  "Input.Replace All": [
+    "全部替换",
+    "Replace All",
+    "全部取代",
+    "すべて置換",
+    "Tout remplacer",
+    "Reemplazar todo",
+    "Zastąp wszystko",
+    "Заменить всё"
+  ],
+  "Input.Clear": [
+    "清除",
+    "Clear",
+    "清除",
+    "クリア",
+    "Effacer",
+    "Borrar",
+    "Wyczyść",
+    "Очистить"
+  ],
+  "Input.Cut": [
+    "剪切",
+    "Cut",
+    "剪下",
+    "切り取り",
+    "Couper",
+    "Cortar",
+    "Wytnij",
+    "Вырезать"
+  ],
+  "Input.Copy": [
+    "复制",
+    "Copy",
+    "複製",
+    "コピー",
+    "Copier",
+    "Copiar",
+    "Kopiuj",
+    "Копировать"
+  ],
+  "Input.Paste": [
+    "粘贴",
+    "Paste",
+    "貼上",
+    "貼り付け",
+    "Coller",
+    "Pegar",
+    "Wklej",
+    "Вставить"
+  ],
+  "Input.Select All": [
+    "全选",
+    "Select All",
+    "全選",
+    "すべて選択",
+    "Tout sélectionner",
+    "Seleccionar todo",
+    "Zaznacz wszystko",
+    "Выделить всё"
+  ],
+  "Input.Go to Definition": [
+    "跳转到定义",
+    "Go to Definition",
+    "前往定義",
+    "定義へ移動",
+    "Aller à la définition",
+    "Ir a la definición",
+    "Przejdź do definicji",
+    "Перейти к определению"
+  ],
+  "Input.Show Code Actions": [
+    "显示代码操作",
+    "Show Code Actions",
+    "顯示程式碼動作",
+    "コードアクションを表示",
+    "Afficher les actions",
+    "Mostrar acciones",
+    "Pokaż działania",
+    "Показать действия"
+  ],
+  "Input.Show Password": [
+    "显示密码",
+    "Show password",
+    "顯示密碼",
+    "パスワードを表示",
+    "Afficher le mot de passe",
+    "Mostrar contraseña",
+    "Pokaż hasło",
+    "Показать пароль"
+  ],
+  "Input.Hide Password": [
+    "隐藏密码",
+    "Hide password",
+    "隱藏密碼",
+    "パスワードを隠す",
+    "Masquer le mot de passe",
+    "Ocultar contraseña",
+    "Ukryj hasło",
+    "Скрыть пароль"
+  ],
+  "Dialog.ok": [
+    "确定",
+    "OK",
+    "確定",
+    "OK",
+    "OK",
+    "Aceptar",
+    "OK",
+    "ОК"
+  ],
+  "Attachment.Retry": [
+    "重试",
+    "Retry",
+    "重試",
+    "再試行",
+    "Réessayer",
+    "Reintentar",
+    "Ponów",
+    "Повторить"
+  ],
+  "ComboBox.placeholder": [
+    "请选择",
+    "Please select",
+    "請選擇",
+    "選択してください",
+    "Veuillez choisir",
+    "Seleccione",
+    "Wybierz",
+    "Выберите"
+  ],
+  "List.search_placeholder": [
+    "搜索...",
+    "Search...",
+    "搜尋...",
+    "検索…",
+    "Rechercher…",
+    "Buscar…",
+    "Szukaj…",
+    "Поиск…"
+  ],
+  "Settings.search_placeholder": [
+    "搜索...",
+    "Search...",
+    "搜尋...",
+    "検索…",
+    "Rechercher…",
+    "Buscar…",
+    "Szukaj…",
+    "Поиск…"
+  ],
+  "DatePicker.time": [
+    "时间",
+    "Time",
+    "時間",
+    "時間",
+    "Heure",
+    "Hora",
+    "Czas",
+    "Время"
+  ],
+  "Attachment.Remove": [
+    "移除",
+    "Remove",
+    "移除",
+    "除外",
+    "Retirer",
+    "Quitar",
+    "Usuń",
+    "Убрать"
+  ],
+  "Dialog.cancel": [
+    "取消",
+    "Cancel",
+    "取消",
+    "キャンセル",
+    "Annuler",
+    "Cancelar",
+    "Anuluj",
+    "Отмена"
+  ],
+  "Pagination.previous": [
+    "上一页",
+    "Previous",
+    "上一頁",
+    "前へ",
+    "Précédent",
+    "Anterior",
+    "Poprzednia",
+    "Предыдущая"
+  ],
+  "Pagination.next": [
+    "下一页",
+    "Next",
+    "下一頁",
+    "次へ",
+    "Suivant",
+    "Siguiente",
+    "Następna",
+    "Следующая"
+  ]
+}

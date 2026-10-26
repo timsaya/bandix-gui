@@ -1,5 +1,6 @@
 //! Live traffic rendering; interaction, native plotting and tooltip content live separately.
 
+use crate::i18n::{tf, tr};
 mod interaction;
 mod plot;
 mod tooltip;
@@ -7,7 +8,7 @@ mod tooltip;
 pub(super) use interaction::RealtimeChartState;
 
 use super::{BandixApp, chart_zoom::wheel_capture, components::panel_title, theme::*};
-use crate::services::api::{Metrics, format_rate};
+use crate::services::api::Metrics;
 use chrono::{Local, TimeZone};
 use gpui_kit::*;
 use plot::RealtimePlot;
@@ -34,6 +35,7 @@ pub(super) fn render(
     cx: &mut Context<BandixApp>,
 ) -> impl IntoElement {
     let metrics = app.realtime_chart.metrics(latest);
+    let speed_unit = app.speed_unit;
     let mut samples = metrics
         .metrics
         .iter()
@@ -83,80 +85,80 @@ pub(super) fn render(
         .map(|sample| format_time(sample.timestamp_ms))
         .unwrap_or_else(|| "—".to_string());
 
-    let plot =
-        if samples.is_empty() {
-            div()
-                .h(px(190.0))
-                .flex()
-                .items_center()
-                .justify_center()
-                .text_size(px(11.0))
-                .text_color(rgb(MUTED))
-                .child("暂无实时指标")
-                .into_any_element()
-        } else {
-            let chart = RealtimePlot::new(
-                samples,
-                axis_maximum,
-                app.realtime_chart.controls.bounds.clone(),
-                app.charts_interactive(),
-            );
+    let plot = if samples.is_empty() {
+        div()
+            .h(px(190.0))
+            .flex()
+            .items_center()
+            .justify_center()
+            .text_size(px(11.0))
+            .text_color(rgb(MUTED))
+            .child(tr("暂无实时指标"))
+            .into_any_element()
+    } else {
+        let chart = RealtimePlot::new(
+            samples,
+            axis_maximum,
+            app.realtime_chart.controls.bounds.clone(),
+            app.charts_interactive(),
+            speed_unit,
+        );
 
-            div()
-                .h(px(190.0))
-                .flex()
-                .child(
-                    div()
-                        .w(px(70.0))
-                        .flex_none()
-                        .h_full()
-                        .pr_3()
-                        .flex()
-                        .flex_col()
-                        .items_end()
-                        .justify_between()
-                        .text_size(px(10.0))
-                        .text_color(rgb(MUTED))
-                        .children((0_u64..=4).rev().map(move |tick| {
-                            div().child(format_rate(tick_step.saturating_mul(tick)))
-                        })),
-                )
-                .child(
-                    div()
-                        .id("realtime-traffic-interaction")
-                        .flex_1()
-                        .min_w_0()
-                        .h_full()
-                        .relative()
-                        .border_b_1()
-                        .border_color(rgb(BORDER))
-                        .on_hover(cx.listener(|app, hovered, _, cx| {
-                            app.set_realtime_chart_hover(*hovered, cx);
-                        }))
-                        .on_mouse_down(
-                            MouseButton::Left,
-                            cx.listener(|app, event: &MouseDownEvent, _, cx| {
-                                if event.click_count == 2 {
-                                    app.reset_realtime_chart_zoom(cx);
-                                }
-                            }),
-                        )
-                        .children((0..4).map(|tick| {
-                            div()
-                                .absolute()
-                                .top(relative(tick as f32 / 4.0))
-                                .left_0()
-                                .w_full()
-                                .border_t_1()
-                                .border_color(rgb(BORDER).opacity(0.55))
-                        }))
-                        .child(chart)
-                        .child(wheel_capture(cx, move |app, event, window, cx| {
-                            app.zoom_realtime_chart(event, sample_count, window, cx);
-                        })),
-                )
-                .into_any_element()
-        };
+        div()
+            .h(px(190.0))
+            .flex()
+            .child(
+                div()
+                    .w(px(70.0))
+                    .flex_none()
+                    .h_full()
+                    .pr_3()
+                    .flex()
+                    .flex_col()
+                    .items_end()
+                    .justify_between()
+                    .text_size(px(10.0))
+                    .text_color(rgb(MUTED))
+                    .children((0_u64..=4).rev().map(move |tick| {
+                        div().child(speed_unit.format(tick_step.saturating_mul(tick)))
+                    })),
+            )
+            .child(
+                div()
+                    .id("realtime-traffic-interaction")
+                    .flex_1()
+                    .min_w_0()
+                    .h_full()
+                    .relative()
+                    .border_b_1()
+                    .border_color(rgb(BORDER))
+                    .on_hover(cx.listener(|app, hovered, _, cx| {
+                        app.set_realtime_chart_hover(*hovered, cx);
+                    }))
+                    .on_mouse_down(
+                        MouseButton::Left,
+                        cx.listener(|app, event: &MouseDownEvent, _, cx| {
+                            if event.click_count == 2 {
+                                app.reset_realtime_chart_zoom(cx);
+                            }
+                        }),
+                    )
+                    .children((0..4).map(|tick| {
+                        div()
+                            .absolute()
+                            .top(relative(tick as f32 / 4.0))
+                            .left_0()
+                            .w_full()
+                            .border_t_1()
+                            .border_color(rgb(BORDER).opacity(0.55))
+                    }))
+                    .child(chart)
+                    .child(wheel_capture(cx, move |app, event, window, cx| {
+                        app.zoom_realtime_chart(event, sample_count, window, cx);
+                    })),
+            )
+            .into_any_element()
+    };
 
     div()
         .w_full()
@@ -168,20 +170,24 @@ pub(super) fn render(
         .border_1()
         .border_color(rgb(BORDER))
         .child(
-            panel_title("实时流量").child(
+            panel_title(tr("实时流量")).child(
                 div()
                     .flex()
                     .flex_wrap()
                     .items_center()
                     .gap_3()
-                    .child(legend(UPLOAD, format!("上传 {}", format_rate(upload))))
-                    .child(legend(DOWNLOAD, format!("下载 {}", format_rate(download))))
-                    .child(
-                        div()
-                            .text_size(px(10.0))
-                            .text_color(rgb(MUTED))
-                            .child(format!("保留 {} 秒", metrics.retention_seconds)),
-                    ),
+                    .child(legend(
+                        UPLOAD,
+                        tf("上传 {0}", &[format!("{}", speed_unit.format(upload))]),
+                    ))
+                    .child(legend(
+                        DOWNLOAD,
+                        tf("下载 {0}", &[format!("{}", speed_unit.format(download))]),
+                    ))
+                    .child(div().text_size(px(10.0)).text_color(rgb(MUTED)).child(tf(
+                        "保留 {0} 秒",
+                        &[format!("{}", metrics.retention_seconds)],
+                    ))),
             ),
         )
         .child(plot)
@@ -206,7 +212,7 @@ fn legend(color: u32, label: String) -> impl IntoElement {
         .text_size(px(11.0))
         .text_color(rgb(MUTED))
         .child(div().w(px(14.0)).h(px(2.0)).rounded_full().bg(rgb(color)))
-        .child(label)
+        .child(crate::i18n::text(&label))
 }
 
 fn series_fill(color: u32, opacity: f32) -> Background {

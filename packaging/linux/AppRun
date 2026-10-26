@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+appdir="${APPDIR:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)}"
+export LD_LIBRARY_PATH="$appdir/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export XDG_DATA_DIRS="$appdir/usr/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+exec "$appdir/usr/bin/bandix-gui" "$@"

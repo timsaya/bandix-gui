@@ -1,6 +1,7 @@
 //! Sorting preferences live in the user's platform-specific configuration directory.
 
 use super::{period::DevicePeriod, sort::DeviceSort};
+use crate::i18n::tr;
 use std::{
     fs,
     io::{self, Write},
@@ -13,7 +14,7 @@ pub(super) struct SortStorage {
 
 impl SortStorage {
     pub fn for_user() -> Result<Self, String> {
-        let directory = dirs::config_dir().ok_or("无法获取用户配置目录")?;
+        let directory = dirs::config_dir().ok_or(tr("无法获取用户配置目录"))?;
         Ok(Self::new(
             directory.join("bandix-gui").join("device-sort.json"),
         ))
@@ -65,7 +66,7 @@ impl SortStorage {
         let parent = self
             .path
             .parent()
-            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "配置路径缺少父目录"))?;
+            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, tr("配置路径缺少父目录")))?;
         fs::create_dir_all(parent)?;
         // A same-directory temporary file keeps replacement on the same filesystem.
         // tempfile::persist also replaces existing destinations on Windows.

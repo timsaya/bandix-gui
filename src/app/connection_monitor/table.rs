@@ -1,5 +1,6 @@
 use super::{ConnectionDetails, text};
 use crate::app::theme::*;
+use crate::i18n::{tf, tr};
 use crate::services::api::{ConnectionFlow, format_bytes};
 use gpui_kit::component::{
     scroll::{ScrollableElement, ScrollbarAxis},
@@ -21,20 +22,23 @@ const COLUMNS: [(&str, f32); 9] = [
 
 pub(super) fn render(details: &ConnectionDetails) -> AnyElement {
     if details.loading {
-        return notice("正在读取连接…", MUTED);
+        return notice(tr("正在读取连接…"), MUTED);
     }
     let flows = match &details.data {
         Some(Ok(data)) => data,
         Some(Err(error)) => {
             return notice(
-                &format!("连接明细读取失败：{error}\n可尝试缩小每页条数，或调整筛选后重试。"),
+                &tf(
+                    "连接明细读取失败：{0}\n可尝试缩小每页条数，或调整筛选后重试。",
+                    &[format!("{}", error)],
+                ),
                 RED,
             );
         }
-        None => return notice("暂无连接数据", MUTED),
+        None => return notice(tr("暂无连接数据"), MUTED),
     };
     if flows.items.is_empty() {
-        return notice("没有符合条件的连接", MUTED);
+        return notice(tr("没有符合条件的连接"), MUTED);
     }
     div()
         .relative()
@@ -59,7 +63,7 @@ pub(super) fn render(details: &ConnectionDetails) -> AnyElement {
                                 .rounded_md()
                                 .bg(rgb(0x0d131d))
                                 .children(COLUMNS.iter().map(|(label, width)| {
-                                    cell(*width).child(text(*label, MUTED, 11.0))
+                                    cell(*width).child(text(crate::i18n::tr(label), MUTED, 11.0))
                                 })),
                         )
                         .children(
@@ -166,7 +170,7 @@ fn address(id: &'static str, width: f32, ip: &str, port: u16) -> impl IntoElemen
             if port == 0 {
                 "—".into()
             } else {
-                format!("端口 {port}")
+                tf("端口 {0}", &[format!("{}", port)])
             },
             MUTED,
             10.0,
@@ -179,7 +183,7 @@ fn usage(width: f32, packets: u64, bytes: u64, color: u32) -> Div {
         .flex_col()
         .gap_1()
         .child(text(format_bytes(bytes), color, 11.0))
-        .child(text(format!("{packets} 包"), MUTED, 10.0))
+        .child(text(tf("{0} 包", &[format!("{}", packets)]), MUTED, 10.0))
 }
 fn notice(message: &str, color: u32) -> AnyElement {
     div()

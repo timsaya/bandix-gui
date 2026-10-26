@@ -1,4 +1,5 @@
 use super::super::{BandixApp, components::*, theme::*};
+use crate::i18n::{tf, tr};
 use crate::services::api::{DeviceConnection, GlobalConnectionStats};
 use gpui_kit::component::{
     Disableable, Sizable, button::Button, input::Input, scroll::ScrollableElement, tooltip::Tooltip,
@@ -7,13 +8,17 @@ use gpui_kit::*;
 
 pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
     let Some(data) = &app.data else {
-        return data_notice("暂无连接数据", "请先连接 Bandix 服务。".into(), MUTED)
-            .into_any_element();
+        return data_notice(
+            tr("暂无连接数据"),
+            tr("请先连接 Bandix 服务。").into(),
+            MUTED,
+        )
+        .into_any_element();
     };
     let stats = match &data.connection_stats {
         Ok(stats) => stats,
         Err(error) => {
-            return data_notice("连接统计接口请求失败", error.clone(), RED).into_any_element();
+            return data_notice(tr("连接统计接口请求失败"), error.clone(), RED).into_any_element();
         }
     };
     let query = app
@@ -53,9 +58,9 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement
                                 .flex()
                                 .flex_col()
                                 .gap_1()
-                                .child(text("设备连接统计", TEXT, 14.0))
+                                .child(text(tr("设备连接统计"), TEXT, 14.0))
                                 .child(text(
-                                    "仅统计局域网设备的连接，数量可能与全局总连接数不同。",
+                                    tr("仅统计局域网设备的连接，数量可能与全局总连接数不同。"),
                                     MUTED,
                                     10.0,
                                 )),
@@ -66,14 +71,20 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement
                                     .small()
                                     .h(px(30.0))
                                     .cleanable(true)
-                                    .aria_label("搜索连接设备"),
+                                    .aria_label(tr("搜索连接设备")),
                             ),
                         )
                         .child(text(
                             if query.is_empty() {
-                                format!("{} 台设备", stats.devices.len())
+                                tf("{0} 台设备", &[format!("{}", stats.devices.len())])
                             } else {
-                                format!("{} / {} 台设备", devices.len(), stats.devices.len())
+                                tf(
+                                    "{0} / {1} 台设备",
+                                    &[
+                                        format!("{}", devices.len()),
+                                        format!("{}", stats.devices.len()),
+                                    ],
+                                )
                             },
                             MUTED,
                             11.0,
@@ -88,9 +99,9 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement
                         .justify_center()
                         .child(text(
                             if query.is_empty() {
-                                "暂无设备连接"
+                                tr("暂无设备连接")
                             } else {
-                                "没有匹配的设备"
+                                tr("没有匹配的设备")
                             },
                             MUTED,
                             12.0,
@@ -118,14 +129,14 @@ fn summary(global: &GlobalConnectionStats) -> Div {
         .flex()
         .gap_3()
         .child(stat_card(
-            "总连接",
+            tr("总连接"),
             global.total_connections.to_string(),
             String::new(),
             BLUE,
             "⇄",
         ))
         .child(
-            protocol_card("TCP 连接", global.tcp_connections, "TCP", ACCENT)
+            protocol_card(tr("TCP 连接"), global.tcp_connections, "TCP", ACCENT)
                 .min_w(px(330.0))
                 .id("connection-tcp-summary")
                 .child(
@@ -138,24 +149,24 @@ fn summary(global: &GlobalConnectionStats) -> Div {
                             "EST",
                             global.established_tcp,
                             ACCENT,
-                            "ESTABLISHED · 已建立连接",
+                            tr("ESTABLISHED · 已建立连接"),
                         ))
                         .child(status(
                             "WAIT",
                             global.time_wait_tcp,
                             ORANGE,
-                            "TIME_WAIT · 等待关闭",
+                            tr("TIME_WAIT · 等待关闭"),
                         ))
                         .child(status(
                             "CLOSE",
                             global.close_wait_tcp,
                             MUTED,
-                            "CLOSE_WAIT · 等待本地关闭",
+                            tr("CLOSE_WAIT · 等待本地关闭"),
                         )),
                 ),
         )
         .child(protocol_card(
-            "UDP 连接",
+            tr("UDP 连接"),
             global.udp_connections,
             "UDP",
             DOWNLOAD,
@@ -176,7 +187,7 @@ fn protocol_card(label: &'static str, count: u32, protocol: &'static str, color:
                 .h(px(28.0))
                 .items_center()
                 .justify_between()
-                .child(text(label, MUTED, 11.0))
+                .child(text(crate::i18n::tr(label), MUTED, 11.0))
                 .child(text(protocol, color, 12.0)),
         )
         .child(
@@ -212,14 +223,14 @@ fn header() -> Div {
                 ("总连接", 0.8),
             ]
             .into_iter()
-            .map(|(label, weight)| cell(weight).child(text(label, MUTED, 11.0))),
+            .map(|(label, weight)| cell(weight).child(text(crate::i18n::tr(label), MUTED, 11.0))),
         )
         .child(
             div()
                 .w(px(76.0))
                 .flex_none()
                 .px_2()
-                .child(text("操作", MUTED, 11.0)),
+                .child(text(tr("操作"), MUTED, 11.0)),
         )
 }
 fn row(device: &DeviceConnection, cx: &mut Context<BandixApp>) -> AnyElement {
@@ -271,19 +282,19 @@ fn row(device: &DeviceConnection, cx: &mut Context<BandixApp>) -> AnyElement {
                         "EST",
                         device.established_tcp,
                         ACCENT,
-                        "ESTABLISHED · 已建立连接",
+                        tr("ESTABLISHED · 已建立连接"),
                     ))
                     .child(status(
                         "WAIT",
                         device.time_wait_tcp,
                         ORANGE,
-                        "TIME_WAIT · 等待关闭",
+                        tr("TIME_WAIT · 等待关闭"),
                     ))
                     .child(status(
                         "CLOSE",
                         device.close_wait_tcp,
                         MUTED,
-                        "CLOSE_WAIT · 等待本地关闭",
+                        tr("CLOSE_WAIT · 等待本地关闭"),
                     )),
             ),
         )
@@ -300,7 +311,7 @@ fn row(device: &DeviceConnection, cx: &mut Context<BandixApp>) -> AnyElement {
                     device.ip
                 )))
                 .small()
-                .label("详情")
+                .label(tr("详情"))
                 .disabled(device.ip.is_empty())
                 .on_click(cx.listener(move |app, _, window, cx| {
                     app.open_connection_details(target.clone(), window, cx)
@@ -324,7 +335,7 @@ fn status(
         .flex()
         .items_center()
         .gap_1()
-        .child(text(label, color, 9.0))
+        .child(text(crate::i18n::tr(label), color, 9.0))
         .child(text(count.to_string(), TEXT, 10.0))
         .tooltip(move |window, cx| Tooltip::new(description).build(window, cx))
 }

@@ -1,3 +1,4 @@
+use crate::i18n::{tf, tr};
 mod adaptive_list;
 mod chart_zoom;
 mod components;
@@ -7,6 +8,7 @@ mod device_management;
 mod dns_monitor;
 mod global_rate_limit;
 mod page;
+mod preferences;
 mod quota_usage;
 mod realtime_chart;
 mod shell;
@@ -16,6 +18,7 @@ mod traffic_stats;
 mod usage_ranking;
 mod views;
 
+use crate::i18n::Language;
 use crate::services::api::{self, ApiResult, DashboardData, UsageRanking, UsageTimeline};
 use crate::services::discovery::{self, DiscoveryState, ProbeReport};
 use adaptive_list::AdaptiveListState;
@@ -32,6 +35,7 @@ use gpui_kit::component::{
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use page::Page;
+use preferences::{DisplayStorage, SpeedUnit};
 use realtime_chart::RealtimeChartState;
 use std::time::Duration;
 use theme::BG;
@@ -74,6 +78,11 @@ pub struct BandixApp {
     data_loading: bool,
     data_generation: u64,
     refresh_interval_secs: u64,
+    speed_unit: SpeedUnit,
+    language: Language,
+    language_select: Entity<SelectState<Vec<Language>>>,
+    _language_subscription: Subscription,
+    display_settings_error: Option<String>,
     auto_refresh_generation: u64,
     device_list: DeviceListState,
     device_period: Entity<SelectState<Vec<DevicePeriod>>>,
@@ -89,6 +98,42 @@ pub struct BandixApp {
 
 impl BandixApp {
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
+        let (speed_unit, display_settings_error) =
+            match DisplayStorage::for_user().and_then(|storage| storage.load()) {
+                Ok(unit) => (unit, None),
+                Err(error) => (
+                    SpeedUnit::default(),
+                    Some(tf("无法读取显示设置：{0}", &[format!("{}", error)])),
+                ),
+            };
+        let language = DisplayStorage::for_user()
+            .and_then(|storage| storage.load_language())
+            .unwrap_or_default();
+        let refresh_interval_secs = DisplayStorage::for_user()
+            .and_then(|storage| storage.load_refresh_interval())
+            .unwrap_or(1);
+        language.activate();
+        let language_index = Language::ALL
+            .iter()
+            .position(|item| *item == language)
+            .unwrap_or_default();
+        let language_select = cx.new(|cx| {
+            SelectState::new(
+                Language::ALL.to_vec(),
+                Some(IndexPath::new(language_index)),
+                window,
+                cx,
+            )
+        });
+        let language_subscription = cx.subscribe_in(
+            &language_select,
+            window,
+            |app, _, event: &SelectEvent<Vec<Language>>, window, cx| {
+                if let SelectEvent::Confirm(Some(language)) = event {
+                    app.set_language(*language, window, cx);
+                }
+            },
+        );
         let connection_page = connection_monitor::ConnectionPage::new(window, cx);
         let dns_page = dns_monitor::DnsPage::new(window, cx);
         let device_list = DeviceListState::load_preferences();
@@ -235,7 +280,7 @@ impl BandixApp {
             service_address: cx.new(|cx| {
                 InputState::new(window, cx)
                     .default_value("http://127.0.0.1:8686")
-                    .placeholder("例如 http://192.168.1.1:8686")
+                    .placeholder(tr("例如 http://192.168.1.1:8686"))
             }),
             ranking_start_date,
             ranking_end_date,
@@ -263,7 +308,12 @@ impl BandixApp {
             data: None,
             data_loading: false,
             data_generation: 0,
-            refresh_interval_secs: 1,
+            refresh_interval_secs,
+            speed_unit,
+            language,
+            language_select,
+            _language_subscription: language_subscription,
+            display_settings_error,
             auto_refresh_generation: 0,
             device_list,
             device_period,
@@ -278,19 +328,21 @@ impl BandixApp {
         }
     }
 
-    pub(super) fn search_default_gateway(&mut self, cx: &mut Context<Self>) {
+    pub(super) fn search_default_gateway(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.run_probe(
-            "正在查找默认网关并探测 8686 端口…",
+            tr("正在查找默认网关并探测 8686 端口…"),
             discovery::discover_default_gateway,
+            window,
             cx,
         );
     }
 
-    pub(super) fn test_manual_address(&mut self, cx: &mut Context<Self>) {
+    pub(super) fn test_manual_address(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let address = self.service_address.read(cx).value().to_string();
         self.run_probe(
-            "正在测试手动填写的服务地址…",
+            tr("正在连接 Bandix 服务…"),
             move || discovery::probe_endpoint(&address),
+            window,
             cx,
         );
     }
@@ -299,6 +351,7 @@ impl BandixApp {
         &mut self,
         message: &str,
         operation: impl FnOnce() -> Result<ProbeReport, String> + Send + 'static,
+        window: &mut Window,
         cx: &mut Context<Self>,
     ) {
         self.probe_generation += 1;
@@ -325,15 +378,21 @@ impl BandixApp {
         self.dns_page.reset();
         cx.notify();
 
-        cx.spawn(async move |this, cx| {
-            let result = cx.background_spawn(async move { operation() }).await;
-            this.update(cx, |app, cx| {
+        let operation = cx.background_spawn(async move { operation() });
+        cx.spawn_in(window, async move |this, window| {
+            let result = operation.await;
+            this.update_in(window, |app, window, cx| {
                 if app.probe_generation != generation {
                     return;
                 }
                 match result {
                     Ok(report) => {
                         let endpoint = report.endpoint.clone();
+                        if report.gateway.is_some() {
+                            app.service_address.update(cx, |input, cx| {
+                                input.set_value(endpoint.clone(), window, cx);
+                            });
+                        }
                         app.discovery = DiscoveryState::Connected(report);
                         app.start_auto_refresh(endpoint, cx);
                         app.refresh_ranking(cx);
@@ -357,11 +416,13 @@ impl BandixApp {
 
     pub(super) fn set_refresh_interval(&mut self, seconds: u64, cx: &mut Context<Self>) {
         let seconds = seconds.clamp(1, 60);
-        if self.refresh_interval_secs == seconds {
-            return;
-        }
+        let changed = self.refresh_interval_secs != seconds;
         self.refresh_interval_secs = seconds;
-        if let DiscoveryState::Connected(report) = &self.discovery {
+        self.display_settings_error = DisplayStorage::for_user()
+            .and_then(|storage| storage.save_refresh_interval(seconds))
+            .err()
+            .map(|error| tf("刷新间隔已更改，但保存失败：{0}", &[error]));
+        if changed && let DiscoveryState::Connected(report) = &self.discovery {
             self.start_auto_refresh(report.endpoint.clone(), cx);
         }
         cx.notify();
@@ -522,18 +583,18 @@ impl BandixApp {
             .read(cx)
             .date_time()
             .start()
-            .ok_or("请选择开始日期")?
+            .ok_or(tr("请选择开始日期"))?
             .date();
         let end = end_picker
             .read(cx)
             .date_time()
             .start()
-            .ok_or("请选择结束日期")?
+            .ok_or(tr("请选择结束日期"))?
             .date();
         if start > end {
-            return Err("开始日期不能晚于结束日期");
+            return Err(tr("开始日期不能晚于结束日期"));
         }
-        date_range_ms(start, end).ok_or("所选日期范围无效")
+        date_range_ms(start, end).ok_or(tr("所选日期范围无效"))
     }
 
     fn connected_endpoint(&self) -> Option<String> {
@@ -723,7 +784,14 @@ impl Render for BandixApp {
                             .border_color(rgb(theme::BORDER))
                             .text_color(rgb(theme::TEXT))
                             .text_size(px(13.0))
-                            .child("Bandix"),
+                            .child(
+                                div()
+                                    .flex()
+                                    .items_center()
+                                    .gap_2()
+                                    .child(img(crate::assets::APP_ICON).size(px(20.0)).flex_none())
+                                    .child("Bandix"),
+                            ),
                     )
                 },
             )

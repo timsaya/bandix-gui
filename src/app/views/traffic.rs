@@ -8,6 +8,7 @@ use super::super::{
     traffic_stats::{TrafficRangePreset, format_timestamp},
     usage_ranking,
 };
+use crate::i18n::{tf, tr};
 use crate::services::api::{UsageTimeline, format_bytes};
 use gpui_kit::component::date_picker::DatePicker;
 use gpui_kit::component::select::Select;
@@ -29,8 +30,12 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement
 
 fn render_realtime(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
     let Some(data) = &app.data else {
-        return data_notice("暂无流量数据", "请先连接 Bandix 服务。".to_string(), MUTED)
-            .into_any_element();
+        return data_notice(
+            tr("暂无流量数据"),
+            tr("请先连接 Bandix 服务。").to_string(),
+            MUTED,
+        )
+        .into_any_element();
     };
 
     let metrics = match &data.metrics {
@@ -39,7 +44,8 @@ fn render_realtime(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
             if let Some(frozen) = app.realtime_chart.frozen_metrics() {
                 frozen
             } else {
-                return data_notice("流量指标接口请求失败", error.clone(), RED).into_any_element();
+                return data_notice(tr("流量指标接口请求失败"), error.clone(), RED)
+                    .into_any_element();
             }
         }
     };
@@ -75,25 +81,28 @@ fn render_realtime(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
                 .flex_wrap()
                 .gap_2()
                 .child(traffic_summary_card(
-                    "LAN 流量",
+                    tr("LAN 流量"),
                     lan_upload,
                     lan_upload_bytes,
                     lan_download,
                     lan_download_bytes,
+                    app.speed_unit,
                 ))
                 .child(traffic_summary_card(
-                    "WAN 流量",
+                    tr("WAN 流量"),
                     wan_upload,
                     wan_upload_bytes,
                     wan_download,
                     wan_download_bytes,
+                    app.speed_unit,
                 ))
                 .child(traffic_summary_card(
-                    "总流量",
+                    tr("总流量"),
                     total_upload,
                     total_upload_bytes,
                     total_download,
                     total_download_bytes,
+                    app.speed_unit,
                 )),
         )
         .child(realtime_chart::render(app, metrics, cx))
@@ -142,7 +151,7 @@ fn ranking_filters(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEle
                 .items_end()
                 .gap_3()
                 .child(
-                    filter_field("开始日期").child(
+                    filter_field(tr("开始日期")).child(
                         div()
                             .id("ranking-start-date")
                             .w(px(170.0))
@@ -150,7 +159,7 @@ fn ranking_filters(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEle
                     ),
                 )
                 .child(
-                    filter_field("结束日期").child(
+                    filter_field(tr("结束日期")).child(
                         div()
                             .id("ranking-end-date")
                             .w(px(170.0))
@@ -158,11 +167,11 @@ fn ranking_filters(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEle
                     ),
                 )
                 .child(
-                    filter_field("网络类型").child(
+                    filter_field(tr("网络类型")).child(
                         div().w(px(128.0)).h(px(32.0)).child(
                             Select::new(&app.ranking_network_type)
                                 .id("ranking-network-type")
-                                .accessibility_label("排行网络类型")
+                                .accessibility_label(tr("排行网络类型"))
                                 .w_full()
                                 .h(px(32.0))
                                 .menu_width(px(128.0)),
@@ -202,7 +211,7 @@ fn timeline_card(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEleme
         .border_1()
         .border_color(rgb(BORDER))
         .p_5()
-        .child(panel_title("流量时间线"))
+        .child(panel_title(tr("流量时间线")))
         .child(timeline_filters(app, cx))
         .child(
             div()
@@ -223,7 +232,7 @@ fn timeline_filters(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEl
                 .items_end()
                 .gap_3()
                 .child(
-                    filter_field("开始日期").child(
+                    filter_field(tr("开始日期")).child(
                         div()
                             .id("timeline-start-date")
                             .w(px(170.0))
@@ -231,7 +240,7 @@ fn timeline_filters(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEl
                     ),
                 )
                 .child(
-                    filter_field("结束日期").child(
+                    filter_field(tr("结束日期")).child(
                         div()
                             .id("timeline-end-date")
                             .w(px(170.0))
@@ -239,11 +248,11 @@ fn timeline_filters(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEl
                     ),
                 )
                 .child(
-                    filter_field("网络类型").child(
+                    filter_field(tr("网络类型")).child(
                         div().w(px(128.0)).h(px(32.0)).child(
                             Select::new(&app.timeline_network_type)
                                 .id("timeline-network-type")
-                                .accessibility_label("时间线网络类型")
+                                .accessibility_label(tr("时间线网络类型"))
                                 .w_full()
                                 .h(px(32.0))
                                 .menu_width(px(128.0)),
@@ -283,11 +292,11 @@ fn timeline_filters(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEl
                 .items_end()
                 .gap_3()
                 .child(
-                    filter_field("聚合粒度").child(
+                    filter_field(tr("聚合粒度")).child(
                         div().w(px(128.0)).h(px(32.0)).child(
                             Select::new(&app.timeline_aggregation)
                                 .id("timeline-aggregation")
-                                .accessibility_label("时间线聚合粒度")
+                                .accessibility_label(tr("时间线聚合粒度"))
                                 .w_full()
                                 .h(px(32.0))
                                 .menu_width(px(128.0)),
@@ -295,16 +304,16 @@ fn timeline_filters(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEl
                     ),
                 )
                 .child(
-                    filter_field("设备").child(
+                    filter_field(tr("设备")).child(
                         div().w(px(360.0)).h(px(32.0)).child(
                             Select::new(&app.timeline_device)
                                 .id("timeline-device")
-                                .accessibility_label("时间线设备")
+                                .accessibility_label(tr("时间线设备"))
                                 .w_full()
                                 .h(px(32.0))
                                 .menu_width(px(540.0))
                                 .menu_max_h(px(320.0))
-                                .search_placeholder("搜索昵称、IP 或 MAC"),
+                                .search_placeholder(tr("搜索昵称、IP 或 MAC")),
                         ),
                     ),
                 ),
@@ -316,7 +325,7 @@ fn filter_field(label: &'static str) -> Div {
         div()
             .text_size(px(10.0))
             .text_color(rgb(MUTED))
-            .child(label),
+            .child(crate::i18n::text(&label)),
     )
 }
 
@@ -359,7 +368,11 @@ fn query_button(
                 .opacity(0.7)
                 .child(Spinner::new().small().color(rgb(0x07110d).into()))
         })
-        .child(if loading { "查询中…" } else { "查询" })
+        .child(if loading {
+            tr("查询中…")
+        } else {
+            tr("查询")
+        })
 }
 
 fn small_filter_button(
@@ -381,7 +394,7 @@ fn small_filter_button(
         .justify_center()
         .text_size(px(10.0))
         .font_weight(FontWeight::MEDIUM)
-        .child(label);
+        .child(crate::i18n::text(&label));
     if active {
         button
             .bg(rgb(ACCENT))
@@ -442,11 +455,11 @@ fn timeline_result(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
             .child(timeline_summary(timeline))
             .into_any_element(),
         Some(Err(error)) => {
-            timeline_notice("流量时间线接口请求失败", error.clone(), RED).into_any_element()
+            timeline_notice(tr("流量时间线接口请求失败"), error.clone(), RED).into_any_element()
         }
         None => timeline_notice(
-            "暂无时间线数据",
-            "选择时间范围、网络类型、聚合粒度和设备后查询。".to_string(),
+            tr("暂无时间线数据"),
+            tr("选择时间范围、网络类型、聚合粒度和设备后查询。").to_string(),
             MUTED,
         )
         .into_any_element(),
@@ -461,7 +474,7 @@ fn timeline_notice(title: &'static str, detail: String, color: u32) -> impl Into
                 .text_size(px(13.0))
                 .font_weight(FontWeight::SEMIBOLD)
                 .text_color(rgb(color))
-                .child(title),
+                .child(crate::i18n::text(&title)),
         )
         .child(
             div()
@@ -495,7 +508,7 @@ fn timeline_summary(timeline: &UsageTimeline) -> impl IntoElement {
                     div()
                         .text_size(px(10.0))
                         .text_color(rgb(MUTED))
-                        .child(label),
+                        .child(crate::i18n::text(&label)),
                 )
                 .child(
                     div()
@@ -513,25 +526,27 @@ fn usage_timeline_chart(
     timeline: &UsageTimeline,
     cx: &mut Context<BandixApp>,
 ) -> impl IntoElement {
-    let plot = TimelinePlot::new(timeline.clone(), app.charts_interactive()).with_viewport(
-        app.timeline_chart.visible_range(timeline.increments.len()),
-        app.timeline_chart.bounds.clone(),
-    );
+    let plot = TimelinePlot::new(timeline.clone(), app.charts_interactive())
+        .with_speed_unit(app.speed_unit)
+        .with_viewport(
+            app.timeline_chart.visible_range(timeline.increments.len()),
+            app.timeline_chart.bounds.clone(),
+        );
     let ticks = plot.axis_ticks();
     let (start_ms, end_ms) = plot.visible_times();
     const AXIS_WIDTH: f32 = 80.0;
     let aggregation = match timeline.aggregation.as_str() {
-        "hourly" => "按小时",
-        "daily" => "按天",
+        "hourly" => tr("按小时"),
+        "daily" => tr("按天"),
         other => other,
     };
     let device = if timeline.mac == "all" {
-        "全部设备"
+        tr("全部设备")
     } else {
         &timeline.mac
     };
     let network = if timeline.network_type == "all" {
-        "全部网络".to_string()
+        tr("全部网络").to_string()
     } else {
         timeline.network_type.to_uppercase()
     };
@@ -556,17 +571,17 @@ fn usage_timeline_chart(
                                 .text_size(px(14.0))
                                 .font_weight(FontWeight::SEMIBOLD)
                                 .text_color(rgb(TEXT))
-                                .child("时间线图表"),
+                                .child(tr("时间线图表")),
                         )
-                        .child(
-                            div()
-                                .text_size(px(10.0))
-                                .text_color(rgb(MUTED))
-                                .child(format!(
-                                    "{network} · {aggregation} · {device} · {} 个时间段",
-                                    timeline.increments.len()
-                                )),
-                        ),
+                        .child(div().text_size(px(10.0)).text_color(rgb(MUTED)).child(tf(
+                            "{0} · {1} · {2} · {3} 个时间段",
+                            &[
+                                format!("{}", network),
+                                format!("{}", aggregation),
+                                format!("{}", device),
+                                format!("{}", timeline.increments.len()),
+                            ],
+                        ))),
                 )
                 .child(
                     div()
@@ -577,13 +592,13 @@ fn usage_timeline_chart(
                             div()
                                 .text_size(px(10.0))
                                 .text_color(rgb(DOWNLOAD))
-                                .child("● 下载"),
+                                .child(tr("● 下载")),
                         )
                         .child(
                             div()
                                 .text_size(px(10.0))
                                 .text_color(rgb(UPLOAD))
-                                .child("● 上传"),
+                                .child(tr("● 上传")),
                         ),
                 ),
         )
@@ -595,7 +610,7 @@ fn usage_timeline_chart(
                 .justify_center()
                 .text_size(px(11.0))
                 .text_color(rgb(MUTED))
-                .child("暂无时间线数据")
+                .child(tr("暂无时间线数据"))
                 .into_any_element()
         } else {
             div()

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Bandix
+Comment=Network traffic and device monitor
+Comment[zh_CN]=网络流量与设备监控
+Exec=bandix-gui
+Icon=bandix-gui
+Terminal=false
+Categories=Network;Monitor;
+StartupWMClass=bandix-gui
+StartupNotify=true

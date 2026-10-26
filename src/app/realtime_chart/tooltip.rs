@@ -1,14 +1,13 @@
 //! Compact instantaneous rates and cumulative traffic counters.
 
 use super::{NetworkTraffic, TrafficSample};
-use crate::{
-    app::theme::*,
-    services::api::{format_bytes, format_rate},
-};
+use crate::app::preferences::SpeedUnit;
+use crate::i18n::tr;
+use crate::{app::theme::*, services::api::format_bytes};
 use chrono::{Local, TimeZone};
 use gpui_kit::*;
 
-pub(super) fn render(sample: &TrafficSample) -> impl IntoElement {
+pub(super) fn render(sample: &TrafficSample, speed_unit: SpeedUnit) -> impl IntoElement {
     div()
         .w(px(310.0))
         .p_2()
@@ -29,16 +28,26 @@ pub(super) fn render(sample: &TrafficSample) -> impl IntoElement {
                 .mt_1()
                 .flex()
                 .gap_2()
-                .child(kpi("WAN 实时上传", sample.wan.upload_rate, UPLOAD))
-                .child(kpi("WAN 实时下载", sample.wan.download_rate, DOWNLOAD)),
+                .child(kpi(
+                    tr("WAN 实时上传"),
+                    sample.wan.upload_rate,
+                    UPLOAD,
+                    speed_unit,
+                ))
+                .child(kpi(
+                    tr("WAN 实时下载"),
+                    sample.wan.download_rate,
+                    DOWNLOAD,
+                    speed_unit,
+                )),
         )
-        .child(section_header("实时速率"))
-        .child(traffic_row("总计", sample.total, false))
-        .child(traffic_row("LAN", sample.lan, false))
-        .child(section_header("累计流量"))
-        .child(traffic_row("LAN", sample.lan, true))
-        .child(traffic_row("WAN", sample.wan, true))
-        .child(traffic_row("总计", sample.total, true))
+        .child(section_header(tr("实时速率")))
+        .child(traffic_row(tr("总计"), sample.total, false, speed_unit))
+        .child(traffic_row("LAN", sample.lan, false, speed_unit))
+        .child(section_header(tr("累计流量")))
+        .child(traffic_row("LAN", sample.lan, true, speed_unit))
+        .child(traffic_row("WAN", sample.wan, true, speed_unit))
+        .child(traffic_row(tr("总计"), sample.total, true, speed_unit))
 }
 
 fn full_time(timestamp_ms: u64) -> String {
@@ -49,7 +58,7 @@ fn full_time(timestamp_ms: u64) -> String {
         .unwrap_or_else(|| "—".to_string())
 }
 
-fn kpi(label: &'static str, rate: u64, color: u32) -> impl IntoElement {
+fn kpi(label: &'static str, rate: u64, color: u32, speed_unit: SpeedUnit) -> impl IntoElement {
     div()
         .flex_1()
         .min_w_0()
@@ -57,7 +66,7 @@ fn kpi(label: &'static str, rate: u64, color: u32) -> impl IntoElement {
             div()
                 .text_size(px(10.0))
                 .text_color(rgb(MUTED))
-                .child(label),
+                .child(crate::i18n::text(&label)),
         )
         .child(
             div()
@@ -65,7 +74,7 @@ fn kpi(label: &'static str, rate: u64, color: u32) -> impl IntoElement {
                 .font_weight(FontWeight::SEMIBOLD)
                 .text_color(rgb(color))
                 .whitespace_nowrap()
-                .child(format_rate(rate)),
+                .child(speed_unit.format(rate)),
         )
 }
 
@@ -79,12 +88,22 @@ fn section_header(title: &'static str) -> impl IntoElement {
         .flex()
         .items_center()
         .text_color(rgb(MUTED))
-        .child(div().w(px(64.0)).whitespace_nowrap().child(title))
-        .child(div().flex_1().text_right().child("上传"))
-        .child(div().flex_1().text_right().child("下载"))
+        .child(
+            div()
+                .w(px(64.0))
+                .whitespace_nowrap()
+                .child(crate::i18n::text(&title)),
+        )
+        .child(div().flex_1().text_right().child(tr("上传")))
+        .child(div().flex_1().text_right().child(tr("下载")))
 }
 
-fn traffic_row(label: &'static str, traffic: NetworkTraffic, cumulative: bool) -> impl IntoElement {
+fn traffic_row(
+    label: &'static str,
+    traffic: NetworkTraffic,
+    cumulative: bool,
+    speed_unit: SpeedUnit,
+) -> impl IntoElement {
     let (upload, download) = if cumulative {
         (
             format_bytes(traffic.upload_bytes),
@@ -92,8 +111,8 @@ fn traffic_row(label: &'static str, traffic: NetworkTraffic, cumulative: bool) -
         )
     } else {
         (
-            format_rate(traffic.upload_rate),
-            format_rate(traffic.download_rate),
+            speed_unit.format(traffic.upload_rate),
+            speed_unit.format(traffic.download_rate),
         )
     };
     value_row(label, upload, download)
@@ -104,7 +123,12 @@ fn value_row(label: &'static str, upload: String, download: String) -> impl Into
         .h(px(16.0))
         .flex()
         .items_center()
-        .child(div().w(px(64.0)).text_color(rgb(MUTED)).child(label))
+        .child(
+            div()
+                .w(px(64.0))
+                .text_color(rgb(MUTED))
+                .child(crate::i18n::text(&label)),
+        )
         .child(
             div()
                 .flex_1()

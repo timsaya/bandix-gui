@@ -1,0 +1,30 @@
+{
+  "generator": "built-in image_gen",
+  "transparent_background": true,
+  "concepts": [
+    {
+      "key": "05-bandwidth-gauge",
+      "name": "带宽仪表",
+      "prompt": "Use case: logo-brand.\nAsset type: desktop application icon for Bandix, a network bandwidth, traffic and device monitoring application for Windows, Linux and macOS.\nProduce exactly ONE centered icon, not a sheet, mockup, presentation, or grid. Square canvas. A beautifully finished rounded-square app tile takes up about 88% of the canvas, with genuinely transparent empty margin outside it. Bold, minimal geometry, balanced negative space, refined professional software branding, crisp silhouette legible at 24–32 px. Flat vector-like design with just restrained tonal depth. No words, labels, lettering other than any specifically requested monogram. No watermarks, decorative particles, tiny details, external shadows or halo. Clean antialiased edges, absolutely no scattered pixels outside the icon.\nSubject: a bold turquoise open semicircular speedometer arc with a single white diagonal needle and a small central pivot, subtly suggesting a network throughput meter. The needle and arc have generous stroke widths and rounded ends; no numerals, no ticks, no secondary charts. Deep midnight blue rounded-square tile, turquoise-to-sky-blue arc, white needle. Modern precise geometric composition, centered and generous size.",
+      "file": "05-bandwidth-gauge.png"
+    },
+    {
+      "key": "06-data-pulse",
+      "name": "数据脉冲",
+      "prompt": "Use case: logo-brand.\nAsset type: desktop application icon for Bandix, a network bandwidth, traffic and device monitoring application for Windows, Linux and macOS.\nProduce exactly ONE centered icon, not a sheet, mockup, presentation, or grid. Square canvas. A beautifully finished rounded-square app tile takes up about 88% of the canvas, with genuinely transparent empty margin outside it. Bold, minimal geometry, balanced negative space, refined professional software branding, crisp silhouette legible at 24–32 px. Flat vector-like design with just restrained tonal depth. No words, labels, lettering other than any specifically requested monogram. No watermarks, decorative particles, tiny details, external shadows or halo. Clean antialiased edges, absolutely no scattered pixels outside the icon.\nSubject: a single thick flowing data waveform, with one clear central rise and fall and flat ends, contained inside a simple rounded rectangular connection loop. The waveform and loop form one coherent memorable logo, not an ECG medical symbol: smooth stepped digital packet rhythm, no heartbeat spike. Warm ivory rounded-square tile, dark petrol teal loop, bright teal waveform, very small amount of mint contrast. Calm sophisticated light icon, flat and elegant, strong legibility.",
+      "file": "06-data-pulse.png"
+    },
+    {
+      "key": "07-link-b",
+      "name": "链路 B",
+      "prompt": "Use case: logo-brand.\nAsset type: desktop application icon for Bandix, a network bandwidth, traffic and device monitoring application for Windows, Linux and macOS.\nProduce exactly ONE centered icon, not a sheet, mockup, presentation, or grid. Square canvas. A beautifully finished rounded-square app tile takes up about 88% of the canvas, with genuinely transparent empty margin outside it. Bold, minimal geometry, balanced negative space, refined professional software branding, crisp silhouette legible at 24–32 px. Flat vector-like design with just restrained tonal depth. No words, labels, lettering other than any specifically requested monogram. No watermarks, decorative particles, tiny details, external shadows or halo. Clean antialiased edges, absolutely no scattered pixels outside the icon.\nSubject: a uniquely drawn uppercase B monogram made from two broad interlocking rounded link segments, suggesting connected network links. The letter must unmistakably read as a B, with two spacious counters and a strong vertical spine. Link structure expressed by just two clean over-under breaks, no extra links or nodes. Rich indigo rounded-square tile, pale lavender and soft periwinkle monogram, subtle satin depth rather than glass. Confident bold sculptural geometry.",
+      "file": "07-link-b.png"
+    },
+    {
+      "key": "08-traffic-bars",
+      "name": "流量节奏",
+      "prompt": "Use case: logo-brand.\nAsset type: desktop application icon for Bandix, a network bandwidth, traffic and device monitoring application for Windows, Linux and macOS.\nProduce exactly ONE centered icon, not a sheet, mockup, presentation, or grid. Square canvas. A beautifully finished rounded-square app tile takes up about 88% of the canvas, with genuinely transparent empty margin outside it. Bold, minimal geometry, balanced negative space, refined professional software branding, crisp silhouette legible at 24–32 px. Flat vector-like design with just restrained tonal depth. No words, labels, lettering other than any specifically requested monogram. No watermarks, decorative particles, tiny details, external shadows or halo. Clean antialiased edges, absolutely no scattered pixels outside the icon.\nSubject: a compact signature of four thick vertical rounded bars with deliberately different heights, connected visually by a gently rising negative-space diagonal. The two left bars are vibrant cyan and mint, the two right bars are warm orange and pale amber, reflecting download and upload activity. No baseline, arrows, gauge, letters or graph axes. Matte near-black navy rounded-square tile. Flat geometric symbol with impeccable spacing and large margins, memorable like an audio equalizer but composed as a network throughput brand.",
+      "file": "08-traffic-bars.png"
+    }
+  ]
+}

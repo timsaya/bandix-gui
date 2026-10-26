@@ -1,6 +1,7 @@
 //! DNS query snapshots, debounced server-side filters and pagination.
 
 use super::{BandixApp, page::Page};
+use crate::i18n::tr;
 use crate::services::api::{self, ApiResult, DnsQueries, DnsQueryFilter};
 use gpui_kit::component::{
     IndexPath,
@@ -18,7 +19,7 @@ pub(super) struct Choice {
 impl SelectItem for Choice {
     type Value = &'static str;
     fn title(&self) -> SharedString {
-        self.label.into()
+        crate::i18n::tr(self.label).into()
     }
     fn value(&self) -> &Self::Value {
         &self.value
@@ -62,9 +63,9 @@ pub(super) struct DnsPage {
 }
 impl DnsPage {
     pub fn new(window: &mut Window, cx: &mut Context<BandixApp>) -> Self {
-        let domain = cx.new(|cx| InputState::new(window, cx).placeholder("域名"));
-        let device = cx.new(|cx| InputState::new(window, cx).placeholder("设备名 / IP / MAC"));
-        let server = cx.new(|cx| InputState::new(window, cx).placeholder("DNS 服务器"));
+        let domain = cx.new(|cx| InputState::new(window, cx).placeholder(tr("域名")));
+        let device = cx.new(|cx| InputState::new(window, cx).placeholder(tr("设备名 / IP / MAC")));
+        let server = cx.new(|cx| InputState::new(window, cx).placeholder(tr("DNS 服务器")));
         let kind = choices(
             &[("", "全部记录"), ("true", "仅查询"), ("false", "仅响应")],
             0,

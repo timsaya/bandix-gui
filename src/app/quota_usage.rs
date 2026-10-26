@@ -17,7 +17,7 @@ impl QuotaUsage {
     pub fn text(self) -> String {
         format!(
             "{} {} / {}",
-            self.label,
+            crate::i18n::tr(self.label),
             format_bytes(self.used),
             format_bytes(self.limit)
         )

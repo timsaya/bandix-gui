@@ -7,6 +7,8 @@ edition = "2024"
 chrono = "0.4"
 dirs = "6"
 gpui-kit = "0.8.0"
+image = { version = "0.25", default-features = false, features = ["png"] }
+rust-i18n = "4.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tempfile = "3"

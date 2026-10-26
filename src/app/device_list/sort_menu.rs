@@ -3,6 +3,7 @@ use super::{
     sort::{SortDirection, SortField},
 };
 use crate::app::theme::*;
+use crate::i18n::tr;
 use gpui_kit::component::{Disableable, Sizable, button::Button, popover::Popover, switch::Switch};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
@@ -26,7 +27,7 @@ pub(super) fn render(app: &BandixApp, expanded: bool, cx: &mut Context<BandixApp
                 .border_color(rgb(BORDER))
                 .text_color(rgb(BLUE))
                 .label(app.device_list.sort.summary())
-                .accessibility_label("设备排序")
+                .accessibility_label(tr("设备排序"))
                 .tooltip(app.device_list.sort.tooltip()),
         )
         .child(panel(app, cx))
@@ -49,7 +50,7 @@ fn panel(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
                 .flex()
                 .flex_col()
                 .gap_2()
-                .child(label("排序字段"))
+                .child(label(tr("排序字段")))
                 .child(div().flex().flex_col().gap_1().children(
                     SortField::ALL.chunks(2).enumerate().map(|(row, fields)| {
                         div()
@@ -77,50 +78,55 @@ fn panel(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
                 )),
         )
         .child(
-            div().flex().flex_col().gap_2().child(label("顺序")).child(
-                div()
-                    .flex()
-                    .gap_1()
-                    .p_1()
-                    .rounded_md()
-                    .bg(rgb(BG))
-                    .children(
-                        [
-                            (SortDirection::Ascending, "device-sort-ascending"),
-                            (SortDirection::Descending, "device-sort-descending"),
-                        ]
-                        .into_iter()
-                        .map(|(direction, id)| {
-                            Button::new(id)
-                                .small()
-                                .flex_1()
-                                .h(px(26.0))
-                                .label(direction.label())
-                                .disabled(!sortable)
-                                .bg(rgb(if direction == sort.direction {
-                                    SURFACE_2
-                                } else {
-                                    BG
-                                }))
-                                .text_color(rgb(if direction == sort.direction {
-                                    BLUE
-                                } else {
-                                    MUTED
-                                }))
-                                .on_click(cx.listener(move |app, _, _, cx| {
-                                    if app.device_list.sort.direction != direction {
-                                        app.device_list.sort.toggle_direction();
-                                        app.save_device_sort(cx);
-                                    }
-                                }))
-                        }),
-                    ),
-            ),
+            div()
+                .flex()
+                .flex_col()
+                .gap_2()
+                .child(label(tr("顺序")))
+                .child(
+                    div()
+                        .flex()
+                        .gap_1()
+                        .p_1()
+                        .rounded_md()
+                        .bg(rgb(BG))
+                        .children(
+                            [
+                                (SortDirection::Ascending, "device-sort-ascending"),
+                                (SortDirection::Descending, "device-sort-descending"),
+                            ]
+                            .into_iter()
+                            .map(|(direction, id)| {
+                                Button::new(id)
+                                    .small()
+                                    .flex_1()
+                                    .h(px(26.0))
+                                    .label(direction.label())
+                                    .disabled(!sortable)
+                                    .bg(rgb(if direction == sort.direction {
+                                        SURFACE_2
+                                    } else {
+                                        BG
+                                    }))
+                                    .text_color(rgb(if direction == sort.direction {
+                                        BLUE
+                                    } else {
+                                        MUTED
+                                    }))
+                                    .on_click(cx.listener(move |app, _, _, cx| {
+                                        if app.device_list.sort.direction != direction {
+                                            app.device_list.sort.toggle_direction();
+                                            app.save_device_sort(cx);
+                                        }
+                                    }))
+                            }),
+                        ),
+                ),
         )
         .child(
             Switch::new("device-online-first")
                 .small()
-                .label("在线始终在前")
+                .label(tr("在线始终在前"))
                 .checked(sort.online_first)
                 .color(rgb(ACCENT))
                 .on_change(cx.listener(|app, checked, _, cx| {
@@ -134,7 +140,7 @@ fn panel(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
                     .small()
                     .w_full()
                     .h(px(28.0))
-                    .label("恢复默认排序")
+                    .label(tr("恢复默认排序"))
                     .on_click(cx.listener(|app, _, _, cx| app.reset_device_sort(cx))),
             ),
         )

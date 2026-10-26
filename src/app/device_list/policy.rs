@@ -2,11 +2,12 @@
 
 use super::DeviceListMode;
 use super::row::{cell, line};
+use crate::app::preferences::SpeedUnit;
 use crate::app::quota_usage::{QuotaUsage, blocking_periods, configured_periods};
 use crate::app::theme::*;
+use crate::i18n::{tf, tr};
 use crate::services::api::{
-    ApiResult, DashboardData, GlobalRateLimit, ScheduledRateLimit, TrafficQuotaStatus,
-    format_bytes, format_rate,
+    ApiResult, DashboardData, GlobalRateLimit, ScheduledRateLimit, TrafficQuotaStatus, format_bytes,
 };
 use chrono::{Datelike, Local, Timelike};
 use gpui_kit::component::tooltip::Tooltip;
@@ -25,6 +26,7 @@ pub(super) fn render(
     data: Option<&DashboardData>,
     mac: &str,
     mode: DeviceListMode,
+    speed_unit: SpeedUnit,
 ) -> impl IntoElement {
     let now = Local::now();
     let limits = rate_status(
@@ -33,6 +35,7 @@ pub(super) fn render(
         now.weekday().number_from_monday() as u8,
         (now.hour() * 60 + now.minute()) as u16,
         data.map(|data| &data.global_rate_limit),
+        speed_unit,
     );
     let quota = quota_status(data.map(|data| &data.quotas), mac);
     let tooltip = format!("{}\n\n{}", limits.detail, quota.detail);
@@ -64,14 +67,15 @@ fn rate_status(
     weekday: u8,
     minute: u16,
     global: Option<&ApiResult<GlobalRateLimit>>,
+    speed_unit: SpeedUnit,
 ) -> StatusLine {
     let schedules = match schedules {
         Some(Ok(rules)) => rules,
-        Some(Err(error)) => return unavailable("限速", Some(error)),
-        None => return unavailable("限速", None),
+        Some(Err(error)) => return unavailable(tr("限速"), Some(error)),
+        None => return unavailable(tr("限速"), None),
     };
     if let Some(Err(error)) = global {
-        return unavailable("限速", Some(error));
+        return unavailable(tr("限速"), Some(error));
     }
     let rules = schedules
         .iter()
@@ -105,22 +109,27 @@ fn rate_status(
                 .filter_map(|day| {
                     day.checked_sub(1)
                         .and_then(|index| DAY_LABELS.get(index as usize))
-                        .copied()
+                        .map(|day| tr(day))
                 })
                 .collect::<Vec<_>>()
                 .join("、");
-            format!(
-                "{} · 周{} {}–{} · ↓ {} · ↑ {}",
-                if rule_is_active(rule, weekday, minute) {
-                    "生效"
-                } else {
-                    "未生效"
-                },
-                days,
-                rule.time_slot.start,
-                rule.time_slot.end,
-                limit_text(rule.wan_rx_rate_limit),
-                limit_text(rule.wan_tx_rate_limit)
+            tf(
+                "{0} · 周{1} {2}–{3} · ↓ {4} · ↑ {5}",
+                &[
+                    format!(
+                        "{}",
+                        if rule_is_active(rule, weekday, minute) {
+                            crate::i18n::tr("生效")
+                        } else {
+                            crate::i18n::tr("未生效")
+                        }
+                    ),
+                    format!("{}", days),
+                    format!("{}", rule.time_slot.start),
+                    format!("{}", rule.time_slot.end),
+                    format!("{}", limit_text(rule.wan_rx_rate_limit, speed_unit)),
+                    format!("{}", limit_text(rule.wan_tx_rate_limit, speed_unit)),
+                ],
             )
         })
         .collect::<Vec<_>>()
@@ -135,22 +144,36 @@ fn rate_status(
             };
             download = minimum(download, policy.default_wan_rx_rate_limit);
             upload = minimum(upload, policy.default_wan_tx_rate_limit);
-            format!(
-                "\n全局限速：↓ {} · ↑ {}",
-                limit_text(policy.default_wan_rx_rate_limit),
-                limit_text(policy.default_wan_tx_rate_limit)
+            tf(
+                "\n全局限速：↓ {0} · ↑ {1}",
+                &[
+                    format!(
+                        "{}",
+                        limit_text(policy.default_wan_rx_rate_limit, speed_unit)
+                    ),
+                    format!(
+                        "{}",
+                        limit_text(policy.default_wan_tx_rate_limit, speed_unit)
+                    ),
+                ],
             )
         }
-        Some(Ok(policy)) if policy.enabled => "\n全局限速：白名单豁免".into(),
-        Some(Err(error)) => format!("\n全局限速状态不可用：{error}"),
+        Some(Ok(policy)) if policy.enabled => tr("\n全局限速：白名单豁免").into(),
+        Some(Err(error)) => tf("\n全局限速状态不可用：{0}", &[format!("{}", error)]),
         _ => String::new(),
     };
     StatusLine {
         usage_lines: Vec::new(),
         text: if download == 0 && upload == 0 {
-            "限速 未限速".into()
+            tr("限速 未限速").into()
         } else {
-            format!("限速 ↓ {} · ↑ {}", limit_text(download), limit_text(upload))
+            tf(
+                "限速 ↓ {0} · ↑ {1}",
+                &[
+                    format!("{}", limit_text(download, speed_unit)),
+                    format!("{}", limit_text(upload, speed_unit)),
+                ],
+            )
         },
         color: if download == 0 && upload == 0 {
             MUTED
@@ -158,12 +181,16 @@ fn rate_status(
             BLUE
         },
         detail: if rules.is_empty() {
-            format!("限速：未设置独立规则{global_detail}")
+            tf("限速：未设置独立规则{0}", &[format!("{}", global_detail)])
         } else {
-            format!(
-                "限速：{} / {} 条规则生效\n{details}{global_detail}",
-                active.len(),
-                rules.len()
+            tf(
+                "限速：{0} / {1} 条规则生效\n{2}{3}",
+                &[
+                    format!("{}", active.len()),
+                    format!("{}", rules.len()),
+                    format!("{}", details),
+                    format!("{}", global_detail),
+                ],
             )
         },
     }
@@ -188,11 +215,11 @@ fn parse_time(time: &str) -> Option<u16> {
     (hour < 24 && minute < 60).then(|| hour * 60 + minute)
 }
 
-fn limit_text(rate: u64) -> String {
+fn limit_text(rate: u64, speed_unit: SpeedUnit) -> String {
     if rate == 0 {
-        "不限".into()
+        tr("不限").into()
     } else {
-        format_rate(rate)
+        speed_unit.format(rate)
     }
 }
 
@@ -209,8 +236,8 @@ fn most_used_quota(quota: &TrafficQuotaStatus) -> Option<QuotaUsage> {
 fn quota_status(quotas: Option<&ApiResult<Vec<TrafficQuotaStatus>>>, mac: &str) -> StatusLine {
     let quotas = match quotas {
         Some(Ok(quotas)) => quotas,
-        Some(Err(error)) => return unavailable("配额", Some(error)),
-        None => return unavailable("配额", None),
+        Some(Err(error)) => return unavailable(tr("配额"), Some(error)),
+        None => return unavailable(tr("配额"), None),
     };
     let Some(quota) = quotas
         .iter()
@@ -218,9 +245,9 @@ fn quota_status(quotas: Option<&ApiResult<Vec<TrafficQuotaStatus>>>, mac: &str) 
     else {
         return StatusLine {
             usage_lines: Vec::new(),
-            text: "配额 未配置".into(),
+            text: tr("配额 未配置").into(),
             color: MUTED,
-            detail: "配额：未配置".into(),
+            detail: tr("配额：未配置").into(),
         };
     };
     let usage = most_used_quota(quota);
@@ -236,7 +263,7 @@ fn quota_status(quotas: Option<&ApiResult<Vec<TrafficQuotaStatus>>>, mac: &str) 
     StatusLine {
         usage_lines: if quota.blocked {
             if blocked_usage.is_empty() {
-                vec!["超限周期与用量暂不可用".into()]
+                vec![tr("超限周期与用量暂不可用").into()]
             } else {
                 blocked_usage.clone()
             }
@@ -245,19 +272,21 @@ fn quota_status(quotas: Option<&ApiResult<Vec<TrafficQuotaStatus>>>, mac: &str) 
         },
         text: if quota.blocked {
             if blocked.len() > 1 {
-                format!("配额 超限阻断（{} 项）", blocked.len())
+                tf("配额 超限阻断（{0} 项）", &[format!("{}", blocked.len())])
             } else {
-                "配额 超限阻断".into()
+                tr("配额 超限阻断").into()
             }
         } else if let Some(usage) = usage {
-            format!(
-                "配额 {} {} / {}",
-                usage.label,
-                format_bytes(usage.used),
-                format_bytes(usage.limit)
+            tf(
+                "配额 {0} {1} / {2}",
+                &[
+                    format!("{}", usage.label),
+                    format!("{}", format_bytes(usage.used)),
+                    format!("{}", format_bytes(usage.limit)),
+                ],
             )
         } else {
-            "配额 不限额".into()
+            tr("配额 不限额").into()
         },
         color: if quota.blocked {
             RED
@@ -267,18 +296,24 @@ fn quota_status(quotas: Option<&ApiResult<Vec<TrafficQuotaStatus>>>, mac: &str) 
             MUTED
         },
         detail: if quota.blocked {
-            format!(
-                "配额：WAN 超限阻断（用量 / 配额）\n{}\n\n所有已配置周期\n{periods}",
-                if blocked_usage.is_empty() {
-                    "超限周期与用量暂不可用".into()
-                } else {
-                    blocked_usage.join("\n")
-                }
+            tf(
+                "配额：WAN 超限阻断（用量 / 配额）\n{0}\n\n所有已配置周期\n{1}",
+                &[
+                    format!(
+                        "{}",
+                        if blocked_usage.is_empty() {
+                            crate::i18n::tr("超限周期与用量暂不可用").into()
+                        } else {
+                            blocked_usage.join("\n")
+                        }
+                    ),
+                    format!("{}", periods),
+                ],
             )
         } else if usage.is_some() {
-            format!("配额：正常\n{periods}")
+            tf("配额：正常\n{0}", &[format!("{}", periods)])
         } else {
-            "配额：所有周期均不限额".into()
+            tr("配额：所有周期均不限额").into()
         },
     }
 }
@@ -289,21 +324,30 @@ fn unavailable(label: &str, error: Option<&String>) -> StatusLine {
         text: format!(
             "{label} {}",
             if error.is_some() {
-                "读取失败"
+                tr("读取失败")
             } else {
-                "正在读取…"
+                tr("正在读取…")
             }
         ),
         color: if error.is_some() { RED } else { MUTED },
         detail: error
-            .map(|error| format!("{label}读取失败：{error}"))
-            .unwrap_or_else(|| format!("正在读取{label}…")),
+            .map(|error| {
+                tf(
+                    "{0}读取失败：{1}",
+                    &[
+                        format!("{}", crate::i18n::tr(&(label))),
+                        format!("{}", error),
+                    ],
+                )
+            })
+            .unwrap_or_else(|| tf("正在读取{0}…", &[format!("{}", crate::i18n::tr(&(label)))])),
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::{most_used_quota, quota_status, rate_status, rule_is_active};
+    use crate::app::preferences::SpeedUnit;
     use crate::services::api::GlobalRateLimit;
     use crate::services::api::{ScheduleTimeSlot, ScheduledRateLimit, TrafficQuotaStatus};
 
@@ -355,11 +399,14 @@ mod tests {
             rule("22:00", "23:59", 1, 1),
             other_device,
         ]);
-        let status = rate_status(Some(&rules), MAC, 1, 600, None);
+        let status = rate_status(Some(&rules), MAC, 1, 600, None, SpeedUnit::Bytes);
         assert_eq!(status.text, "限速 ↓ 2.0 KB/s · ↑ 1.0 KB/s");
+        let bits = rate_status(Some(&rules), MAC, 1, 600, None, SpeedUnit::Bits);
+        assert_eq!(bits.text, "限速 ↓ 16.4 Kbps · ↑ 8.2 Kbps");
+        assert!(bits.detail.contains("32.8 Kbps"));
         assert!(status.detail.contains("2 / 3 条规则生效"));
         assert_eq!(
-            rate_status(Some(&rules), MAC, 2, 600, None).text,
+            rate_status(Some(&rules), MAC, 2, 600, None, SpeedUnit::Bytes).text,
             "限速 未限速"
         );
     }
@@ -374,21 +421,52 @@ mod tests {
             macs: vec![],
         };
         assert_eq!(
-            rate_status(Some(&rules), MAC, 1, 600, Some(&Ok(policy.clone()))).text,
+            rate_status(
+                Some(&rules),
+                MAC,
+                1,
+                600,
+                Some(&Ok(policy.clone())),
+                SpeedUnit::Bytes
+            )
+            .text,
             "限速 ↓ 2.0 KB/s · ↑ 1.0 KB/s"
         );
         policy.macs.push(MAC.to_uppercase());
-        let status = rate_status(Some(&rules), MAC, 1, 600, Some(&Ok(policy.clone())));
+        let status = rate_status(
+            Some(&rules),
+            MAC,
+            1,
+            600,
+            Some(&Ok(policy.clone())),
+            SpeedUnit::Bytes,
+        );
         assert_eq!(status.text, "限速 ↓ 2.0 KB/s · ↑ 不限");
         assert!(status.detail.contains("白名单豁免"));
         policy.macs.clear();
         assert_eq!(
-            rate_status(Some(&Ok(vec![])), MAC, 1, 600, Some(&Ok(policy.clone()))).text,
+            rate_status(
+                Some(&Ok(vec![])),
+                MAC,
+                1,
+                600,
+                Some(&Ok(policy.clone())),
+                SpeedUnit::Bytes
+            )
+            .text,
             "限速 ↓ 4.0 KB/s · ↑ 1.0 KB/s"
         );
         policy.enabled = false;
         assert_eq!(
-            rate_status(Some(&Ok(vec![])), MAC, 1, 600, Some(&Ok(policy))).text,
+            rate_status(
+                Some(&Ok(vec![])),
+                MAC,
+                1,
+                600,
+                Some(&Ok(policy)),
+                SpeedUnit::Bytes
+            )
+            .text,
             "限速 未限速"
         );
     }
@@ -442,7 +520,15 @@ mod tests {
         assert!(status.detail.contains("HTTP 503"));
         assert_eq!(quota_status(None, MAC).text, "配额 正在读取…");
         assert_eq!(
-            rate_status(Some(&Err("HTTP 503".into())), MAC, 1, 600, None).text,
+            rate_status(
+                Some(&Err("HTTP 503".into())),
+                MAC,
+                1,
+                600,
+                None,
+                SpeedUnit::Bytes
+            )
+            .text,
             "限速 读取失败"
         );
         assert_eq!(
@@ -451,7 +537,8 @@ mod tests {
                 MAC,
                 1,
                 600,
-                Some(&Err("HTTP 503".into()))
+                Some(&Err("HTTP 503".into())),
+                SpeedUnit::Bytes,
             )
             .text,
             "限速 读取失败"

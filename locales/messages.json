@@ -1,0 +1,4192 @@
+{
+  "\n全局限速状态不可用：{0}": [
+    "\n全局限速状态不可用：{0}",
+    "\nGlobal rate limit unavailable: {0}",
+    "\n全侷限速狀態不可用：{0}",
+    "\n全体速度制限を取得できません：{0}",
+    "\nLimite globale indisponible : {0}",
+    "\nLímite global no disponible: {0}",
+    "\nLimit globalny niedostępny: {0}",
+    "\nОбщий лимит недоступен: {0}"
+  ],
+  "\n全局限速：↓ {0} · ↑ {1}": [
+    "\n全局限速：↓ {0} · ↑ {1}",
+    "\nGlobal limit: ↓ {0} · ↑ {1}",
+    "\n全侷限速：↓ {0} · ↑ {1}",
+    "\n全体制限：↓ {0} · ↑ {1}",
+    "\nLimite globale : ↓ {0} · ↑ {1}",
+    "\nLímite global: ↓ {0} · ↑ {1}",
+    "\nLimit globalny: ↓ {0} · ↑ {1}",
+    "\nОбщий лимит: ↓ {0} · ↑ {1}"
+  ],
+  "\n全局限速：白名单豁免": [
+    "\n全局限速：白名单豁免",
+    "\nGlobal limit: exempt",
+    "\n全侷限速：白名單豁免",
+    "\n全体制限：対象外",
+    "\nLimite globale : exempté",
+    "\nLímite global: exento",
+    "\nLimit globalny: wyjątek",
+    "\nОбщий лимит: исключение"
+  ],
+  "0 表示不限速": [
+    "0 表示不限速",
+    "0 means unlimited",
+    "0 表示不限速",
+    "0 は無制限",
+    "0 signifie illimité",
+    "0 significa sin límite",
+    "0 oznacza brak limitu",
+    "0 — без ограничений"
+  ],
+  "1 字节 = 8 比特；自动换算速度，流量用量仍以字节显示。": [
+    "1 字节 = 8 比特；自动换算速度，流量用量仍以字节显示。",
+    "1 byte = 8 bits. Speeds are converted automatically; usage stays in bytes.",
+    "1 字節 = 8 比特；自動換算速度，流量用量仍以字節顯示。",
+    "1 バイト = 8 ビット。速度を自動換算し、使用量はバイトで表示します。",
+    "1 octet = 8 bits. Les débits sont convertis ; les volumes restent en octets.",
+    "1 byte = 8 bits. La velocidad se convierte; el consumo sigue en bytes.",
+    "1 bajt = 8 bitów. Prędkość jest przeliczana; zużycie pozostaje w bajtach.",
+    "1 байт = 8 бит. Скорость пересчитывается; объём остаётся в байтах."
+  ],
+  "10 条 / 页": [
+    "10 条 / 页",
+    "10 / page",
+    "10 條 / 頁",
+    "10 件 / ページ",
+    "10 / page",
+    "10 / página",
+    "10 / stronę",
+    "10 на страницу"
+  ],
+  "100 条 / 页": [
+    "100 条 / 页",
+    "100 / page",
+    "100 條 / 頁",
+    "100 件 / ページ",
+    "100 / page",
+    "100 / página",
+    "100 / stronę",
+    "100 на страницу"
+  ],
+  "20 条 / 页": [
+    "20 条 / 页",
+    "20 / page",
+    "20 條 / 頁",
+    "20 件 / ページ",
+    "20 / page",
+    "20 / página",
+    "20 / stronę",
+    "20 на страницу"
+  ],
+  "200 条 / 页": [
+    "200 条 / 页",
+    "200 / page",
+    "200 條 / 頁",
+    "200 件 / ページ",
+    "200 / page",
+    "200 / página",
+    "200 / stronę",
+    "200 на страницу"
+  ],
+  "24 小时制，支持跨午夜；速度设为 0 表示不限速": [
+    "24 小时制，支持跨午夜；速度设为 0 表示不限速",
+    "24-hour time; overnight schedules supported. Set speed to 0 for no limit.",
+    "24 小時制，支持跨午夜；速度設爲 0 表示不限速",
+    "24 時間制。日をまたぐ設定に対応。0 は無制限です。",
+    "Format 24 h, plages nocturnes acceptées. 0 signifie illimité.",
+    "Formato de 24 horas; admite horarios nocturnos. 0 significa sin límite.",
+    "Format 24-godzinny; obsługa przedziałów przez północ. 0 oznacza brak limitu.",
+    "24-часовой формат, включая переход через полночь. 0 — без ограничений."
+  ],
+  "50 条 / 页": [
+    "50 条 / 页",
+    "50 / page",
+    "50 條 / 頁",
+    "50 件 / ページ",
+    "50 / page",
+    "50 / página",
+    "50 / stronę",
+    "50 на страницу"
+  ],
+  "500 条 / 页": [
+    "500 条 / 页",
+    "500 / page",
+    "500 條 / 頁",
+    "500 件 / ページ",
+    "500 / page",
+    "500 / página",
+    "500 / stronę",
+    "500 на страницу"
+  ],
+  "Bandix 当前仅支持 http:// 地址": [
+    "Bandix 当前仅支持 http:// 地址",
+    "Bandix currently supports http:// addresses only",
+    "Bandix 當前僅支持 http:// 地址",
+    "Bandix は現在 http:// アドレスのみ対応しています",
+    "Bandix ne prend en charge que les adresses http://",
+    "Bandix solo admite direcciones http://",
+    "Bandix obsługuje tylko adresy http://",
+    "Bandix поддерживает только адреса http://"
+  ],
+  "Bandix 接口未返回 data": [
+    "Bandix 接口未返回 data",
+    "Bandix response is missing data",
+    "Bandix 接口未返回 data",
+    "Bandix の応答に data がありません",
+    "La réponse Bandix ne contient pas de données",
+    "La respuesta de Bandix no contiene data",
+    "W odpowiedzi Bandix brakuje data",
+    "В ответе Bandix отсутствует data"
+  ],
+  "Bandix 接口返回错误": [
+    "Bandix 接口返回错误",
+    "Bandix API returned an error",
+    "Bandix 接口返回錯誤",
+    "Bandix API がエラーを返しました",
+    "L’API Bandix a renvoyé une erreur",
+    "La API de Bandix devolvió un error",
+    "API Bandix zwróciło błąd",
+    "API Bandix вернул ошибку"
+  ],
+  "Bandix 服务发现": [
+    "Bandix 服务发现",
+    "Bandix Service Discovery",
+    "Bandix 服務發現",
+    "Bandix サービス検出",
+    "Découverte du service Bandix",
+    "Detección del servicio Bandix",
+    "Wykrywanie usługi Bandix",
+    "Поиск службы Bandix"
+  ],
+  "Bandix 服务地址": [
+    "Bandix 服务地址",
+    "Bandix service address",
+    "Bandix 服務地址",
+    "Bandix サービスのアドレス",
+    "Adresse du service Bandix",
+    "Dirección del servicio Bandix",
+    "Adres usługi Bandix",
+    "Адрес службы Bandix"
+  ],
+  "CLOSE_WAIT · 等待本地关闭": [
+    "CLOSE_WAIT · 等待本地关闭",
+    "CLOSE_WAIT · Waiting for local close",
+    "CLOSE_WAIT · 等待本地關閉",
+    "CLOSE_WAIT · ローカル終了待ち",
+    "CLOSE_WAIT · Fermeture locale en attente",
+    "CLOSE_WAIT · Esperando cierre local",
+    "CLOSE_WAIT · Oczekiwanie na zamknięcie lokalne",
+    "CLOSE_WAIT · Ожидание локального закрытия"
+  ],
+  "DNS 服务器": [
+    "DNS 服务器",
+    "DNS Servers",
+    "DNS 服務器",
+    "DNS サーバー",
+    "Serveurs DNS",
+    "Servidores DNS",
+    "Serwery DNS",
+    "DNS-серверы"
+  ],
+  "DNS 查询记录": [
+    "DNS 查询记录",
+    "DNS Query Records",
+    "DNS 查詢記錄",
+    "DNS クエリ記録",
+    "Enregistrements de requêtes DNS",
+    "Registros de consultas DNS",
+    "Rekordy zapytań DNS",
+    "Записи запросов DNS"
+  ],
+  "DNS 查询读取失败：{0}": [
+    "DNS 查询读取失败：{0}",
+    "Failed to load DNS records: {0}",
+    "DNS 查詢讀取失敗：{0}",
+    "DNS レコードを読み込めません：{0}",
+    "Impossible de charger les enregistrements DNS : {0}",
+    "No se pueden cargar los registros DNS: {0}",
+    "Nie można wczytać rekordów DNS: {0}",
+    "Не удалось загрузить записи DNS: {0}"
+  ],
+  "DNS 统计接口请求失败": [
+    "DNS 统计接口请求失败",
+    "Failed to load DNS statistics",
+    "DNS 統計接口請求失敗",
+    "DNS 統計を読み込めません",
+    "Impossible de charger les statistiques DNS",
+    "No se pueden cargar las estadísticas DNS",
+    "Nie można wczytać statystyk DNS",
+    "Не удалось загрузить статистику DNS"
+  ],
+  "DNS 记录类型": [
+    "DNS 记录类型",
+    "DNS record type",
+    "DNS 記錄類型",
+    "DNS レコードの種類",
+    "Type d’enregistrement DNS",
+    "Tipo de registro DNS",
+    "Typ rekordu DNS",
+    "Тип записи DNS"
+  ],
+  "ESTABLISHED · 已建立连接": [
+    "ESTABLISHED · 已建立连接",
+    "ESTABLISHED · Connected",
+    "ESTABLISHED · 已建立連接",
+    "ESTABLISHED · 接続済み",
+    "ESTABLISHED · Connecté",
+    "ESTABLISHED · Conectada",
+    "ESTABLISHED · Połączono",
+    "ESTABLISHED · Установлено"
+  ],
+  "IP 地址": [
+    "IP 地址",
+    "IP Address",
+    "IP位址",
+    "IPアドレス",
+    "Adresse IP",
+    "Dirección IP",
+    "Adres IP",
+    "IP-адрес"
+  ],
+  "JSON 编码失败：{0}": [
+    "JSON 编码失败：{0}",
+    "JSON encoding failed: {0}",
+    "JSON 編碼失敗：{0}",
+    "JSON エンコード失敗：{0}",
+    "Échec d’encodage JSON : {0}",
+    "Error al codificar JSON: {0}",
+    "Błąd kodowania JSON: {0}",
+    "Ошибка кодирования JSON: {0}"
+  ],
+  "JSON 解析失败：{0}": [
+    "JSON 解析失败：{0}",
+    "JSON parsing failed: {0}",
+    "JSON 解析失敗：{0}",
+    "JSON 解析失敗：{0}",
+    "Échec d’analyse JSON : {0}",
+    "Error al analizar JSON: {0}",
+    "Błąd analizy JSON: {0}",
+    "Ошибка разбора JSON: {0}"
+  ],
+  "LAN 上传": [
+    "LAN 上传",
+    "LAN Upload",
+    "LAN 上傳速率",
+    "LAN アップロード速度",
+    "Débit envoi LAN",
+    "Carga LAN",
+    "Wysyłanie LAN",
+    "Скорость отправки LAN"
+  ],
+  "LAN 上传速度": [
+    "LAN 上传速度",
+    "LAN upload speed",
+    "LAN 上傳速度",
+    "LAN アップロード速度",
+    "Débit montant LAN",
+    "Velocidad de subida LAN",
+    "Prędkość wysyłania LAN",
+    "Скорость отдачи LAN"
+  ],
+  "LAN 下载": [
+    "LAN 下载",
+    "LAN Download",
+    "LAN 下載速率",
+    "LAN ダウンロード速度",
+    "Débit téléchargement LAN",
+    "Descarga LAN",
+    "Pobieranie LAN",
+    "Скорость загрузки LAN"
+  ],
+  "LAN 下载速度": [
+    "LAN 下载速度",
+    "LAN download speed",
+    "LAN 下載速度",
+    "LAN ダウンロード速度",
+    "Débit descendant LAN",
+    "Velocidad de bajada LAN",
+    "Prędkość pobierania LAN",
+    "Скорость загрузки LAN"
+  ],
+  "LAN 流量": [
+    "LAN 流量",
+    "LAN Traffic",
+    "LAN 流量",
+    "LAN トラフィック",
+    "Trafic LAN",
+    "Tráfico LAN",
+    "Ruch LAN",
+    "Трафик LAN"
+  ],
+  "LAN 用量": [
+    "LAN 用量",
+    "LAN usage",
+    "LAN 用量",
+    "LAN 使用量",
+    "Volume LAN",
+    "Consumo LAN",
+    "Zużycie LAN",
+    "Объём LAN"
+  ],
+  "LAN 累计用量": [
+    "LAN 累计用量",
+    "Total LAN usage",
+    "LAN 累計用量",
+    "LAN 累計使用量",
+    "Volume LAN cumulé",
+    "Consumo LAN acumulado",
+    "Łączne zużycie LAN",
+    "Суммарный объём LAN"
+  ],
+  "TCP 状态": [
+    "TCP 状态",
+    "TCP state",
+    "TCP 狀態",
+    "TCP 状態",
+    "État TCP",
+    "Estado TCP",
+    "Stan TCP",
+    "Состояние TCP"
+  ],
+  "TCP 连接": [
+    "TCP 连接",
+    "TCP Connections",
+    "TCP連線數",
+    "TCP接続数",
+    "Connexions TCP",
+    "Conexiones TCP",
+    "Połączenia TCP",
+    "Соединения TCP"
+  ],
+  "TIME_WAIT · 等待关闭": [
+    "TIME_WAIT · 等待关闭",
+    "TIME_WAIT · Waiting to close",
+    "TIME_WAIT · 等待關閉",
+    "TIME_WAIT · 終了待ち",
+    "TIME_WAIT · Fermeture en attente",
+    "TIME_WAIT · Esperando cierre",
+    "TIME_WAIT · Oczekiwanie na zamknięcie",
+    "TIME_WAIT · Ожидание закрытия"
+  ],
+  "UDP 连接": [
+    "UDP 连接",
+    "UDP Connections",
+    "UDP連線數",
+    "UDP接続数",
+    "Connexions UDP",
+    "Conexiones UDP",
+    "Połączenia UDP",
+    "Соединения UDP"
+  ],
+  "WAN 上传": [
+    "WAN 上传",
+    "WAN Upload",
+    "WAN 上傳",
+    "WAN アップロード",
+    "Envoi WAN",
+    "Subida WAN",
+    "Wysyłanie WAN",
+    "Отправка WAN"
+  ],
+  "WAN 上传速度": [
+    "WAN 上传速度",
+    "WAN upload speed",
+    "WAN 上傳速度",
+    "WAN アップロード速度",
+    "Débit montant WAN",
+    "Velocidad de subida WAN",
+    "Prędkość wysyłania WAN",
+    "Скорость отдачи WAN"
+  ],
+  "WAN 下载": [
+    "WAN 下载",
+    "WAN Download",
+    "WAN 下載",
+    "WAN ダウンロード",
+    "Téléchargement WAN",
+    "Descarga WAN",
+    "Pobieranie WAN",
+    "Загрузка WAN"
+  ],
+  "WAN 下载速度": [
+    "WAN 下载速度",
+    "WAN download speed",
+    "WAN 下載速度",
+    "WAN ダウンロード速度",
+    "Débit descendant WAN",
+    "Velocidad de bajada WAN",
+    "Prędkość pobierania WAN",
+    "Скорость загрузки WAN"
+  ],
+  "WAN 实时上传": [
+    "WAN 实时上传",
+    "WAN upload speed",
+    "WAN 實時上傳",
+    "WAN アップロード速度",
+    "Débit montant WAN",
+    "Velocidad de subida WAN",
+    "Prędkość wysyłania WAN",
+    "Скорость отдачи WAN"
+  ],
+  "WAN 实时下载": [
+    "WAN 实时下载",
+    "WAN download speed",
+    "WAN 實時下載",
+    "WAN ダウンロード速度",
+    "Débit descendant WAN",
+    "Velocidad de bajada WAN",
+    "Prędkość pobierania WAN",
+    "Скорость загрузки WAN"
+  ],
+  "WAN 流量": [
+    "WAN 流量",
+    "WAN Traffic",
+    "WAN 流量",
+    "WAN トラフィック",
+    "Trafic WAN",
+    "Tráfico WAN",
+    "Ruch WAN",
+    "Трафик WAN"
+  ],
+  "WAN 用量": [
+    "WAN 用量",
+    "WAN usage",
+    "WAN 用量",
+    "WAN 使用量",
+    "Volume WAN",
+    "Consumo WAN",
+    "Zużycie WAN",
+    "Объём WAN"
+  ],
+  "WAN 累计用量": [
+    "WAN 累计用量",
+    "Total WAN usage",
+    "WAN 累計用量",
+    "WAN 累計使用量",
+    "Volume WAN cumulé",
+    "Consumo WAN acumulado",
+    "Łączne zużycie WAN",
+    "Суммарный объём WAN"
+  ],
+  "{0}\n在线始终在前：{1}": [
+    "{0}\n在线始终在前：{1}",
+    "{0}\nOnline first: {1}",
+    "{0}\n在線始終在前：{1}",
+    "{0}\nオンラインを優先：{1}",
+    "{0}\nEn ligne d’abord : {1}",
+    "{0}\nEn línea primero: {1}",
+    "{0}\nOnline najpierw: {1}",
+    "{0}\nСначала онлайн: {1}"
+  ],
+  "{0} / {1} 台设备": [
+    "{0} / {1} 台设备",
+    "{0} / {1} devices",
+    "{0} / {1} 臺設備",
+    "{0} / {1} 台",
+    "{0} / {1} appareils",
+    "{0} / {1} dispositivos",
+    "{0} / {1} urządzeń",
+    "{0} / {1} устройств"
+  ],
+  "{0} ms 平均": [
+    "{0} ms 平均",
+    "{0} ms average",
+    "{0} ms 平均",
+    "{0} ms 平均",
+    "{0} ms en moyenne",
+    "{0} ms de media",
+    "{0} ms średnio",
+    "{0} ms в среднем"
+  ],
+  "{0} ms 最快": [
+    "{0} ms 最快",
+    "{0} ms fastest",
+    "{0} ms 最快",
+    "{0} ms 最速",
+    "{0} ms au plus rapide",
+    "{0} ms mínimo",
+    "{0} ms minimum",
+    "{0} ms минимум"
+  ],
+  "{0} ms 最慢": [
+    "{0} ms 最慢",
+    "{0} ms slowest",
+    "{0} ms 最慢",
+    "{0} ms 最遅",
+    "{0} ms au plus lent",
+    "{0} ms máximo",
+    "{0} ms maksimum",
+    "{0} ms максимум"
+  ],
+  "{0} · TCP 延迟 {1} ms · {2} 个模块可用": [
+    "{0} · TCP 延迟 {1} ms · {2} 个模块可用",
+    "{0} · TCP latency {1} ms · {2} modules available",
+    "{0} · TCP 延遲 {1} ms · {2} 個模組可用",
+    "{0} · TCP 遅延 {1} ms · {2} モジュール利用可能",
+    "{0} · Latence TCP {1} ms · {2} modules disponibles",
+    "{0} · Latencia TCP {1} ms · {2} módulos disponibles",
+    "{0} · Opóźnienie TCP {1} ms · Dostępne moduły: {2}",
+    "{0} · Задержка TCP {1} мс · Доступно модулей: {2}"
+  ],
+  "{0} · {1}\n{2} · {3}\n{4}\n{5}\nIPv6 {6}\n最后在线 {7}": [
+    "{0} · {1}\n{2} · {3}\n{4}\n{5}\nIPv6 {6}\n最后在线 {7}",
+    "{0} · {1}\n{2} · {3}\n{4}\n{5}\nIPv6 {6}\nLast seen {7}",
+    "{0} · {1}\n{2} · {3}\n{4}\n{5}\nIPv6 {6}\n最後在線 {7}",
+    "{0} · {1}\n{2} · {3}\n{4}\n{5}\nIPv6 {6}\n最終接続 {7}",
+    "{0} · {1}\n{2} · {3}\n{4}\n{5}\nIPv6 {6}\nDernière activité {7}",
+    "{0} · {1}\n{2} · {3}\n{4}\n{5}\nIPv6 {6}\nÚltima conexión {7}",
+    "{0} · {1}\n{2} · {3}\n{4}\n{5}\nIPv6 {6}\nOstatnio widziane {7}",
+    "{0} · {1}\n{2} · {3}\n{4}\n{5}\nIPv6 {6}\nПоследняя активность {7}"
+  ],
+  "{0} · {1} · TCP 延迟 {2} ms · {3} 个模块可用": [
+    "{0} · {1} · TCP 延迟 {2} ms · {3} 个模块可用",
+    "{0} · {1} · TCP latency {2} ms · {3} modules available",
+    "{0} · {1} · TCP 延遲 {2} ms · {3} 個模塊可用",
+    "{0} · {1} · TCP 遅延 {2} ms · {3} モジュール利用可能",
+    "{0} · {1} · Latence TCP {2} ms · {3} modules disponibles",
+    "{0} · {1} · Latencia TCP {2} ms · {3} módulos disponibles",
+    "{0} · {1} · Opóźnienie TCP {2} ms · {3} dostępnych modułów",
+    "{0} · {1} · Задержка TCP {2} ms · Доступно модулей: {3}"
+  ],
+  "{0} · {1} · {2} · {3} 个时间段": [
+    "{0} · {1} · {2} · {3} 个时间段",
+    "{0} · {1} · {2} · {3} buckets",
+    "{0} · {1} · {2} · {3} 個時間段",
+    "{0} · {1} · {2} · {3} 区間",
+    "{0} · {1} · {2} · {3} périodes",
+    "{0} · {1} · {2} · {3} intervalos",
+    "{0} · {1} · {2} · {3} przedziałów",
+    "{0} · {1} · {2} · {3} интервалов"
+  ],
+  "{0} · 周{1} {2}–{3} · ↓ {4} · ↑ {5}": [
+    "{0} · 周{1} {2}–{3} · ↓ {4} · ↑ {5}",
+    "{0} · {1} {2}–{3} · ↓ {4} · ↑ {5}",
+    "{0} · 周{1} {2}–{3} · ↓ {4} · ↑ {5}",
+    "{0} · {1} {2}–{3} · ↓ {4} · ↑ {5}",
+    "{0} · {1} {2}–{3} · ↓ {4} · ↑ {5}",
+    "{0} · {1} {2}–{3} · ↓ {4} · ↑ {5}",
+    "{0} · {1} {2}–{3} · ↓ {4} · ↑ {5}",
+    "{0} · {1} {2}–{3} · ↓ {4} · ↑ {5}"
+  ],
+  "{0} · 跨午夜": [
+    "{0} · 跨午夜",
+    "{0} · Overnight",
+    "{0} · 跨午夜",
+    "{0} · 日またぎ",
+    "{0} · Plage nocturne",
+    "{0} · Horario nocturno",
+    "{0} · Przez północ",
+    "{0} · Через полночь"
+  ],
+  "{0} → {1} · {2} · 总计 {3}（↓ {4} / ↑ {5}）": [
+    "{0} → {1} · {2} · 总计 {3}（↓ {4} / ↑ {5}）",
+    "{0} → {1} · {2} · Total {3} (↓ {4} / ↑ {5})",
+    "{0} → {1} · {2} · 總計 {3}（↓ {4} / ↑ {5}）",
+    "{0} → {1} · {2} · 合計 {3}（↓ {4} / ↑ {5}）",
+    "{0} → {1} · {2} · Total {3} (↓ {4} / ↑ {5})",
+    "{0} → {1} · {2} · Total {3} (↓ {4} / ↑ {5})",
+    "{0} → {1} · {2} · Razem {3} (↓ {4} / ↑ {5})",
+    "{0} → {1} · {2} · Всего {3} (↓ {4} / ↑ {5})"
+  ],
+  "{0} 包": [
+    "{0} 包",
+    "{0} packets",
+    "{0} 包",
+    "{0} パケット",
+    "{0} paquets",
+    "{0} paquetes",
+    "{0} pakietów",
+    "{0} пакетов"
+  ],
+  "{0} 台设备": [
+    "{0} 台设备",
+    "{0} devices",
+    "{0} 臺設備",
+    "{0} 台",
+    "{0} appareils",
+    "{0} dispositivos",
+    "{0} urządzeń",
+    "{0} устройств"
+  ],
+  "{0} 响应": [
+    "{0} 响应",
+    "{0} responses",
+    "{0} 響應",
+    "{0} レスポンス",
+    "{0} Réponses",
+    "{0} Respuestas",
+    "{0} Odpowiedzi",
+    "{0} Ответы"
+  ],
+  "{0} 失败": [
+    "{0} 失败",
+    "{0} failed",
+    "{0} 失敗",
+    "{0} 失敗",
+    "{0} échecs",
+    "{0} fallidas",
+    "{0} błędów",
+    "{0} ошибок"
+  ],
+  "{0} 无响应": [
+    "{0} 无响应",
+    "{0} unanswered",
+    "{0} 無響應",
+    "{0} 応答なし",
+    "{0} sans réponse",
+    "{0} sin respuesta",
+    "{0} bez odpowiedzi",
+    "{0} без ответа"
+  ],
+  "{0} 查询": [
+    "{0} 查询",
+    "{0} queries",
+    "{0} 查詢",
+    "{0} クエリ",
+    "{0} Requêtes",
+    "{0} Consultas",
+    "{0} Zapytania",
+    "{0} Запросы"
+  ],
+  "{0} 秒": [
+    "{0} 秒",
+    "{0} s",
+    "{0} 秒",
+    "{0} 秒",
+    "{0} s",
+    "{0} s",
+    "{0} s",
+    "{0} с"
+  ],
+  "{0}% 成功率": [
+    "{0}% 成功率",
+    "{0}% success",
+    "{0}% 成功率",
+    "{0}% 成功",
+    "{0}% de réussite",
+    "{0}% de éxito",
+    "{0}% powodzeń",
+    "{0}% успешно"
+  ],
+  "{0}。请确认 Bandix 正在监听 8686 端口，或手动填写地址。": [
+    "{0}。请确认 Bandix 正在监听 8686 端口，或手动填写地址。",
+    "{0}. Check that Bandix is listening on port 8686, or enter an address manually.",
+    "{0}。請確認 Bandix 正在監聽 8686 端口，或手動填寫地址。",
+    "{0}。Bandix のポート 8686 を確認するか、アドレスを手動入力してください。",
+    "{0}. Vérifiez le port 8686 de Bandix ou saisissez une adresse.",
+    "{0}. Compruebe el puerto 8686 de Bandix o introduzca una dirección.",
+    "{0}. Sprawdź port 8686 usługi Bandix lub wpisz adres ręcznie.",
+    "{0}. Проверьте порт 8686 Bandix или введите адрес вручную."
+  ],
+  "{0}单位": [
+    "{0}单位",
+    "{0} unit",
+    "{0}單位",
+    "{0}の単位",
+    "Unité : {0}",
+    "Unidad de {0}",
+    "Jednostka: {0}",
+    "Единица: {0}"
+  ],
+  "{0}读取失败：{1}": [
+    "{0}读取失败：{1}",
+    "Failed to load {0}: {1}",
+    "{0}讀取失敗：{1}",
+    "{0}を読み込めません：{1}",
+    "Impossible de charger {0} : {1}",
+    "No se puede cargar {0}: {1}",
+    "Nie można wczytać {0}: {1}",
+    "Не удалось загрузить {0}: {1}"
+  ],
+  "{0}配额": [
+    "{0}配额",
+    "{0} quota",
+    "{0}配額",
+    "{0}のクォータ",
+    "Quota : {0}",
+    "Cuota de {0}",
+    "Limit transferu: {0}",
+    "Квота: {0}"
+  ],
+  "{0}配额单位": [
+    "{0}配额单位",
+    "{0} quota unit",
+    "{0}配額單位",
+    "{0}のクォータ単位",
+    "Unité du quota : {0}",
+    "Unidad de cuota de {0}",
+    "Jednostka limitu: {0}",
+    "Единица квоты: {0}"
+  ],
+  "{0}：分钟": [
+    "{0}：分钟",
+    "{0}: minute",
+    "{0}：分鐘",
+    "{0}：分",
+    "{0} : minute",
+    "{0}: minuto",
+    "{0}: minuta",
+    "{0}: минуты"
+  ],
+  "{0}：小时": [
+    "{0}：小时",
+    "{0}: hour",
+    "{0}：小時",
+    "{0}：時",
+    "{0} : heure",
+    "{0}: hora",
+    "{0}: godzina",
+    "{0}: часы"
+  ],
+  "↑ 升序": [
+    "↑ 升序",
+    "↑ Ascending",
+    "升序",
+    "昇順",
+    "Croissant",
+    "Ascendente",
+    "Rosnąco",
+    "По возрастанию"
+  ],
+  "↓ 降序": [
+    "↓ 降序",
+    "↓ Descending",
+    "降序",
+    "降順",
+    "Décroissant",
+    "Descendente",
+    "Malejąco",
+    "По убыванию"
+  ],
+  "⇅ 默认顺序": [
+    "⇅ 默认顺序",
+    "⇅ Default order",
+    "⇅ 默認順序",
+    "⇅ 既定の順序",
+    "⇅ Ordre par défaut",
+    "⇅ Orden predeterminado",
+    "⇅ Kolejność domyślna",
+    "⇅ Порядок по умолчанию"
+  ],
+  "● 上传": [
+    "● 上传",
+    "● Upload",
+    "● 上傳",
+    "● アップロード",
+    "● Envoi",
+    "● Subida",
+    "● Wysyłanie",
+    "● Отдача"
+  ],
+  "● 下载": [
+    "● 下载",
+    "● Download",
+    "● 下載",
+    "● ダウンロード",
+    "● Réception",
+    "● Bajada",
+    "● Pobieranie",
+    "● Загрузка"
+  ],
+  "一": [
+    "一",
+    "Mon",
+    "週一",
+    "月",
+    "Lun",
+    "Lun",
+    "Pon",
+    "Пн"
+  ],
+  "三": [
+    "三",
+    "Wed",
+    "週三",
+    "水",
+    "Mer",
+    "Mié",
+    "Śr",
+    "Ср"
+  ],
+  "上一页": [
+    "上一页",
+    "Previous",
+    "上一頁",
+    "前へ",
+    "Précédent",
+    "Anterior",
+    "Poprzednia",
+    "Предыдущая"
+  ],
+  "上传": [
+    "上传",
+    "Upload",
+    "上傳",
+    "アップロード",
+    "Envoi",
+    "Subida",
+    "Wysyłanie",
+    "Отдача"
+  ],
+  "上传  {0}": [
+    "上传  {0}",
+    "Upload  {0}",
+    "上傳  {0}",
+    "アップロード  {0}",
+    "Envoi  {0}",
+    "Subida  {0}",
+    "Wysyłanie  {0}",
+    "Отдача  {0}"
+  ],
+  "上传 {0}": [
+    "上传 {0}",
+    "Upload {0}",
+    "上傳 {0}",
+    "アップロード {0}",
+    "Envoi {0}",
+    "Subida {0}",
+    "Wysyłanie {0}",
+    "Отдача {0}"
+  ],
+  "上传上限": [
+    "上传上限",
+    "Upload limit",
+    "上傳限速",
+    "アップロード制限",
+    "Limite de téléversement",
+    "Límite de carga",
+    "Limit wysyłania",
+    "Ограничение выгрузки"
+  ],
+  "上传限速": [
+    "上传限速",
+    "Upload Limit",
+    "上傳限速",
+    "アップロード制限",
+    "Limite de téléversement",
+    "Límite de carga",
+    "Limit wysyłania",
+    "Ограничение выгрузки"
+  ],
+  "上周": [
+    "上周",
+    "Last Week",
+    "上週",
+    "先週",
+    "Semaine Dernière",
+    "Semana Pasada",
+    "Zeszły Tydzień",
+    "На прошлой неделе"
+  ],
+  "上月": [
+    "上月",
+    "Last Month",
+    "上月",
+    "先月",
+    "Mois Dernier",
+    "Mes Pasado",
+    "Zeszły Miesiąc",
+    "В прошлом месяце"
+  ],
+  "下一页": [
+    "下一页",
+    "Next",
+    "下一頁",
+    "次へ",
+    "Suivant",
+    "Siguiente",
+    "Następna",
+    "Следующая"
+  ],
+  "下载": [
+    "下载",
+    "Download",
+    "下載",
+    "ダウンロード",
+    "Réception",
+    "Bajada",
+    "Pobieranie",
+    "Загрузка"
+  ],
+  "下载  {0}": [
+    "下载  {0}",
+    "Download  {0}",
+    "下載  {0}",
+    "ダウンロード  {0}",
+    "Réception  {0}",
+    "Bajada  {0}",
+    "Pobieranie  {0}",
+    "Загрузка  {0}"
+  ],
+  "下载 {0}": [
+    "下载 {0}",
+    "Download {0}",
+    "下載 {0}",
+    "ダウンロード {0}",
+    "Réception {0}",
+    "Bajada {0}",
+    "Pobieranie {0}",
+    "Загрузка {0}"
+  ],
+  "下载上限": [
+    "下载上限",
+    "Download limit",
+    "下載限速",
+    "ダウンロード制限",
+    "Limite de téléchargement",
+    "Límite de descarga",
+    "Limit pobierania",
+    "Ограничение загрузки"
+  ],
+  "下载限速": [
+    "下载限速",
+    "Download Limit",
+    "下載限速",
+    "ダウンロード制限",
+    "Limite de téléchargement",
+    "Límite de descarga",
+    "Limit pobierania",
+    "Ограничение загрузки"
+  ],
+  "不包含 DoH 和 DoT": [
+    "不包含 DoH 和 DoT",
+    "Does not include DoH and DoT",
+    "不包含 DoH 和 DoT",
+    "DoH と DoT は含まれません",
+    "N'inclut pas DoH et DoT",
+    "No incluye DoH y DoT",
+    "Nie obejmuje DoH i DoT",
+    "Не включает DoH и DoT"
+  ],
+  "不限": [
+    "不限",
+    "Unlimited",
+    "無限制",
+    "無制限",
+    "Illimité",
+    "Ilimitado",
+    "Bez limitu",
+    "Без ограничений"
+  ],
+  "不限速": [
+    "不限速",
+    "Unlimited",
+    "無限制",
+    "無制限",
+    "Illimité",
+    "Ilimitado",
+    "Bez limitu",
+    "Без ограничений"
+  ],
+  "二": [
+    "二",
+    "Tue",
+    "週二",
+    "火",
+    "Mar",
+    "Mar",
+    "Wt",
+    "Вт"
+  ],
+  "五": [
+    "五",
+    "Fri",
+    "週五",
+    "金",
+    "Ven",
+    "Vie",
+    "Pt",
+    "Пт"
+  ],
+  "仅响应": [
+    "仅响应",
+    "Responses Only",
+    "仅回應",
+    "応答のみ",
+    "Réponses uniquement",
+    "Solo respuestas",
+    "Tylko odpowiedzi",
+    "Только ответы"
+  ],
+  "仅查询": [
+    "仅查询",
+    "Queries Only",
+    "仅查詢",
+    "クエリのみ",
+    "Requêtes uniquement",
+    "Solo consultas",
+    "Tylko zapytania",
+    "Только запросы"
+  ],
+  "仅统计局域网设备的连接，数量可能与全局总连接数不同。": [
+    "仅统计局域网设备的连接，数量可能与全局总连接数不同。",
+    "Connections from LAN devices only; counts may differ from the global total.",
+    "僅統計局域網設備的連接，數量可能與全局總連接數不同。",
+    "LAN デバイスの接続のみ。全体の接続数と異なる場合があります。",
+    "Connexions des appareils LAN uniquement ; le total global peut différer.",
+    "Solo conexiones de dispositivos LAN; el total global puede ser distinto.",
+    "Tylko połączenia urządzeń LAN; suma globalna może się różnić.",
+    "Только соединения устройств LAN; общее число может отличаться."
+  ],
+  "今天": [
+    "今天",
+    "Today",
+    "今天",
+    "今日",
+    "Aujourd'hui",
+    "Hoy",
+    "Dzisiaj",
+    "Сегодня"
+  ],
+  "今年": [
+    "今年",
+    "This Year",
+    "本年",
+    "今年",
+    "Cette Année",
+    "Este Año",
+    "Ten Rok",
+    "Этот Год"
+  ],
+  "从未在线": [
+    "从未在线",
+    "Never seen",
+    "從未在線",
+    "接続履歴なし",
+    "Jamais vu",
+    "Nunca conectado",
+    "Nigdy niewidziane",
+    "Не подключалось"
+  ],
+  "例如 http://192.168.1.1:8686": [
+    "例如 http://192.168.1.1:8686",
+    "e.g. http://192.168.1.1:8686",
+    "例如 http://192.168.1.1:8686",
+    "例：http://192.168.1.1:8686",
+    "Ex. : http://192.168.1.1:8686",
+    "Ej.: http://192.168.1.1:8686",
+    "Np. http://192.168.1.1:8686",
+    "Например: http://192.168.1.1:8686"
+  ],
+  "保存昵称": [
+    "保存昵称",
+    "Save Nickname",
+    "保存暱稱",
+    "ニックネームを保存",
+    "Enregistrer le surnom",
+    "Guardar alias",
+    "Zapisz nazwę",
+    "Сохранить имя"
+  ],
+  "保存配额": [
+    "保存配额",
+    "Save Quota",
+    "儲存配額",
+    "クォータを保存",
+    "Enregistrer le quota",
+    "Guardar cuota",
+    "Zapisz limit",
+    "Сохранить квоту"
+  ],
+  "保存限速": [
+    "保存限速",
+    "Save Limits",
+    "保存限速",
+    "制限を保存",
+    "Enregistrer les limites",
+    "Guardar límites",
+    "Zapisz limity",
+    "Сохранить ограничения"
+  ],
+  "保留 {0} 秒": [
+    "保留 {0} 秒",
+    "Retain {0} s",
+    "保留 {0} 秒",
+    "{0} 秒保持",
+    "Conserver {0} s",
+    "Conservar {0} s",
+    "Zachowaj {0} s",
+    "Хранить {0} с"
+  ],
+  "偏好设置": [
+    "偏好设置",
+    "Preferences",
+    "偏好設定",
+    "環境設定",
+    "Préférences",
+    "Preferencias",
+    "Preferencje",
+    "Настройки"
+  ],
+  "全局查询次数": [
+    "全局查询次数",
+    "Global query count",
+    "全局查詢次數",
+    "全体のクエリ数",
+    "Nombre global de requêtes",
+    "Consultas globales",
+    "Globalna liczba zapytań",
+    "Общее число запросов"
+  ],
+  "全局限速": [
+    "全局限速",
+    "Global Rate Limit",
+    "全侷限速",
+    "全体速度制限",
+    "Limite globale de débit",
+    "Límite global de velocidad",
+    "Globalny limit prędkości",
+    "Общий лимит скорости"
+  ],
+  "全局限速状态不可用：{0}；点击重试": [
+    "全局限速状态不可用：{0}；点击重试",
+    "Global rate limit unavailable: {0}; click to retry",
+    "全侷限速狀態不可用：{0}；點擊重試",
+    "全体速度制限を取得できません：{0}。クリックして再試行",
+    "Limite globale indisponible : {0} ; cliquez pour réessayer",
+    "Límite global no disponible: {0}; pulse para reintentar",
+    "Limit globalny niedostępny: {0}; kliknij, aby ponowić",
+    "Общий лимит недоступен: {0}; нажмите для повтора"
+  ],
+  "全局限速：{0} · 豁免 {1} 台\n每台设备上限：↓ {2} · ↑ {3}": [
+    "全局限速：{0} · 豁免 {1} 台\n每台设备上限：↓ {2} · ↑ {3}",
+    "Global limit: {0} · {1} exempt devices\nPer-device limit: ↓ {2} · ↑ {3}",
+    "全侷限速：{0} · 豁免 {1} 臺\n每臺設備上限：↓ {2} · ↑ {3}",
+    "全体制限：{0} · 対象外 {1} 台\nデバイスごとの上限：↓ {2} · ↑ {3}",
+    "Limite globale : {0} · {1} appareils exemptés\nLimite par appareil : ↓ {2} · ↑ {3}",
+    "Límite global: {0} · {1} dispositivos exentos\nLímite por dispositivo: ↓ {2} · ↑ {3}",
+    "Limit globalny: {0} · {1} wyjątków\nLimit na urządzenie: ↓ {2} · ↑ {3}",
+    "Общий лимит: {0} · Исключений: {1}\nНа устройство: ↓ {2} · ↑ {3}"
+  ],
+  "全部": [
+    "全部",
+    "All",
+    "全部",
+    "すべて",
+    "Tous",
+    "Todos",
+    "Wszystkie",
+    "Все"
+  ],
+  "全部协议": [
+    "全部协议",
+    "All protocols",
+    "全部協議",
+    "すべてのプロトコル",
+    "Tous les protocoles",
+    "Todos los protocolos",
+    "Wszystkie protokoły",
+    "Все протоколы"
+  ],
+  "全部状态": [
+    "全部状态",
+    "All states",
+    "全部狀態",
+    "すべての状態",
+    "Tous les états",
+    "Todos los estados",
+    "Wszystkie stany",
+    "Все состояния"
+  ],
+  "全部类型": [
+    "全部类型",
+    "All types",
+    "全部類型",
+    "すべての種類",
+    "Tous les types",
+    "Todos los tipos",
+    "Wszystkie typy",
+    "Все типы"
+  ],
+  "全部网络": [
+    "全部网络",
+    "All networks",
+    "全部網絡",
+    "すべてのネットワーク",
+    "Tous les réseaux",
+    "Todas las redes",
+    "Wszystkie sieci",
+    "Все сети"
+  ],
+  "全部记录": [
+    "全部记录",
+    "All records",
+    "全部記錄",
+    "すべてのレコード",
+    "Tous les enregistrements",
+    "Todos los registros",
+    "Wszystkie rekordy",
+    "Все записи"
+  ],
+  "全部设备": [
+    "全部设备",
+    "All Devices",
+    "所有設備",
+    "すべてのデバイス",
+    "Tous les appareils",
+    "Todos los dispositivos",
+    "Wszystkie urządzenia",
+    "Все устройства"
+  ],
+  "六": [
+    "六",
+    "Sat",
+    "週六",
+    "土",
+    "Sam",
+    "Sáb",
+    "Sob",
+    "Сб"
+  ],
+  "共 {0} 条记录": [
+    "共 {0} 条记录",
+    "{0} records",
+    "共 {0} 條記錄",
+    "{0} 件の記録",
+    "{0} enregistrements",
+    "{0} registros",
+    "{0} rekordów",
+    "{0} записей"
+  ],
+  "共 {0} 条连接 · 每页 {1} 条": [
+    "共 {0} 条连接 · 每页 {1} 条",
+    "{0} connections · {1} / page",
+    "共 {0} 條連接 · 每頁 {1} 條",
+    "{0} 接続 · {1} 件 / ページ",
+    "{0} connexions · {1} / page",
+    "{0} conexiones · {1} / página",
+    "{0} połączeń · {1} / stronę",
+    "{0} соединений · {1} на страницу"
+  ],
+  "关闭": [
+    "关闭",
+    "Close",
+    "關閉",
+    "閉じる",
+    "Fermer",
+    "Cerrar",
+    "Zamknij",
+    "Закрыть"
+  ],
+  "切换后立即生效，并在下次启动时恢复。": [
+    "切换后立即生效，并在下次启动时恢复。",
+    "Changes apply immediately and are restored at the next launch.",
+    "切換後立即生效，並在下次啟動時恢復。",
+    "変更はすぐに反映され、次回起動時にも維持されます。",
+    "Les changements sont immédiats et conservés au prochain lancement.",
+    "Los cambios se aplican al instante y se conservan al reiniciar.",
+    "Zmiany są natychmiastowe i zachowywane po ponownym uruchomieniu.",
+    "Изменения применяются сразу и сохраняются после перезапуска."
+  ],
+  "删除": [
+    "删除",
+    "Delete",
+    "刪除",
+    "削除",
+    "Supprimer",
+    "Eliminar",
+    "Usuń",
+    "Удалить"
+  ],
+  "删除设备？": [
+    "删除设备？",
+    "Delete device?",
+    "刪除設備",
+    "デバイスを削除",
+    "Supprimer l'appareil",
+    "Eliminar dispositivo",
+    "Usuń urządzenie",
+    "Удалить устройство"
+  ],
+  "删除配额": [
+    "删除配额",
+    "Delete Quota",
+    "刪除配額",
+    "クォータを削除",
+    "Supprimer le quota",
+    "Eliminar cuota",
+    "Usuń limit",
+    "Удалить квоту"
+  ],
+  "刷新": [
+    "刷新",
+    "Refresh",
+    "重新整理",
+    "更新",
+    "Actualiser",
+    "Actualizar",
+    "Odśwież",
+    "Обновить"
+  ],
+  "刷新间隔已更改，但保存失败：{0}": [
+    "刷新间隔已更改，但保存失败：{0}",
+    "Refresh interval changed, but saving failed: {0}",
+    "重新整理間隔已變更，但儲存失敗：{0}",
+    "更新間隔を変更しましたが、保存に失敗しました：{0}",
+    "Intervalle modifié, mais échec de l’enregistrement : {0}",
+    "Intervalo cambiado, pero no se pudo guardar: {0}",
+    "Zmieniono interwał odświeżania, ale zapis się nie powiódł: {0}",
+    "Интервал обновления изменён, но не сохранён: {0}"
+  ],
+  "协议": [
+    "协议",
+    "Protocol",
+    "協定",
+    "プロトコル",
+    "Protocole",
+    "Protocolo",
+    "Protokół",
+    "Протокол"
+  ],
+  "占比": [
+    "占比",
+    "Share",
+    "佔比",
+    "割合",
+    "Part",
+    "Proporción",
+    "Udział",
+    "Доля"
+  ],
+  "原始源地址": [
+    "原始源地址",
+    "Original source",
+    "原始源地址",
+    "元の送信元",
+    "Source initiale",
+    "Origen original",
+    "Pierwotne źródło",
+    "Исходный отправитель"
+  ],
+  "原始目标地址": [
+    "原始目标地址",
+    "Original destination",
+    "原始目標地址",
+    "元の宛先",
+    "Destination initiale",
+    "Destino original",
+    "Pierwotny cel",
+    "Исходный получатель"
+  ],
+  "发送": [
+    "发送",
+    "Sent",
+    "發送",
+    "送信",
+    "Envoyer",
+    "Enviar",
+    "Wyślij",
+    "Отправка"
+  ],
+  "取消": [
+    "取消",
+    "Cancel",
+    "取消",
+    "キャンセル",
+    "Annuler",
+    "Cancelar",
+    "Anuluj",
+    "Отмена"
+  ],
+  "另有 {0} 条": [
+    "另有 {0} 条",
+    "{0} more",
+    "另有 {0} 條",
+    "{0} その他",
+    "{0} plus",
+    "{0} más",
+    "{0} więcej",
+    "{0} еще"
+  ],
+  "可以搜索默认网关，也可以填写 IP、主机名或完整 HTTP 地址。": [
+    "可以搜索默认网关，也可以填写 IP、主机名或完整 HTTP 地址。",
+    "Discover the default gateway, or enter an IP, hostname or complete HTTP address.",
+    "可以搜索默認網關，也可以填寫 IP、主機名或完整 HTTP 地址。",
+    "既定のゲートウェイを検索するか、IP・ホスト名・HTTP アドレスを入力してください。",
+    "Recherchez la passerelle ou saisissez une IP, un nom d’hôte ou une adresse HTTP.",
+    "Busque la puerta de enlace o introduzca una IP, nombre de host o dirección HTTP.",
+    "Wyszukaj bramę albo wpisz adres IP, nazwę hosta lub adres HTTP.",
+    "Найдите шлюз или введите IP, имя узла либо HTTP-адрес."
+  ],
+  "启用全局限速": [
+    "启用全局限速",
+    "Enable Global Rate Limit",
+    "啓用全侷限速",
+    "全体速度制限を有効にする",
+    "Activer la limite globale",
+    "Activar límite global",
+    "Włącz limit globalny",
+    "Включить общий лимит"
+  ],
+  "周{0}": [
+    "周{0}",
+    "{0}",
+    "周{0}",
+    "{0}",
+    "{0}",
+    "{0}",
+    "{0}",
+    "{0}"
+  ],
+  "周期 ": [
+    "周期 ",
+    "Period ",
+    "週期",
+    "期間",
+    "Période",
+    "Período",
+    "Okres",
+    "Период"
+  ],
+  "响应": [
+    "响应",
+    "Response",
+    "響應",
+    "レスポンス",
+    "Réponses",
+    "Respuestas",
+    "Odpowiedzi",
+    "Ответы"
+  ],
+  "响应时间": [
+    "响应时间",
+    "Response Time",
+    "回應時間",
+    "応答時間",
+    "Temps de réponse",
+    "Tiempo de respuesta",
+    "Czas odpowiedzi",
+    "Время отклика"
+  ],
+  "四": [
+    "四",
+    "Thu",
+    "週四",
+    "木",
+    "Jeu",
+    "Jue",
+    "Czw",
+    "Чт"
+  ],
+  "回复": [
+    "回复",
+    "Reply",
+    "回覆",
+    "応答",
+    "Réponse",
+    "Respuesta",
+    "Odpowiedź",
+    "Ответ"
+  ],
+  "回复源地址": [
+    "回复源地址",
+    "Reply source",
+    "回覆源地址",
+    "応答の送信元",
+    "Source de la réponse",
+    "Origen de respuesta",
+    "Źródło odpowiedzi",
+    "Отправитель ответа"
+  ],
+  "回复目标地址": [
+    "回复目标地址",
+    "Reply destination",
+    "回覆目標地址",
+    "応答の宛先",
+    "Destination de la réponse",
+    "Destino de respuesta",
+    "Cel odpowiedzi",
+    "Получатель ответа"
+  ],
+  "在线": [
+    "在线",
+    "Online",
+    "在線",
+    "オンライン",
+    "En ligne",
+    "En línea",
+    "Online",
+    "В сети"
+  ],
+  "在线始终在前": [
+    "在线始终在前",
+    "Online First",
+    "在線始終在前",
+    "オンラインを優先",
+    "En ligne d’abord",
+    "En línea primero",
+    "Online najpierw",
+    "Сначала онлайн"
+  ],
+  "域名": [
+    "域名",
+    "Domain",
+    "網域",
+    "ドメイン",
+    "Domaine",
+    "Dominio",
+    "Domena",
+    "Домен"
+  ],
+  "字节（MB/s）": [
+    "字节（MB/s）",
+    "Bytes (MB/s)",
+    "字節（MB/s）",
+    "バイト（MB/s）",
+    "Octets (MB/s)",
+    "Bytes (MB/s)",
+    "Bajty (MB/s)",
+    "Байты (MB/s)"
+  ],
+  "实时流量": [
+    "实时流量",
+    "Real-time Traffic",
+    "實時流量",
+    "リアルタイム通信量",
+    "Trafic en temps réel",
+    "Tráfico en tiempo real",
+    "Ruch na żywo",
+    "Трафик в реальном времени"
+  ],
+  "实时速率": [
+    "实时速率",
+    "Current Speed",
+    "實時速率",
+    "現在の速度",
+    "Débit instantané",
+    "Velocidad actual",
+    "Bieżąca prędkość",
+    "Текущая скорость"
+  ],
+  "对每台非豁免设备的 WAN 流量分别限速；白名单不豁免独立规则和流量配额。": [
+    "对每台非豁免设备的 WAN 流量分别限速；白名单不豁免独立规则和流量配额。",
+    "Apply WAN limits to each non-exempt device. Exemptions do not bypass device rules or quotas.",
+    "對每臺非豁免設備的 WAN 流量分別限速；白名單不豁免獨立規則和流量配額。",
+    "対象外以外のデバイスごとに WAN を制限します。対象外設定は個別ルールやクォータには適用されません。",
+    "Limite WAN par appareil non exempté. Les exemptions ne contournent ni les règles individuelles ni les quotas.",
+    "Limita WAN por dispositivo no exento. Las excepciones no omiten reglas individuales ni cuotas.",
+    "Limit WAN na każde urządzenie poza wyjątkami. Wyjątki nie omijają reguł indywidualnych ani limitów transferu.",
+    "Лимит WAN для каждого устройства вне исключений. Исключения не отменяют индивидуальные правила и квоты."
+  ],
+  "将删除 {0}（{1}）的流量历史、昵称、限速规则和配额，此操作无法撤销。": [
+    "将删除 {0}（{1}）的流量历史、昵称、限速规则和配额，此操作无法撤销。",
+    "Delete traffic history, nickname, rate limits and quotas for {0} ({1}). This cannot be undone.",
+    "將刪除 {0}（{1}）的流量歷史、暱稱、限速規則和配額，此操作無法撤銷。",
+    "{0}（{1}）の通信履歴、名前、速度制限、クォータを削除します。元に戻せません。",
+    "Supprimer l’historique, le surnom, les limites et quotas de {0} ({1}). Action irréversible.",
+    "Se eliminarán el historial, alias, límites y cuotas de {0} ({1}). No se puede deshacer.",
+    "Usunąć historię ruchu, nazwę, limity prędkości i transferu dla {0} ({1})? Tej operacji nie można cofnąć.",
+    "Удалить историю трафика, имя, ограничения и квоты для {0} ({1})? Это действие необратимо."
+  ],
+  "尚无限速规则，可在上方卡片添加": [
+    "尚无限速规则，可在上方卡片添加",
+    "No rate limit rules. Add one using the card above.",
+    "尚無限速規則，可在上方卡片添加",
+    "速度制限ルールはありません。上のカードから追加できます。",
+    "Aucune règle. Ajoutez-en une avec la carte ci-dessus.",
+    "No hay reglas. Añada una con la tarjeta superior.",
+    "Brak reguł. Dodaj regułę w karcie powyżej.",
+    "Нет правил ограничения. Добавьте правило в карточке выше."
+  ],
+  "尚未设置配额，可在上方卡片设置": [
+    "尚未设置配额，可在上方卡片设置",
+    "No quota configured. Set one using the card above.",
+    "尚未設置配額，可在上方卡片設置",
+    "クォータ未設定。上のカードで設定できます。",
+    "Aucun quota. Configurez-le dans la carte ci-dessus.",
+    "No hay cuota. Configúrela en la tarjeta superior.",
+    "Brak limitu transferu. Ustaw go w karcie powyżej.",
+    "Квота не задана. Настройте её в карточке выше."
+  ],
+  "展开查看": [
+    "展开查看",
+    "Expand",
+    "展開查看",
+    "展開",
+    "Développer",
+    "Expandir",
+    "Rozwiń",
+    "Развернуть"
+  ],
+  "已关闭": [
+    "已关闭",
+    "Disabled",
+    "已關閉",
+    "無効",
+    "Désactivé",
+    "Desactivado",
+    "Wyłączone",
+    "Отключено"
+  ],
+  "已启用": [
+    "已启用",
+    "Enabled",
+    "已啓用",
+    "有効",
+    "Activé",
+    "Activado",
+    "Włączone",
+    "Включено"
+  ],
+  "已开启": [
+    "已开启",
+    "Enabled",
+    "已開啓",
+    "有効",
+    "Activé",
+    "Activado",
+    "Włączone",
+    "Включено"
+  ],
+  "已找到 Bandix 服务": [
+    "已找到 Bandix 服务",
+    "Bandix service found",
+    "已找到 Bandix 服務",
+    "Bandix サービスが見つかりました",
+    "Service Bandix trouvé",
+    "Servicio Bandix encontrado",
+    "Znaleziono usługę Bandix",
+    "Служба Bandix найдена"
+  ],
+  "已用流量 / 配额": [
+    "已用流量 / 配额",
+    "Usage / Quota",
+    "已用流量 / 配額",
+    "使用量 / クォータ",
+    "Volume / Quota",
+    "Consumo / Cuota",
+    "Zużycie / Limit",
+    "Использовано / Квота"
+  ],
+  "已超限": [
+    "已超限",
+    "Exceeded",
+    "已超限",
+    "超過",
+    "Dépassé",
+    "Excedido",
+    "Przekroczono",
+    "Превышено"
+  ],
+  "已连接": [
+    "已连接",
+    "Connected",
+    "已連線",
+    "接続済み",
+    "Connecté",
+    "Conectado",
+    "Połączono",
+    "Подключено"
+  ],
+  "平均速率": [
+    "平均速率",
+    "Average Speed",
+    "平均速率",
+    "平均速度",
+    "Débit moyen",
+    "Velocidad media",
+    "Średnia prędkość",
+    "Средняя скорость"
+  ],
+  "应答记录": [
+    "应答记录",
+    "Answer Records",
+    "應答記錄",
+    "応答レコード",
+    "Enregistrements de réponse",
+    "Registros de respuesta",
+    "Rekordy odpowiedzi",
+    "Записи ответа"
+  ],
+  "开始日期": [
+    "开始日期",
+    "Start Date",
+    "開始日期",
+    "開始日",
+    "Date de Début",
+    "Fecha de Inicio",
+    "Data Początkowa",
+    "Дата начала"
+  ],
+  "开始日期不能晚于结束日期": [
+    "开始日期不能晚于结束日期",
+    "Start date must not be later than end date",
+    "開始日期不能晚於結束日期",
+    "開始日は終了日以前にしてください",
+    "La date de début doit précéder la date de fin",
+    "La fecha inicial no debe ser posterior a la final",
+    "Data początkowa nie może być późniejsza od końcowej",
+    "Начальная дата не может быть позже конечной"
+  ],
+  "开始时间": [
+    "开始时间",
+    "Start Time",
+    "開始時間",
+    "開始時刻",
+    "Heure de début",
+    "Hora de inicio",
+    "Godzina rozpoczęcia",
+    "Время начала"
+  ],
+  "当前系统暂不支持自动获取默认网关，请手动填写地址": [
+    "当前系统暂不支持自动获取默认网关，请手动填写地址",
+    "Automatic gateway discovery is unavailable on this system. Enter the address manually.",
+    "當前系統暫不支持自動獲取默認網關，請手動填寫地址",
+    "このシステムではゲートウェイを自動検出できません。手動入力してください。",
+    "La découverte automatique est indisponible. Saisissez l’adresse manuellement.",
+    "La detección automática no está disponible. Introduzca la dirección manualmente.",
+    "Automatyczne wykrywanie bramy jest niedostępne. Wpisz adres ręcznie.",
+    "Автопоиск шлюза недоступен. Введите адрес вручную."
+  ],
+  "总上传": [
+    "总上传",
+    "Total Upload",
+    "總上傳",
+    "総アップロード",
+    "Total envoyé",
+    "Total cargado",
+    "Całkowite wysłane",
+    "Всего отправлено"
+  ],
+  "总下载": [
+    "总下载",
+    "Total Download",
+    "總下載",
+    "総ダウンロード",
+    "Total téléchargé",
+    "Total descargado",
+    "Całkowite pobrane",
+    "Всего загружено"
+  ],
+  "总流量": [
+    "总流量",
+    "Total Traffic",
+    "總流量",
+    "総トラフィック",
+    "Trafic total",
+    "Tráfico total",
+    "Całkowity ruch",
+    "Всего трафика"
+  ],
+  "总计": [
+    "总计",
+    "Total",
+    "全部",
+    "合計",
+    "Total",
+    "Total",
+    "Całkowity",
+    "Всего"
+  ],
+  "总连接": [
+    "总连接",
+    "Total Connections",
+    "總連線數",
+    "総接続数",
+    "Total des connexions",
+    "Total de conexiones",
+    "Całkowite połączenia",
+    "Всего соединений"
+  ],
+  "恢复默认排序": [
+    "恢复默认排序",
+    "Reset Sorting",
+    "恢復默認排序",
+    "並べ替えをリセット",
+    "Réinitialiser le tri",
+    "Restablecer orden",
+    "Przywróć sortowanie",
+    "Сбросить сортировку"
+  ],
+  "成功": [
+    "成功",
+    "Success",
+    "成功",
+    "成功",
+    "Succès",
+    "Éxito",
+    "Sukces",
+    "Успешно"
+  ],
+  "或填写 aa:bb:cc:dd:ee:ff": [
+    "或填写 aa:bb:cc:dd:ee:ff",
+    "Or enter aa:bb:cc:dd:ee:ff",
+    "或填寫 aa:bb:cc:dd:ee:ff",
+    "または aa:bb:cc:dd:ee:ff を入力",
+    "Ou saisir aa:bb:cc:dd:ee:ff",
+    "O introduzca aa:bb:cc:dd:ee:ff",
+    "Lub wpisz aa:bb:cc:dd:ee:ff",
+    "Или введите aa:bb:cc:dd:ee:ff"
+  ],
+  "所有周期均不限额": [
+    "所有周期均不限额",
+    "Unlimited in all periods",
+    "所有周期均不限額",
+    "すべての期間が無制限",
+    "Toutes les périodes sont illimitées",
+    "Sin límite en todos los periodos",
+    "Brak limitów we wszystkich okresach",
+    "Все периоды без ограничений"
+  ],
+  "所选日期范围无效": [
+    "所选日期范围无效",
+    "Invalid date range",
+    "所選日期範圍無效",
+    "日付範囲が無効です",
+    "Plage de dates invalide",
+    "Intervalo de fechas no válido",
+    "Nieprawidłowy zakres dat",
+    "Недопустимый диапазон дат"
+  ],
+  "手动填写地址": [
+    "手动填写地址",
+    "Manual address",
+    "手動填寫地址",
+    "手動アドレス",
+    "Adresse manuelle",
+    "Dirección manual",
+    "Adres ręczny",
+    "Адрес вручную"
+  ],
+  "手动填写豁免 MAC 地址": [
+    "手动填写豁免 MAC 地址",
+    "Enter an exempt MAC address",
+    "手動填寫豁免 MAC 地址",
+    "対象外の MAC アドレスを入力",
+    "Saisir une adresse MAC exemptée",
+    "Introducir MAC exenta",
+    "Wpisz adres MAC wyjątku",
+    "Введите MAC исключения"
+  ],
+  "手动服务地址": [
+    "手动服务地址",
+    "Service Address",
+    "手動服務地址",
+    "サービスアドレス",
+    "Adresse du service",
+    "Dirección del servicio",
+    "Adres usługi",
+    "Адрес службы"
+  ],
+  "按 DNS 服务器筛选": [
+    "按 DNS 服务器筛选",
+    "Filter by DNS server",
+    "按 DNS 服務器篩選",
+    "DNS サーバーで絞り込み",
+    "Filtrer par serveur DNS",
+    "Filtrar por servidor DNS",
+    "Filtruj według serwera DNS",
+    "Фильтр по DNS-серверу"
+  ],
+  "按域名筛选": [
+    "按域名筛选",
+    "Filter by domain",
+    "按域名篩選",
+    "ドメインで絞り込み",
+    "Filtrer par domaine",
+    "Filtrar por dominio",
+    "Filtruj według domeny",
+    "Фильтр по домену"
+  ],
+  "按天": [
+    "按天",
+    "Daily",
+    "每日",
+    "日次",
+    "Quotidien",
+    "Diario",
+    "Dzienny",
+    "Ежедневно"
+  ],
+  "按小时": [
+    "按小时",
+    "Hourly",
+    "按小時",
+    "時間単位",
+    "Par Heure",
+    "Por Hora",
+    "Co Godzinę",
+    "По часам"
+  ],
+  "按设备名、IP 或 MAC 筛选": [
+    "按设备名、IP 或 MAC 筛选",
+    "Filter by device name, IP or MAC",
+    "按設備名、IP 或 MAC 篩選",
+    "デバイス名・IP・MAC で絞り込み",
+    "Filtrer par nom, IP ou MAC",
+    "Filtrar por nombre, IP o MAC",
+    "Filtruj według nazwy, IP lub MAC",
+    "Фильтр по имени, IP или MAC"
+  ],
+  "按重复日期和时间段执行，仅限制 WAN 流量": [
+    "按重复日期和时间段执行，仅限制 WAN 流量",
+    "Recurring schedule; applies to WAN traffic only",
+    "按重複日期和時間段執行，僅限制 WAN 流量",
+    "繰り返しスケジュール。WAN 通信のみに適用",
+    "Planification récurrente, trafic WAN uniquement",
+    "Horario recurrente; solo tráfico WAN",
+    "Harmonogram cykliczny; tylko ruch WAN",
+    "Повторяющееся расписание; только WAN"
+  ],
+  "排名": [
+    "排名",
+    "Rank",
+    "排名",
+    "順位",
+    "Rang",
+    "Puesto",
+    "Pozycja",
+    "Место"
+  ],
+  "排序字段": [
+    "排序字段",
+    "Sort Field",
+    "排序字段",
+    "並べ替え項目",
+    "Champ de tri",
+    "Campo de orden",
+    "Pole sortowania",
+    "Поле сортировки"
+  ],
+  "排行网络类型": [
+    "排行网络类型",
+    "Ranking network type",
+    "排行網絡類型",
+    "ランキングのネットワーク種別",
+    "Réseau du classement",
+    "Red de clasificación",
+    "Sieć rankingu",
+    "Сеть рейтинга"
+  ],
+  "接口 {0}": [
+    "接口 {0}",
+    "Interface {0}",
+    "接口 {0}",
+    "インターフェース {0}",
+    "Interface {0}",
+    "Interfaz {0}",
+    "Interfejs {0}",
+    "Интерфейс {0}"
+  ],
+  "接口未知": [
+    "接口未知",
+    "Unknown interface",
+    "接口未知",
+    "不明なインターフェース",
+    "Interface inconnue",
+    "Interfaz desconocida",
+    "Nieznany interfejs",
+    "Неизвестный интерфейс"
+  ],
+  "搜索昵称、IP 或 MAC": [
+    "搜索昵称、IP 或 MAC",
+    "Search nickname, IP or MAC",
+    "搜索暱稱、IP 或 MAC",
+    "名前・IP・MAC を検索",
+    "Rechercher surnom, IP ou MAC",
+    "Buscar alias, IP o MAC",
+    "Szukaj nazwy, IP lub MAC",
+    "Поиск имени, IP или MAC"
+  ],
+  "搜索设备": [
+    "搜索设备",
+    "Search Devices",
+    "搜尋設備",
+    "デバイスを検索",
+    "Rechercher appareil",
+    "Buscar dispositivo",
+    "Szukaj urządzenia",
+    "Поиск устройства"
+  ],
+  "搜索连接设备": [
+    "搜索连接设备",
+    "Search connected devices",
+    "搜索連接設備",
+    "接続デバイスを検索",
+    "Rechercher les appareils connectés",
+    "Buscar dispositivos conectados",
+    "Szukaj połączonych urządzeń",
+    "Поиск подключённых устройств"
+  ],
+  "搜索默认网关": [
+    "搜索默认网关",
+    "Discover Gateway",
+    "搜索默認網關",
+    "ゲートウェイを検索",
+    "Rechercher la passerelle",
+    "Buscar puerta de enlace",
+    "Wyszukaj bramę",
+    "Найти шлюз"
+  ],
+  "操作": [
+    "操作",
+    "Actions",
+    "操作",
+    "操作",
+    "Actions",
+    "Acciones",
+    "Akcje",
+    "Действия"
+  ],
+  "收起": [
+    "收起",
+    "Collapse",
+    "收起",
+    "折りたたむ",
+    "Réduire",
+    "Contraer",
+    "Zwiń",
+    "Свернуть"
+  ],
+  "新增配额": [
+    "新增配额",
+    "Add Quota",
+    "新增配額",
+    "クォータを追加",
+    "Ajouter un quota",
+    "Añadir cuota",
+    "Dodaj limit transferu",
+    "Добавить квоту"
+  ],
+  "新增限速规则": [
+    "新增限速规则",
+    "Add Rate Limit Rule",
+    "新增限速規則",
+    "速度制限ルールを追加",
+    "Ajouter une règle de débit",
+    "Añadir regla de velocidad",
+    "Dodaj regułę prędkości",
+    "Добавить правило скорости"
+  ],
+  "无效的 HTTP 响应": [
+    "无效的 HTTP 响应",
+    "Invalid HTTP response",
+    "無效的 HTTP 響應",
+    "無効な HTTP 応答",
+    "Réponse HTTP invalide",
+    "Respuesta HTTP no válida",
+    "Nieprawidłowa odpowiedź HTTP",
+    "Недопустимый ответ HTTP"
+  ],
+  "无效的 HTTP 状态码": [
+    "无效的 HTTP 状态码",
+    "Invalid HTTP status code",
+    "無效的 HTTP 狀態碼",
+    "無効な HTTP ステータスコード",
+    "Code d’état HTTP invalide",
+    "Código HTTP no válido",
+    "Nieprawidłowy kod HTTP",
+    "Недопустимый код HTTP"
+  ],
+  "无法保存排序设置：{0}": [
+    "无法保存排序设置：{0}",
+    "Failed to save sorting preferences: {0}",
+    "無法保存排序設置：{0}",
+    "並べ替えを保存できません：{0}",
+    "Impossible d’enregistrer le tri : {0}",
+    "No se puede guardar el orden: {0}",
+    "Nie można zapisać sortowania: {0}",
+    "Не удалось сохранить сортировку: {0}"
+  ],
+  "无法保存排序设置：无法获取用户配置目录": [
+    "无法保存排序设置：无法获取用户配置目录",
+    "Failed to save sorting preferences: configuration directory unavailable",
+    "無法保存排序設置：無法獲取用戶配置目錄",
+    "並べ替えを保存できません：設定ディレクトリがありません",
+    "Impossible d’enregistrer le tri : dossier de configuration indisponible",
+    "No se puede guardar el orden: directorio de configuración no disponible",
+    "Nie można zapisać sortowania: katalog konfiguracji niedostępny",
+    "Не удалось сохранить сортировку: каталог настроек недоступен"
+  ],
+  "无法保存统计周期：{0}": [
+    "无法保存统计周期：{0}",
+    "Failed to save period: {0}",
+    "無法保存統計週期：{0}",
+    "期間を保存できません：{0}",
+    "Impossible d’enregistrer la période : {0}",
+    "No se puede guardar el periodo: {0}",
+    "Nie można zapisać okresu: {0}",
+    "Не удалось сохранить период: {0}"
+  ],
+  "无法获取用户配置目录": [
+    "无法获取用户配置目录",
+    "Configuration directory unavailable",
+    "無法獲取用戶配置目錄",
+    "設定ディレクトリを取得できません",
+    "Dossier de configuration indisponible",
+    "Directorio de configuración no disponible",
+    "Katalog konfiguracji niedostępny",
+    "Каталог настроек недоступен"
+  ],
+  "无法解析地址：{0}": [
+    "无法解析地址：{0}",
+    "Failed to resolve address: {0}",
+    "無法解析地址：{0}",
+    "アドレスを解決できません：{0}",
+    "Impossible de résoudre l’adresse : {0}",
+    "No se puede resolver la dirección: {0}",
+    "Nie można rozwiązać adresu: {0}",
+    "Не удалось разрешить адрес: {0}"
+  ],
+  "无法读取 IPv4 路由表：{0}": [
+    "无法读取 IPv4 路由表：{0}",
+    "Failed to read IPv4 routing table: {0}",
+    "無法讀取 IPv4 路由表：{0}",
+    "IPv4 ルーティングテーブルを読み込めません：{0}",
+    "Impossible de lire la table IPv4 : {0}",
+    "No se puede leer la tabla IPv4: {0}",
+    "Nie można odczytać tablicy IPv4: {0}",
+    "Не удалось прочитать таблицу IPv4: {0}"
+  ],
+  "无法读取已保存的排序，已使用默认设置：{0}": [
+    "无法读取已保存的排序，已使用默认设置：{0}",
+    "Failed to load sorting preferences; using defaults: {0}",
+    "無法讀取已保存的排序，已使用默認設置：{0}",
+    "並べ替えを読み込めず、既定値を使用します：{0}",
+    "Tri illisible, valeurs par défaut utilisées : {0}",
+    "No se puede leer el orden; se usa el predeterminado: {0}",
+    "Nie można wczytać sortowania; użyto domyślnego: {0}",
+    "Не удалось загрузить сортировку; выбраны значения по умолчанию: {0}"
+  ],
+  "无法读取显示设置：{0}": [
+    "无法读取显示设置：{0}",
+    "Failed to load display preferences: {0}",
+    "無法讀取顯示設置：{0}",
+    "表示設定を読み込めません：{0}",
+    "Impossible de charger les préférences d’affichage : {0}",
+    "No se pueden cargar las preferencias de pantalla: {0}",
+    "Nie można wczytać ustawień wyświetlania: {0}",
+    "Не удалось загрузить настройки отображения: {0}"
+  ],
+  "无法读取默认路由：{0}": [
+    "无法读取默认路由：{0}",
+    "Failed to read default route: {0}",
+    "無法讀取默認路由：{0}",
+    "既定のルートを読み込めません：{0}",
+    "Impossible de lire la route par défaut : {0}",
+    "No se puede leer la ruta predeterminada: {0}",
+    "Nie można odczytać trasy domyślnej: {0}",
+    "Не удалось прочитать маршрут по умолчанию: {0}"
+  ],
+  "无法连接 {0}:{1}：{2}": [
+    "无法连接 {0}:{1}：{2}",
+    "Cannot connect to {0}:{1}: {2}",
+    "無法連接 {0}:{1}：{2}",
+    "{0}:{1} に接続できません：{2}",
+    "Connexion impossible à {0}:{1} : {2}",
+    "No se puede conectar a {0}:{1}: {2}",
+    "Nie można połączyć z {0}:{1}: {2}",
+    "Не удалось подключиться к {0}:{1}: {2}"
+  ],
+  "日": [
+    "日",
+    "Sun",
+    "週日",
+    "日",
+    "Dim",
+    "Dom",
+    "Nie",
+    "Вс"
+  ],
+  "时间": [
+    "时间",
+    "Time",
+    "時間",
+    "時間",
+    "Heure",
+    "Hora",
+    "Czas",
+    "Время"
+  ],
+  "时间应在 00:00–23:59 之间": [
+    "时间应在 00:00–23:59 之间",
+    "Time must be between 00:00 and 23:59",
+    "時間應在 00:00–23:59 之間",
+    "時刻は 00:00～23:59 にしてください",
+    "L’heure doit être entre 00:00 et 23:59",
+    "La hora debe estar entre 00:00 y 23:59",
+    "Godzina musi być między 00:00 a 23:59",
+    "Время должно быть от 00:00 до 23:59"
+  ],
+  "时间段未提供": [
+    "时间段未提供",
+    "Time range unavailable",
+    "時間段未提供",
+    "期間が未指定です",
+    "Période indisponible",
+    "Periodo no disponible",
+    "Przedział czasu niedostępny",
+    "Интервал недоступен"
+  ],
+  "时间线图表": [
+    "时间线图表",
+    "Traffic Timeline Chart",
+    "時間線圖表",
+    "通信量タイムラインのグラフ",
+    "Graphique chronologique du trafic",
+    "Gráfico temporal de tráfico",
+    "Wykres osi czasu ruchu",
+    "График трафика по времени"
+  ],
+  "时间线网络类型": [
+    "时间线网络类型",
+    "Timeline network type",
+    "時間線網絡類型",
+    "タイムラインのネットワーク種別",
+    "Réseau de la chronologie",
+    "Red de la cronología",
+    "Sieć osi czasu",
+    "Сеть графика по времени"
+  ],
+  "时间线聚合粒度": [
+    "时间线聚合粒度",
+    "Timeline aggregation",
+    "時間線聚合粒度",
+    "タイムラインの集約",
+    "Agrégation de la chronologie",
+    "Agregación de la cronología",
+    "Agregacja osi czasu",
+    "Агрегация графика"
+  ],
+  "时间线设备": [
+    "时间线设备",
+    "Timeline device",
+    "時間線設備",
+    "タイムラインのデバイス",
+    "Appareil de la chronologie",
+    "Dispositivo de la cronología",
+    "Urządzenie osi czasu",
+    "Устройство графика"
+  ],
+  "昨天": [
+    "昨天",
+    "Yesterday",
+    "昨天",
+    "昨日",
+    "Hier",
+    "Ayer",
+    "Wczoraj",
+    "Вчера"
+  ],
+  "昵称": [
+    "昵称",
+    "Nickname",
+    "暱稱",
+    "ニックネーム",
+    "Surnom",
+    "Alias",
+    "Nazwa",
+    "Имя"
+  ],
+  "昵称 / IP / MAC": [
+    "昵称 / IP / MAC",
+    "Nickname / IP / MAC",
+    "暱稱 / IP / MAC",
+    "ニックネーム / IP / MAC",
+    "Surnom / IP / MAC",
+    "Alias / IP / MAC",
+    "Nazwa / IP / MAC",
+    "Имя / IP / MAC"
+  ],
+  "昵称已保存": [
+    "昵称已保存",
+    "Nickname saved",
+    "暱稱已保存",
+    "ニックネームを保存しました",
+    "Surnom enregistré",
+    "Alias guardado",
+    "Nazwa zapisana",
+    "Имя сохранено"
+  ],
+  "暂无 DNS 数据": [
+    "暂无 DNS 数据",
+    "No DNS data",
+    "暫無 DNS 數據",
+    "DNS データがありません",
+    "Aucune donnée DNS",
+    "Sin datos DNS",
+    "Brak danych DNS",
+    "Нет данных DNS"
+  ],
+  "暂无 DNS 记录": [
+    "暂无 DNS 记录",
+    "No DNS records",
+    "暫無 DNS 記錄",
+    "DNS レコードがありません",
+    "Aucun enregistrement DNS",
+    "Sin registros DNS",
+    "Brak rekordów DNS",
+    "Нет записей DNS"
+  ],
+  "暂无实时指标": [
+    "暂无实时指标",
+    "No real-time metrics",
+    "暫無實時指標",
+    "リアルタイム指標がありません",
+    "Aucune mesure en temps réel",
+    "Sin métricas en tiempo real",
+    "Brak pomiarów na żywo",
+    "Нет текущих показателей"
+  ],
+  "暂无排行数据": [
+    "暂无排行数据",
+    "No ranking data",
+    "暫無排行數據",
+    "ランキングデータがありません",
+    "Aucune donnée de classement",
+    "Sin datos de clasificación",
+    "Brak danych rankingu",
+    "Нет данных рейтинга"
+  ],
+  "暂无时间线数据": [
+    "暂无时间线数据",
+    "No timeline data",
+    "暫無時間線數據",
+    "タイムラインデータがありません",
+    "Aucune donnée chronologique",
+    "Sin datos temporales",
+    "Brak danych osi czasu",
+    "Нет данных по времени"
+  ],
+  "暂无流量数据": [
+    "暂无流量数据",
+    "No traffic data",
+    "暫無流量數據",
+    "通信量データがありません",
+    "Aucune donnée de trafic",
+    "Sin datos de tráfico",
+    "Brak danych ruchu",
+    "Нет данных трафика"
+  ],
+  "暂无设备数据": [
+    "暂无设备数据",
+    "No device data",
+    "暫無設備數據",
+    "デバイスデータがありません",
+    "Aucune donnée d’appareil",
+    "Sin datos de dispositivos",
+    "Brak danych urządzeń",
+    "Нет данных устройств"
+  ],
+  "暂无设备连接": [
+    "暂无设备连接",
+    "No device connections",
+    "暫無設備連接",
+    "デバイスの接続がありません",
+    "Aucune connexion d’appareil",
+    "Sin conexiones de dispositivos",
+    "Brak połączeń urządzeń",
+    "Нет соединений устройств"
+  ],
+  "暂无豁免设备": [
+    "暂无豁免设备",
+    "No exempt devices",
+    "暫無豁免設備",
+    "対象外デバイスがありません",
+    "Aucun appareil exempté",
+    "Sin dispositivos exentos",
+    "Brak wyjątków",
+    "Нет устройств-исключений"
+  ],
+  "暂无连接数据": [
+    "暂无连接数据",
+    "No connection data",
+    "暫無連接數據",
+    "接続データがありません",
+    "Aucune donnée de connexion",
+    "Sin datos de conexiones",
+    "Brak danych połączeń",
+    "Нет данных соединений"
+  ],
+  "最后在线 {0}": [
+    "最后在线 {0}",
+    "Last seen {0}",
+    "最後在線 {0}",
+    "最終接続 {0}",
+    "Dernière activité {0}",
+    "Última conexión {0}",
+    "Ostatnio widziane {0}",
+    "Последняя активность {0}"
+  ],
+  "最大速率": [
+    "最大速率",
+    "Maximum Speed",
+    "最大速率",
+    "最大速度",
+    "Débit maximal",
+    "Velocidad máxima",
+    "Maksymalna prędkość",
+    "Максимальная скорость"
+  ],
+  "最近 30 天": [
+    "最近 30 天",
+    "Last 30 Days",
+    "最近30天",
+    "過去30日間",
+    "30 derniers jours",
+    "Últimos 30 días",
+    "Ostatnie 30 dni",
+    "Последние 30 дней"
+  ],
+  "最近 7 天": [
+    "最近 7 天",
+    "Last 7 Days",
+    "最近7天",
+    "過去7日間",
+    "7 derniers jours",
+    "Últimos 7 días",
+    "Ostatnie 7 dni",
+    "Последние 7 дней"
+  ],
+  "最近 90 天": [
+    "最近 90 天",
+    "Last 90 Days",
+    "最近90天",
+    "過去90日",
+    "90 Derniers Jours",
+    "Últimos 90 Días",
+    "Ostatnie 90 Dni",
+    "Последние 90 дней"
+  ],
+  "最近一年": [
+    "最近一年",
+    "Last Year",
+    "最近一年",
+    "過去1年",
+    "Dernière Année",
+    "Último Año",
+    "Ostatni Rok",
+    "За последний год"
+  ],
+  "最近在线": [
+    "最近在线",
+    "Last Seen",
+    "最近在線",
+    "最終接続",
+    "Dernière activité",
+    "Última conexión",
+    "Ostatnio widziane",
+    "Последняя активность"
+  ],
+  "最近在线时间": [
+    "最近在线时间",
+    "Last seen time",
+    "最近在線時間",
+    "最終接続時刻",
+    "Heure de dernière activité",
+    "Hora de última conexión",
+    "Czas ostatniej aktywności",
+    "Время последней активности"
+  ],
+  "有线": [
+    "有线",
+    "Wired",
+    "有線",
+    "有線",
+    "Filaire",
+    "Cableada",
+    "Przewodowe",
+    "Проводное"
+  ],
+  "服务地址": [
+    "服务地址",
+    "Service address",
+    "服務位址",
+    "サービスアドレス",
+    "Adresse du service",
+    "Dirección del servicio",
+    "Adres usługi",
+    "Адрес сервиса"
+  ],
+  "服务地址无效": [
+    "服务地址无效",
+    "Invalid service address",
+    "服務地址無效",
+    "サービスアドレスが無効です",
+    "Adresse du service invalide",
+    "Dirección de servicio no válida",
+    "Nieprawidłowy adres usługi",
+    "Недопустимый адрес службы"
+  ],
+  "服务连接": [
+    "服务连接",
+    "Service connection",
+    "服務連線",
+    "サービス接続",
+    "Connexion au service",
+    "Conexión al servicio",
+    "Połączenie z usługą",
+    "Подключение к сервису"
+  ],
+  "未找到可用服务": [
+    "未找到可用服务",
+    "No available service found",
+    "未找到可用服務",
+    "利用可能なサービスが見つかりません",
+    "Aucun service disponible trouvé",
+    "No se encontró un servicio disponible",
+    "Nie znaleziono dostępnej usługi",
+    "Доступная служба не найдена"
+  ],
+  "未找到本机网络的 IPv4 默认网关": [
+    "未找到本机网络的 IPv4 默认网关",
+    "No IPv4 default gateway found",
+    "未找到本機網絡的 IPv4 默認網關",
+    "IPv4 の既定ゲートウェイが見つかりません",
+    "Aucune passerelle IPv4 par défaut",
+    "No se encontró puerta de enlace IPv4",
+    "Nie znaleziono domyślnej bramy IPv4",
+    "Шлюз IPv4 по умолчанию не найден"
+  ],
+  "未找到本机网络的默认网关": [
+    "未找到本机网络的默认网关",
+    "No default gateway found",
+    "未找到本機網絡的默認網關",
+    "既定のゲートウェイが見つかりません",
+    "Aucune passerelle par défaut trouvée",
+    "No se encontró puerta de enlace predeterminada",
+    "Nie znaleziono bramy domyślnej",
+    "Шлюз по умолчанию не найден"
+  ],
+  "未生效": [
+    "未生效",
+    "Inactive",
+    "未生效",
+    "未適用",
+    "Inactif",
+    "Inactivo",
+    "Nieaktywne",
+    "Неактивно"
+  ],
+  "未知": [
+    "未知",
+    "Unknown",
+    "未知",
+    "不明",
+    "Inconnu",
+    "Desconocido",
+    "Nieznane",
+    "Неизвестно"
+  ],
+  "未知设备": [
+    "未知设备",
+    "Unknown Device",
+    "未知設備",
+    "不明なデバイス",
+    "Appareil inconnu",
+    "Dispositivo desconocido",
+    "Nieznane urządzenie",
+    "Неизвестное устройство"
+  ],
+  "未连接": [
+    "未连接",
+    "Disconnected",
+    "未連線",
+    "未接続",
+    "Déconnecté",
+    "Desconectado",
+    "Rozłączono",
+    "Не подключено"
+  ],
+  "本周": [
+    "本周",
+    "This Week",
+    "本週",
+    "今週",
+    "Cette Semaine",
+    "Esta Semana",
+    "Ten Tydzień",
+    "На этой неделе"
+  ],
+  "本月": [
+    "本月",
+    "This Month",
+    "本月",
+    "今月",
+    "Ce Mois",
+    "Este Mes",
+    "Ten Miesiąc",
+    "В этом месяце"
+  ],
+  "查询": [
+    "查询",
+    "Query",
+    "查詢",
+    "クエリ",
+    "Requêtes",
+    "Consultas",
+    "Zapytania",
+    "Запросы"
+  ],
+  "查询与响应": [
+    "查询与响应",
+    "Queries and Responses",
+    "查詢與響應",
+    "クエリとレスポンス",
+    "Requête et Réponse",
+    "Consulta y Respuesta",
+    "Zapytanie i Odpowiedź",
+    "Запрос и Ответ"
+  ],
+  "查询中…": [
+    "查询中…",
+    "Querying…",
+    "查詢中…",
+    "クエリ中…",
+    "Requête en cours…",
+    "Consultando…",
+    "Wysyłanie zapytania…",
+    "Выполняется запрос…"
+  ],
+  "查询或响应": [
+    "查询或响应",
+    "Query or response",
+    "查詢或響應",
+    "クエリまたは応答",
+    "Requête ou réponse",
+    "Consulta o respuesta",
+    "Zapytanie lub odpowiedź",
+    "Запрос или ответ"
+  ],
+  "查询排行": [
+    "查询排行",
+    "Query Rankings",
+    "查詢排行",
+    "クエリランキング",
+    "Classement des requêtes",
+    "Clasificación de consultas",
+    "Ranking zapytań",
+    "Рейтинг запросов"
+  ],
+  "查询类型": [
+    "查询类型",
+    "Query Types",
+    "查詢類型",
+    "クエリタイプ",
+    "Type de requête",
+    "Tipo de consulta",
+    "Typ zapytania",
+    "Тип запроса"
+  ],
+  "标志": [
+    "标志",
+    "Flags",
+    "標記",
+    "フラグ",
+    "Drapeaux",
+    "Marcas",
+    "Flagi",
+    "Флаги"
+  ],
+  "正在保存…": [
+    "正在保存…",
+    "Saving…",
+    "儲存中...",
+    "保存中...",
+    "Enregistrement...",
+    "Guardando...",
+    "Zapisywanie...",
+    "Сохранение..."
+  ],
+  "正在删除…": [
+    "正在删除…",
+    "Deleting…",
+    "正在刪除…",
+    "削除中…",
+    "Suppression…",
+    "Eliminando…",
+    "Usuwanie…",
+    "Удаление…"
+  ],
+  "正在搜索": [
+    "正在搜索",
+    "Discovering",
+    "正在搜索",
+    "検索中",
+    "Recherche en cours",
+    "Buscando",
+    "Wyszukiwanie",
+    "Поиск"
+  ],
+  "正在查找默认网关并探测 8686 端口…": [
+    "正在查找默认网关并探测 8686 端口…",
+    "Finding the default gateway and probing port 8686…",
+    "正在查找默認網關並探測 8686 端口…",
+    "既定のゲートウェイとポート 8686 を確認中…",
+    "Recherche de la passerelle et test du port 8686…",
+    "Buscando la puerta de enlace y probando el puerto 8686…",
+    "Wyszukiwanie bramy i sprawdzanie portu 8686…",
+    "Поиск шлюза и проверка порта 8686…"
+  ],
+  "正在查询…": [
+    "正在查询…",
+    "Querying…",
+    "正在查詢…",
+    "クエリ中…",
+    "Requête en cours…",
+    "Consultando…",
+    "Wysyłanie zapytania…",
+    "Выполняется запрос…"
+  ],
+  "正在测试手动填写的服务地址…": [
+    "正在测试手动填写的服务地址…",
+    "Testing the entered service address…",
+    "正在測試手動填寫的服務地址…",
+    "入力されたサービスアドレスをテスト中…",
+    "Test de l’adresse saisie…",
+    "Probando la dirección introducida…",
+    "Sprawdzanie wpisanego adresu…",
+    "Проверка введённого адреса…"
+  ],
+  "正在添加…": [
+    "正在添加…",
+    "Adding…",
+    "新增中...",
+    "追加中...",
+    "Ajout en cours...",
+    "Agregando...",
+    "Dodawanie...",
+    "Добавление..."
+  ],
+  "正在读取{0}…": [
+    "正在读取{0}…",
+    "Loading {0}…",
+    "正在讀取{0}…",
+    "{0}を読み込み中…",
+    "Chargement : {0}…",
+    "Cargando {0}…",
+    "Wczytywanie: {0}…",
+    "Загрузка: {0}…"
+  ],
+  "正在读取…": [
+    "正在读取…",
+    "Loading…",
+    "載入中…",
+    "読み込み中…",
+    "Chargement…",
+    "Cargando…",
+    "Ładowanie…",
+    "Загрузка…"
+  ],
+  "正在读取全局限速设置…": [
+    "正在读取全局限速设置…",
+    "Loading global rate limit settings…",
+    "正在讀取全侷限速設置…",
+    "全体速度制限を読み込み中…",
+    "Chargement des limites globales…",
+    "Cargando límites globales…",
+    "Wczytywanie limitów globalnych…",
+    "Загрузка общих ограничений…"
+  ],
+  "正在读取所选周期用量…": [
+    "正在读取所选周期用量…",
+    "Loading usage for the selected period…",
+    "正在讀取所選週期用量…",
+    "選択期間の使用量を読み込み中…",
+    "Chargement du volume de la période…",
+    "Cargando consumo del periodo…",
+    "Wczytywanie zużycia w okresie…",
+    "Загрузка объёма за период…"
+  ],
+  "正在读取规则…": [
+    "正在读取规则…",
+    "Loading rules…",
+    "正在讀取規則…",
+    "ルールを読み込み中…",
+    "Chargement des règles…",
+    "Cargando reglas…",
+    "Wczytywanie reguł…",
+    "Загрузка правил…"
+  ],
+  "正在读取连接…": [
+    "正在读取连接…",
+    "Loading connections…",
+    "正在讀取連接…",
+    "接続を読み込み中…",
+    "Chargement des connexions…",
+    "Cargando conexiones…",
+    "Wczytywanie połączeń…",
+    "Загрузка соединений…"
+  ],
+  "正在读取连接快照": [
+    "正在读取连接快照",
+    "Loading connection snapshot",
+    "正在讀取連接快照",
+    "接続スナップショットを読み込み中",
+    "Chargement de l’instantané des connexions",
+    "Cargando instantánea de conexiones",
+    "Wczytywanie migawki połączeń",
+    "Загрузка снимка соединений"
+  ],
+  "正在读取配额…": [
+    "正在读取配额…",
+    "Loading quotas…",
+    "正在讀取配額…",
+    "クォータを読み込み中…",
+    "Chargement des quotas…",
+    "Cargando cuotas…",
+    "Wczytywanie limitów transferu…",
+    "Загрузка квот…"
+  ],
+  "正在连接 Bandix 服务…": [
+    "正在连接 Bandix 服务…",
+    "Connecting to the Bandix service…",
+    "正在連線 Bandix 服務…",
+    "Bandix サービスに接続中…",
+    "Connexion au service Bandix…",
+    "Conectando al servicio Bandix…",
+    "Łączenie z usługą Bandix…",
+    "Подключение к сервису Bandix…"
+  ],
+  "每个周期独立设置数值和单位；0 表示不限额": [
+    "每个周期独立设置数值和单位；0 表示不限额",
+    "Set each period independently. 0 means unlimited.",
+    "每個週期獨立設置數值和單位；0 表示不限額",
+    "期間ごとに値と単位を設定します。0 は無制限です。",
+    "Réglez chaque période séparément. 0 signifie illimité.",
+    "Configure cada periodo por separado. 0 significa sin límite.",
+    "Ustaw każdy okres osobno. 0 oznacza brak limitu.",
+    "Настройте каждый период отдельно. 0 — без ограничений."
+  ],
+  "每分钟": [
+    "每分钟",
+    "Per Minute",
+    "每分鐘",
+    "1分",
+    "Minute",
+    "Minuto",
+    "Minuta",
+    "Минута"
+  ],
+  "每周": [
+    "每周",
+    "Weekly",
+    "每週",
+    "週次",
+    "Hebdomadaire",
+    "Semanal",
+    "Tygodniowy",
+    "Еженедельно"
+  ],
+  "每天": [
+    "每天",
+    "Daily",
+    "每日",
+    "日次",
+    "Quotidien",
+    "Diario",
+    "Dzienny",
+    "Ежедневно"
+  ],
+  "每小时": [
+    "每小时",
+    "Hourly",
+    "按小時",
+    "時間単位",
+    "Par Heure",
+    "Por Hora",
+    "Co Godzinę",
+    "По часам"
+  ],
+  "每月": [
+    "每月",
+    "Monthly",
+    "每月",
+    "月次",
+    "Mensuel",
+    "Mensual",
+    "Miesięczny",
+    "Ежемесячно"
+  ],
+  "每页记录数": [
+    "每页记录数",
+    "Records per page",
+    "每頁記錄數",
+    "ページあたりのレコード数",
+    "Enregistrements par page",
+    "Registros por página",
+    "Rekordy na stronę",
+    "Записей на странице"
+  ],
+  "每页连接条数": [
+    "每页连接条数",
+    "Connections per page",
+    "每頁連接條數",
+    "ページあたりの接続数",
+    "Connexions par page",
+    "Conexiones por página",
+    "Połączenia na stronę",
+    "Соединений на странице"
+  ],
+  "比特（Mbps）": [
+    "比特（Mbps）",
+    "Bits (Mbps)",
+    "比特（Mbps）",
+    "ビット（Mbps）",
+    "Bits (Mbps)",
+    "Bits (Mbps)",
+    "Bity (Mbps)",
+    "Биты (Mbps)"
+  ],
+  "没有匹配的设备": [
+    "没有匹配的设备",
+    "No matching devices",
+    "沒有匹配的設備",
+    "一致するデバイスがありません",
+    "Aucun appareil correspondant",
+    "No hay dispositivos coincidentes",
+    "Brak pasujących urządzeń",
+    "Нет подходящих устройств"
+  ],
+  "没有找到可用的 IPv4 地址": [
+    "没有找到可用的 IPv4 地址",
+    "No usable IPv4 address found",
+    "沒有找到可用的 IPv4 地址",
+    "利用可能な IPv4 アドレスがありません",
+    "Aucune adresse IPv4 utilisable",
+    "No hay dirección IPv4 disponible",
+    "Brak dostępnego adresu IPv4",
+    "Нет доступного адреса IPv4"
+  ],
+  "没有符合条件的 DNS 记录": [
+    "没有符合条件的 DNS 记录",
+    "No matching DNS records",
+    "沒有符合條件的 DNS 記錄",
+    "一致する DNS レコードがありません",
+    "Aucun enregistrement DNS correspondant",
+    "No hay registros DNS coincidentes",
+    "Brak pasujących rekordów DNS",
+    "Нет подходящих записей DNS"
+  ],
+  "没有符合条件的连接": [
+    "没有符合条件的连接",
+    "No matching connections",
+    "沒有符合條件的連接",
+    "一致する接続がありません",
+    "Aucune connexion correspondante",
+    "No hay conexiones coincidentes",
+    "Brak pasujących połączeń",
+    "Нет подходящих соединений"
+  ],
+  "流量": [
+    "流量",
+    "Traffic",
+    "流量",
+    "通信量",
+    "Trafic",
+    "Tráfico",
+    "Ruch",
+    "Трафик"
+  ],
+  "流量指标接口请求失败": [
+    "流量指标接口请求失败",
+    "Failed to load traffic metrics",
+    "流量指標接口請求失敗",
+    "通信指標を読み込めません",
+    "Impossible de charger les mesures de trafic",
+    "No se pueden cargar las métricas de tráfico",
+    "Nie można wczytać pomiarów ruchu",
+    "Не удалось загрузить показатели трафика"
+  ],
+  "流量时间线": [
+    "流量时间线",
+    "Traffic Timeline",
+    "流量時間線",
+    "トラフィックタイムライン",
+    "Chronologie du Trafic",
+    "Línea de Tiempo de Tráfico",
+    "Oś Czasu Ruchu",
+    "Временная шкала трафика"
+  ],
+  "流量时间线接口请求失败": [
+    "流量时间线接口请求失败",
+    "Failed to load traffic timeline",
+    "流量時間線接口請求失敗",
+    "通信タイムラインを読み込めません",
+    "Impossible de charger la chronologie du trafic",
+    "No se puede cargar la cronología de tráfico",
+    "Nie można wczytać osi czasu ruchu",
+    "Не удалось загрузить график трафика"
+  ],
+  "流量用量排行": [
+    "流量用量排行",
+    "Traffic Usage Ranking",
+    "流量用量排行",
+    "通信使用量ランキング",
+    "Classement des volumes de trafic",
+    "Clasificación de consumo",
+    "Ranking zużycia transferu",
+    "Рейтинг объёма трафика"
+  ],
+  "流量用量排行接口请求失败": [
+    "流量用量排行接口请求失败",
+    "Failed to load traffic rankings",
+    "流量用量排行接口請求失敗",
+    "通信ランキングを読み込めません",
+    "Impossible de charger le classement du trafic",
+    "No se puede cargar la clasificación de tráfico",
+    "Nie można wczytać rankingu ruchu",
+    "Не удалось загрузить рейтинг трафика"
+  ],
+  "流量配额已保存": [
+    "流量配额已保存",
+    "Traffic quota saved",
+    "流量配額已保存",
+    "通信クォータを保存しました",
+    "Quota de trafic enregistré",
+    "Cuota de tráfico guardada",
+    "Limit transferu zapisany",
+    "Квота трафика сохранена"
+  ],
+  "流量配额已删除": [
+    "流量配额已删除",
+    "Traffic quota deleted",
+    "流量配額已刪除",
+    "通信クォータを削除しました",
+    "Quota de trafic supprimé",
+    "Cuota de tráfico eliminada",
+    "Limit transferu usunięty",
+    "Квота трафика удалена"
+  ],
+  "测试填写地址": [
+    "测试填写地址",
+    "Test Address",
+    "測試填寫地址",
+    "アドレスをテスト",
+    "Tester l’adresse",
+    "Probar dirección",
+    "Sprawdź adres",
+    "Проверить адрес"
+  ],
+  "添加": [
+    "添加",
+    "Add",
+    "添加",
+    "追加",
+    "Ajouter",
+    "Añadir",
+    "Dodaj",
+    "Добавить"
+  ],
+  "添加规则": [
+    "添加规则",
+    "Add Rule",
+    "新增規則",
+    "ルールを追加",
+    "Ajouter une règle",
+    "Agregar regla",
+    "Dodaj regułę",
+    "Добавить правило"
+  ],
+  "状态": [
+    "状态",
+    "Status",
+    "狀態",
+    "状態",
+    "État",
+    "Estado",
+    "Stan",
+    "Состояние"
+  ],
+  "生效": [
+    "生效",
+    "Active",
+    "生效中",
+    "有効",
+    "Actif",
+    "Activa",
+    "Aktywny",
+    "Активна"
+  ],
+  "用量": [
+    "用量",
+    "Usage",
+    "用量",
+    "使用量",
+    "Volume",
+    "Consumo",
+    "Zużycie",
+    "Использовано"
+  ],
+  "界面语言": [
+    "界面语言",
+    "Interface Language",
+    "介面語言",
+    "表示言語",
+    "Langue de l’interface",
+    "Idioma de la interfaz",
+    "Język interfejsu",
+    "Язык интерфейса"
+  ],
+  "确认删除": [
+    "确认删除",
+    "Confirm Delete",
+    "確認刪除",
+    "削除を確認",
+    "Confirmer la suppression",
+    "Confirmar eliminación",
+    "Potwierdź usunięcie",
+    "Подтвердить удаление"
+  ],
+  "离线": [
+    "离线",
+    "Offline",
+    "離線",
+    "オフライン",
+    "Hors ligne",
+    "Sin conexión",
+    "Offline",
+    "Не в сети"
+  ],
+  "移除": [
+    "移除",
+    "Remove",
+    "移除",
+    "除外",
+    "Retirer",
+    "Quitar",
+    "Usuń",
+    "Убрать"
+  ],
+  "端口 {0}": [
+    "端口 {0}",
+    "Port {0}",
+    "端口 {0}",
+    "ポート {0}",
+    "Port {0}",
+    "Puerto {0}",
+    "Port {0}",
+    "Порт {0}"
+  ],
+  "端口号无效": [
+    "端口号无效",
+    "Invalid port number",
+    "端口號無效",
+    "ポート番号が無効です",
+    "Numéro de port invalide",
+    "Número de puerto no válido",
+    "Nieprawidłowy numer portu",
+    "Недопустимый номер порта"
+  ],
+  "等待探测": [
+    "等待探测",
+    "Waiting for discovery",
+    "等待探測",
+    "検出待ち",
+    "En attente de découverte",
+    "Esperando detección",
+    "Oczekiwanie na wykrycie",
+    "Ожидание поиска"
+  ],
+  "策略状态": [
+    "策略状态",
+    "Policy Status",
+    "策略狀態",
+    "ポリシーの状態",
+    "État des règles",
+    "Estado de políticas",
+    "Stan zasad",
+    "Состояние правил"
+  ],
+  "简易": [
+    "简易",
+    "Simple",
+    "簡易",
+    "簡易",
+    "Simple",
+    "Simple",
+    "Prosty",
+    "Простой"
+  ],
+  "类型": [
+    "类型",
+    "Type",
+    "類型",
+    "タイプ",
+    "Type",
+    "Tipo",
+    "Typ",
+    "Тип"
+  ],
+  "累计": [
+    "累计",
+    "Total",
+    "累計",
+    "累計",
+    "Total cumulé",
+    "Total acumulado",
+    "Łącznie",
+    "Всего"
+  ],
+  "累计流量": [
+    "累计流量",
+    "Cumulative Traffic",
+    "累計流量",
+    "累積トラフィック",
+    "Trafic cumulé",
+    "Tráfico acumulado",
+    "Skumulowany ruch",
+    "Накопительный трафик"
+  ],
+  "结束日期": [
+    "结束日期",
+    "End Date",
+    "結束日期",
+    "終了日",
+    "Date de Fin",
+    "Fecha de Fin",
+    "Data Końcowa",
+    "Дата окончания"
+  ],
+  "结束时间": [
+    "结束时间",
+    "End Time",
+    "結束時間",
+    "終了時刻",
+    "Heure de fin",
+    "Hora de fin",
+    "Godzina zakończenia",
+    "Время окончания"
+  ],
+  "给设备设置容易识别的名称": [
+    "给设备设置容易识别的名称",
+    "Give this device a recognizable name",
+    "給設備設置容易識別的名稱",
+    "識別しやすい名前を付けます",
+    "Donnez un nom reconnaissable à cet appareil",
+    "Asigne un nombre reconocible al dispositivo",
+    "Nadaj urządzeniu rozpoznawalną nazwę",
+    "Задайте устройству понятное имя"
+  ],
+  "统计 WAN 上传与下载的合计流量": [
+    "统计 WAN 上传与下载的合计流量",
+    "Combined WAN upload and download usage",
+    "統計 WAN 上傳與下載的合計流量",
+    "WAN アップロードとダウンロードの合計",
+    "Volume WAN envoyé et reçu cumulé",
+    "Consumo combinado de subida y bajada WAN",
+    "Łączne wysyłanie i pobieranie WAN",
+    "Общий объём отдачи и загрузки WAN"
+  ],
+  "编辑配额": [
+    "编辑配额",
+    "Edit Quota",
+    "編輯配額",
+    "クォータを編集",
+    "Modifier le quota",
+    "Editar cuota",
+    "Edytuj limit transferu",
+    "Изменить квоту"
+  ],
+  "网络类型": [
+    "网络类型",
+    "Network Type",
+    "網路類型",
+    "ネットワークタイプ",
+    "Type de Réseau",
+    "Tipo de Red",
+    "Typ Sieci",
+    "Тип Сети"
+  ],
+  "聚合粒度": [
+    "聚合粒度",
+    "Aggregation",
+    "聚合方式：",
+    "集計：",
+    "Agrégation :",
+    "Agregación:",
+    "Agregacja:",
+    "Агрегация:"
+  ],
+  "自动刷新间隔": [
+    "自动刷新间隔",
+    "Auto-refresh Interval",
+    "自動刷新間隔",
+    "自動更新間隔",
+    "Intervalle d’actualisation",
+    "Intervalo de actualización",
+    "Odstęp automatycznego odświeżania",
+    "Интервал автообновления"
+  ],
+  "自动发现": [
+    "自动发现",
+    "Auto-discover",
+    "自動探索",
+    "自動検出",
+    "Détection automatique",
+    "Detectar automáticamente",
+    "Wykryj automatycznie",
+    "Найти автоматически"
+  ],
+  "记录类型": [
+    "记录类型",
+    "Record Type",
+    "記錄類型",
+    "レコードの種類",
+    "Type d’enregistrement",
+    "Tipo de registro",
+    "Typ rekordu",
+    "Тип записи"
+  ],
+  "设备": [
+    "设备",
+    "Device",
+    "設備",
+    "デバイス",
+    "Appareil",
+    "Dispositivo",
+    "Urządzenie",
+    "Устройство"
+  ],
+  "设备信息": [
+    "设备信息",
+    "Device Info",
+    "設備資訊",
+    "デバイス情報",
+    "Informations sur l'appareil",
+    "Información del dispositivo",
+    "Informacje o urządzeniu",
+    "Информация об устройстве"
+  ],
+  "设备列表": [
+    "设备列表",
+    "Device List",
+    "設備清單",
+    "デバイス一覧",
+    "Liste des appareils",
+    "Lista de dispositivos",
+    "Lista urządzeń",
+    "Список устройств"
+  ],
+  "设备名 / IP / MAC": [
+    "设备名 / IP / MAC",
+    "Device name / IP / MAC",
+    "設備名 / IP / MAC",
+    "デバイス名 / IP / MAC",
+    "Nom de l’appareil / IP / MAC",
+    "Nombre de dispositivo / IP / MAC",
+    "Nazwa urządzenia / IP / MAC",
+    "Имя устройства / IP / MAC"
+  ],
+  "设备排序": [
+    "设备排序",
+    "Device Sorting",
+    "設備排序",
+    "デバイスの並べ替え",
+    "Tri des appareils",
+    "Orden de dispositivos",
+    "Sortowanie urządzeń",
+    "Сортировка устройств"
+  ],
+  "设备接口请求失败": [
+    "设备接口请求失败",
+    "Failed to load devices",
+    "設備接口請求失敗",
+    "デバイスを読み込めません",
+    "Impossible de charger les appareils",
+    "No se pueden cargar los dispositivos",
+    "Nie można wczytać urządzeń",
+    "Не удалось загрузить устройства"
+  ],
+  "设备昵称": [
+    "设备昵称",
+    "Device Nickname",
+    "設備暱稱",
+    "デバイスのニックネーム",
+    "Surnom de l’appareil",
+    "Alias del dispositivo",
+    "Nazwa urządzenia",
+    "Имя устройства"
+  ],
+  "设备流量统计周期": [
+    "设备流量统计周期",
+    "Device usage period",
+    "設備流量統計週期",
+    "デバイス使用量の期間",
+    "Période du volume par appareil",
+    "Periodo de consumo del dispositivo",
+    "Okres zużycia urządzenia",
+    "Период объёма устройства"
+  ],
+  "设备设置": [
+    "设备设置",
+    "Device Settings",
+    "設備設定",
+    "デバイス設定",
+    "Paramètres de l'appareil",
+    "Configuración del dispositivo",
+    "Ustawienia urządzenia",
+    "Настройки устройства"
+  ],
+  "设备连接统计": [
+    "设备连接统计",
+    "Device Connection Statistics",
+    "設備連線統計",
+    "デバイス接続統計",
+    "Statistiques de connexion par appareil",
+    "Estadísticas de conexión de dispositivos",
+    "Statystyki połączeń urządzeń",
+    "Статистика соединений по устройствам"
+  ],
+  "设置": [
+    "设置",
+    "Settings",
+    "設定",
+    "設定",
+    "Paramètres",
+    "Configuración",
+    "Ustawienia",
+    "Настройки"
+  ],
+  "设置已保存": [
+    "设置已保存",
+    "Settings saved",
+    "設置已保存",
+    "設定を保存しました",
+    "Paramètres enregistrés",
+    "Configuración guardada",
+    "Ustawienia zapisane",
+    "Настройки сохранены"
+  ],
+  "该设备已在白名单中": [
+    "该设备已在白名单中",
+    "This device is already exempt",
+    "該設備已在白名單中",
+    "このデバイスは既に対象外です",
+    "Cet appareil est déjà exempté",
+    "Este dispositivo ya está exento",
+    "To urządzenie jest już wyjątkiem",
+    "Это устройство уже в исключениях"
+  ],
+  "详情": [
+    "详情",
+    "Details",
+    "詳情",
+    "詳細",
+    "Détails",
+    "Detalles",
+    "Szczegóły",
+    "Подробнее"
+  ],
+  "详细": [
+    "详细",
+    "Detailed",
+    "詳細",
+    "詳細",
+    "Détaillé",
+    "Detallado",
+    "Szczegółowy",
+    "Подробный"
+  ],
+  "语言已切换，但保存失败：{0}": [
+    "语言已切换，但保存失败：{0}",
+    "Language changed, but could not be saved: {0}",
+    "語言已切換，但儲存失敗：{0}",
+    "言語を切り替えましたが保存できません：{0}",
+    "Langue modifiée, mais non enregistrée : {0}",
+    "Idioma cambiado, pero no guardado: {0}",
+    "Język zmieniony, ale niezapisany: {0}",
+    "Язык изменён, но не сохранён: {0}"
+  ],
+  "请先连接 Bandix 服务。": [
+    "请先连接 Bandix 服务。",
+    "Connect to a Bandix service first.",
+    "請先連接 Bandix 服務。",
+    "先に Bandix サービスへ接続してください。",
+    "Connectez-vous d’abord au service Bandix.",
+    "Conéctese primero al servicio Bandix.",
+    "Najpierw połącz się z usługą Bandix.",
+    "Сначала подключитесь к службе Bandix."
+  ],
+  "请至少选择一天": [
+    "请至少选择一天",
+    "Select at least one day",
+    "請至少選擇一天",
+    "少なくとも1日を選択してください",
+    "Veuillez sélectionner au moins un jour",
+    "Por favor seleccione al menos un día",
+    "Proszę wybrać co najmniej jeden dzień",
+    "Пожалуйста, выберите хотя бы один день"
+  ],
+  "请输入服务地址": [
+    "请输入服务地址",
+    "Enter a service address",
+    "請輸入服務地址",
+    "サービスアドレスを入力してください",
+    "Saisissez l’adresse du service",
+    "Introduzca la dirección del servicio",
+    "Wpisz adres usługi",
+    "Введите адрес службы"
+  ],
+  "请选择分钟": [
+    "请选择分钟",
+    "Select minute",
+    "請選擇分鐘",
+    "分を選択",
+    "Choisir la minute",
+    "Seleccionar minuto",
+    "Wybierz minutę",
+    "Выберите минуты"
+  ],
+  "请选择小时": [
+    "请选择小时",
+    "Select hour",
+    "請選擇小時",
+    "時を選択",
+    "Choisir l’heure",
+    "Seleccionar hora",
+    "Wybierz godzinę",
+    "Выберите часы"
+  ],
+  "请选择开始和结束时间": [
+    "请选择开始和结束时间",
+    "Select start and end times",
+    "請選擇開始和結束時間",
+    "開始時刻と終了時刻を選択してください",
+    "Choisissez les heures de début et de fin",
+    "Seleccione las horas de inicio y fin",
+    "Wybierz godziny rozpoczęcia i zakończenia",
+    "Выберите время начала и окончания"
+  ],
+  "请选择开始日期": [
+    "请选择开始日期",
+    "Select a start date",
+    "請選擇開始日期",
+    "開始日を選択",
+    "Choisir la date de début",
+    "Seleccionar fecha inicial",
+    "Wybierz datę początkową",
+    "Выберите начальную дату"
+  ],
+  "请选择结束日期": [
+    "请选择结束日期",
+    "Select an end date",
+    "請選擇結束日期",
+    "終了日を選択",
+    "Choisir la date de fin",
+    "Seleccionar fecha final",
+    "Wybierz datę końcową",
+    "Выберите конечную дату"
+  ],
+  "请选择设备或填写有效的 MAC 地址，例如 aa:bb:cc:dd:ee:ff": [
+    "请选择设备或填写有效的 MAC 地址，例如 aa:bb:cc:dd:ee:ff",
+    "Select a device or enter a valid MAC address, e.g. aa:bb:cc:dd:ee:ff",
+    "請選擇設備或填寫有效的 MAC 地址，例如 aa:bb:cc:dd:ee:ff",
+    "デバイスを選択するか、有効な MAC アドレス（例 aa:bb:cc:dd:ee:ff）を入力してください",
+    "Choisissez un appareil ou une adresse MAC valide, ex. aa:bb:cc:dd:ee:ff",
+    "Seleccione un dispositivo o una MAC válida, ej. aa:bb:cc:dd:ee:ff",
+    "Wybierz urządzenie lub podaj prawidłowy MAC, np. aa:bb:cc:dd:ee:ff",
+    "Выберите устройство или введите корректный MAC, например aa:bb:cc:dd:ee:ff"
+  ],
+  "请选择配额单位": [
+    "请选择配额单位",
+    "Select a quota unit",
+    "請選擇配額單位",
+    "クォータの単位を選択",
+    "Choisir l’unité du quota",
+    "Seleccionar unidad de cuota",
+    "Wybierz jednostkę limitu",
+    "Выберите единицу квоты"
+  ],
+  "读取失败": [
+    "读取失败",
+    "Failed to load",
+    "載入失敗",
+    "読み込み失敗",
+    "Échec du chargement",
+    "Error al cargar",
+    "Błąd ładowania",
+    "Ошибка загрузки"
+  ],
+  "豁免设备": [
+    "豁免设备",
+    "Exempt Devices",
+    "豁免設備",
+    "制限対象外のデバイス",
+    "Appareils exemptés",
+    "Dispositivos exentos",
+    "Urządzenia wyłączone z limitu",
+    "Устройства-исключения"
+  ],
+  "豁免设备（白名单）· {0} 台": [
+    "豁免设备（白名单）· {0} 台",
+    "Exempt devices (allowlist) · {0}",
+    "豁免設備（白名單）· {0} 臺",
+    "対象外デバイス（許可リスト）· {0} 台",
+    "Appareils exemptés (liste autorisée) · {0}",
+    "Dispositivos exentos (lista permitida) · {0}",
+    "Wyjątki (lista dozwolonych) · {0}",
+    "Исключения (белый список) · {0}"
+  ],
+  "超限周期与用量暂不可用": [
+    "超限周期与用量暂不可用",
+    "Exceeded periods and usage unavailable",
+    "超限週期與用量暫不可用",
+    "超過した期間と使用量が不明です",
+    "Périodes et volumes dépassés indisponibles",
+    "Periodos y consumo excedidos no disponibles",
+    "Przekroczone okresy i zużycie są niedostępne",
+    "Превышенные периоды и объём недоступны"
+  ],
+  "超限阻断": [
+    "超限阻断",
+    "Blocked: Quota Exceeded",
+    "超限阻斷",
+    "クォータ超過により遮断",
+    "Bloqué : quota dépassé",
+    "Bloqueado: cuota excedida",
+    "Zablokowano: przekroczono limit",
+    "Заблокировано: квота превышена"
+  ],
+  "超限阻断 · {0} 个周期": [
+    "超限阻断 · {0} 个周期",
+    "Blocked · {0} periods exceeded",
+    "超限阻斷 · {0} 個週期",
+    "遮断 · {0} 期間で超過",
+    "Bloqué · {0} périodes dépassées",
+    "Bloqueado · {0} periodos excedidos",
+    "Zablokowano · {0} przekroczonych okresów",
+    "Заблокировано · Превышено периодов: {0}"
+  ],
+  "路由器": [
+    "路由器",
+    "Router",
+    "路由器",
+    "ルーター",
+    "Routeur",
+    "Router",
+    "Router",
+    "Маршрутизатор"
+  ],
+  "连接": [
+    "连接",
+    "Connections",
+    "連接",
+    "接続",
+    "Connexions",
+    "Conexiones",
+    "Połączenia",
+    "Соединения"
+  ],
+  "连接中…": [
+    "连接中…",
+    "Connecting…",
+    "連線中…",
+    "接続中…",
+    "Connexion…",
+    "Conectando…",
+    "Łączenie…",
+    "Подключение…"
+  ],
+  "连接协议": [
+    "连接协议",
+    "Connection protocol",
+    "連接協議",
+    "接続プロトコル",
+    "Protocole de connexion",
+    "Protocolo de conexión",
+    "Protokół połączenia",
+    "Протокол соединения"
+  ],
+  "连接失败": [
+    "连接失败",
+    "Connection failed",
+    "連線失敗",
+    "接続失敗",
+    "Échec de connexion",
+    "Error de conexión",
+    "Nie udało się połączyć",
+    "Ошибка подключения"
+  ],
+  "连接快照 · 点击刷新获取最新数据": [
+    "连接快照 · 点击刷新获取最新数据",
+    "Connection snapshot · Refresh to get the latest data",
+    "連接快照 · 點擊刷新獲取最新數據",
+    "接続スナップショット · 更新で最新情報を取得",
+    "Instantané des connexions · Actualiser pour mettre à jour",
+    "Instantánea de conexiones · Actualice para obtener datos recientes",
+    "Migawka połączeń · Odśwież, aby pobrać aktualne dane",
+    "Снимок соединений · Обновите для получения свежих данных"
+  ],
+  "连接成功后自动读取实时数据；流量统计按筛选条件单独查询。": [
+    "连接成功后自动读取实时数据；流量统计按筛选条件单独查询。",
+    "Live data refreshes automatically after connection; usage statistics are queried separately.",
+    "連接成功後自動讀取實時數據；流量統計按篩選條件單獨查詢。",
+    "接続後はリアルタイムデータを自動更新します。使用量は条件を指定して別途検索します。",
+    "Les données en direct sont actualisées après connexion ; les statistiques sont interrogées séparément.",
+    "Los datos en vivo se actualizan al conectar; las estadísticas se consultan por separado.",
+    "Dane bieżące odświeżają się po połączeniu; statystyki są pobierane osobno.",
+    "Текущие данные обновляются после подключения; статистика запрашивается отдельно."
+  ],
+  "连接明细读取失败：{0}\n可尝试缩小每页条数，或调整筛选后重试。": [
+    "连接明细读取失败：{0}\n可尝试缩小每页条数，或调整筛选后重试。",
+    "Failed to load connection details: {0}\nTry fewer rows per page or adjust the filters.",
+    "連接明細讀取失敗：{0}\n可嘗試縮小每頁條數，或調整篩選後重試。",
+    "接続詳細を読み込めません：{0}\nページあたりの件数を減らすか、フィルターを変更してください。",
+    "Impossible de charger les détails : {0}\nRéduisez le nombre de lignes ou modifiez les filtres.",
+    "No se pueden cargar los detalles: {0}\nReduzca las filas por página o ajuste los filtros.",
+    "Nie można wczytać szczegółów: {0}\nZmniejsz liczbę wierszy lub zmień filtry.",
+    "Не удалось загрузить сведения: {0}\nУменьшите число строк или измените фильтры."
+  ],
+  "连接服务": [
+    "连接服务",
+    "Connect",
+    "連線服務",
+    "接続",
+    "Se connecter",
+    "Conectar",
+    "Połącz",
+    "Подключиться"
+  ],
+  "连接状态": [
+    "连接状态",
+    "Connection state",
+    "連接狀態",
+    "接続状態",
+    "État de connexion",
+    "Estado de conexión",
+    "Stan połączenia",
+    "Состояние соединения"
+  ],
+  "连接统计接口请求失败": [
+    "连接统计接口请求失败",
+    "Failed to load connection statistics",
+    "連接統計接口請求失敗",
+    "接続統計を読み込めません",
+    "Impossible de charger les statistiques de connexion",
+    "No se pueden cargar las estadísticas de conexiones",
+    "Nie można wczytać statystyk połączeń",
+    "Не удалось загрузить статистику соединений"
+  ],
+  "连接详情 · {0}": [
+    "连接详情 · {0}",
+    "Connection Details · {0}",
+    "連接詳情 · {0}",
+    "接続詳細 · {0}",
+    "Détails de connexion · {0}",
+    "Detalles de conexión · {0}",
+    "Szczegóły połączenia · {0}",
+    "Подробности соединения · {0}"
+  ],
+  "选择时间范围、网络类型、聚合粒度和设备后查询。": [
+    "选择时间范围、网络类型、聚合粒度和设备后查询。",
+    "Select dates, network type, aggregation and device, then query.",
+    "選擇時間範圍、網絡類型、聚合粒度和設備後查詢。",
+    "日付・ネットワーク・集約・デバイスを選択して検索してください。",
+    "Choisissez dates, réseau, agrégation et appareil, puis lancez la requête.",
+    "Seleccione fechas, red, agregación y dispositivo y consulte.",
+    "Wybierz daty, sieć, agregację i urządzenie, a następnie wyszukaj.",
+    "Выберите даты, сеть, агрегацию и устройство, затем выполните запрос."
+  ],
+  "选择时间范围和网络类型后查询。": [
+    "选择时间范围和网络类型后查询。",
+    "Select dates and network type, then query.",
+    "選擇時間範圍和網絡類型後查詢。",
+    "日付とネットワークを選択して検索してください。",
+    "Choisissez les dates et le réseau, puis lancez la requête.",
+    "Seleccione fechas y red y consulte.",
+    "Wybierz daty i sieć, a następnie wyszukaj.",
+    "Выберите даты и сеть, затем выполните запрос."
+  ],
+  "选择豁免设备": [
+    "选择豁免设备",
+    "Select exempt devices",
+    "選擇豁免設備",
+    "制限対象外のデバイスを選択",
+    "Choisir les appareils exemptés",
+    "Seleccionar dispositivos exentos",
+    "Wybierz wyjątki",
+    "Выберите устройства-исключения"
+  ],
+  "速度单位": [
+    "速度单位",
+    "Speed Unit",
+    "速度單位",
+    "速度の単位",
+    "Unité de débit",
+    "Unidad de velocidad",
+    "Jednostka prędkości",
+    "Единица скорости"
+  ],
+  "速度单位已切换，但保存失败：{0}": [
+    "速度单位已切换，但保存失败：{0}",
+    "Speed unit changed, but could not be saved: {0}",
+    "速度單位已切換，但保存失敗：{0}",
+    "単位を切り替えましたが保存できません：{0}",
+    "Unité modifiée, mais non enregistrée : {0}",
+    "Unidad cambiada, pero no guardada: {0}",
+    "Jednostka zmieniona, ale niezapisana: {0}",
+    "Единица изменена, но не сохранена: {0}"
+  ],
+  "配置路径缺少父目录": [
+    "配置路径缺少父目录",
+    "Configuration path has no parent directory",
+    "配置路徑缺少父目錄",
+    "設定パスに親ディレクトリがありません",
+    "Le chemin de configuration n’a pas de dossier parent",
+    "La ruta de configuración no tiene directorio padre",
+    "Ścieżka konfiguracji nie ma katalogu nadrzędnego",
+    "У пути настроек нет родительского каталога"
+  ],
+  "配额": [
+    "配额",
+    "Quota",
+    "配額",
+    "クォータ",
+    "Quota",
+    "Cuota",
+    "Limit transferu",
+    "Квота"
+  ],
+  "配额 {0} {1} / {2}": [
+    "配额 {0} {1} / {2}",
+    "Quota {0} {1} / {2}",
+    "配額 {0} {1} / {2}",
+    "クォータ {0} {1} / {2}",
+    "Quota {0} {1} / {2}",
+    "Cuota {0} {1} / {2}",
+    "Limit {0} {1} / {2}",
+    "Квота {0} {1} / {2}"
+  ],
+  "配额 不限额": [
+    "配额 不限额",
+    "Quota: Unlimited",
+    "配額 不限額",
+    "クォータ：無制限",
+    "Quota : illimité",
+    "Cuota: sin límite",
+    "Limit transferu: bez ograniczeń",
+    "Квота: без ограничений"
+  ],
+  "配额 未配置": [
+    "配额 未配置",
+    "Quota: Not Configured",
+    "配額 未配置",
+    "クォータ：未設定",
+    "Quota : non configuré",
+    "Cuota: sin configurar",
+    "Limit transferu: nieustawiony",
+    "Квота: не задана"
+  ],
+  "配额 超限阻断": [
+    "配额 超限阻断",
+    "Quota: Blocked",
+    "配額阻斷",
+    "クォータによりブロック",
+    "Blocage par quota",
+    "Bloqueado por cuota",
+    "Blokada przez limit",
+    "Блокировка по квоте"
+  ],
+  "配额 超限阻断（{0} 项）": [
+    "配额 超限阻断（{0} 项）",
+    "Quota: Blocked ({0} periods)",
+    "配額 超限阻斷（{0} 項）",
+    "クォータ：遮断（{0} 期間）",
+    "Quota : bloqué ({0} périodes)",
+    "Cuota: bloqueado ({0} periodos)",
+    "Limit: zablokowano ({0} okresów)",
+    "Квота: заблокировано ({0} периодов)"
+  ],
+  "配额周期": [
+    "配额周期",
+    "Quota Period",
+    "配額週期",
+    "クォータ期間",
+    "Période du quota",
+    "Periodo de cuota",
+    "Okres limitu transferu",
+    "Период квоты"
+  ],
+  "配额必须是有效数字": [
+    "配额必须是有效数字",
+    "Quota must be a valid number",
+    "配額必須是有效數字",
+    "クォータには有効な数値を指定してください",
+    "Le quota doit être un nombre valide",
+    "La cuota debe ser un número válido",
+    "Limit transferu musi być prawidłową liczbą",
+    "Квота должна быть допустимым числом"
+  ],
+  "配额必须是非负的有限数字": [
+    "配额必须是非负的有限数字",
+    "Quota must be a finite, nonnegative number",
+    "配額必須是非負的有限數字",
+    "クォータには有限の非負数を指定してください",
+    "Le quota doit être un nombre fini positif ou nul",
+    "La cuota debe ser finita y no negativa",
+    "Limit transferu musi być skończony i nieujemny",
+    "Квота должна быть конечным неотрицательным числом"
+  ],
+  "配额换算后不能小于 1 B": [
+    "配额换算后不能小于 1 B",
+    "Converted quota must be at least 1 B",
+    "配額換算後不能小於 1 B",
+    "換算後のクォータは 1 B 以上にしてください",
+    "Le quota converti doit être d’au moins 1 B",
+    "La cuota convertida debe ser de al menos 1 B",
+    "Przeliczony limit musi wynosić co najmniej 1 B",
+    "Квота после пересчёта должна быть не менее 1 B"
+  ],
+  "配额数值过大": [
+    "配额数值过大",
+    "Quota value is too large",
+    "配額數值過大",
+    "クォータが大きすぎます",
+    "Valeur du quota trop élevée",
+    "El valor de la cuota es demasiado grande",
+    "Wartość limitu transferu jest zbyt duża",
+    "Значение квоты слишком велико"
+  ],
+  "配额正常": [
+    "配额正常",
+    "Within Quota",
+    "配額正常",
+    "クォータ内",
+    "Quota respecté",
+    "Dentro de la cuota",
+    "W granicach limitu",
+    "В пределах квоты"
+  ],
+  "配额状态": [
+    "配额状态",
+    "Quota Status",
+    "配額狀態",
+    "クォータの状態",
+    "État du quota",
+    "Estado de la cuota",
+    "Stan limitu",
+    "Состояние квоты"
+  ],
+  "配额：WAN 超限阻断（用量 / 配额）\n{0}\n\n所有已配置周期\n{1}": [
+    "配额：WAN 超限阻断（用量 / 配额）\n{0}\n\n所有已配置周期\n{1}",
+    "Quota: WAN blocked (usage / quota)\n{0}\n\nAll configured periods\n{1}",
+    "配額：WAN 超限阻斷（用量 / 配額）\n{0}\n\n所有已配置週期\n{1}",
+    "クォータ：WAN 遮断（使用量 / クォータ）\n{0}\n\n設定済みの全期間\n{1}",
+    "Quota : WAN bloqué (volume / quota)\n{0}\n\nToutes les périodes configurées\n{1}",
+    "Cuota: WAN bloqueada (consumo / cuota)\n{0}\n\nTodos los periodos configurados\n{1}",
+    "Limit: WAN zablokowany (zużycie / limit)\n{0}\n\nWszystkie skonfigurowane okresy\n{1}",
+    "Квота: WAN заблокирован (объём / квота)\n{0}\n\nВсе настроенные периоды\n{1}"
+  ],
+  "配额：所有周期均不限额": [
+    "配额：所有周期均不限额",
+    "Quota: All periods unlimited",
+    "配額：所有周期均不限額",
+    "クォータ：すべての期間が無制限",
+    "Quota : toutes les périodes illimitées",
+    "Cuota: todos los periodos sin límite",
+    "Limit: wszystkie okresy bez ograniczeń",
+    "Квота: все периоды без ограничений"
+  ],
+  "配额：未配置": [
+    "配额：未配置",
+    "Quota: Not configured",
+    "配額：未配置",
+    "クォータ：未設定",
+    "Quota : non configuré",
+    "Cuota: sin configurar",
+    "Limit: nieustawiony",
+    "Квота: не задана"
+  ],
+  "配额：正常\n{0}": [
+    "配额：正常\n{0}",
+    "Quota: Within limits\n{0}",
+    "配額：正常\n{0}",
+    "クォータ：正常\n{0}",
+    "Quota : respecté\n{0}",
+    "Cuota: dentro del límite\n{0}",
+    "Limit: w normie\n{0}",
+    "Квота: в пределах лимита\n{0}"
+  ],
+  "重复日期": [
+    "重复日期",
+    "Repeat On",
+    "重複日期",
+    "繰り返す曜日",
+    "Répéter les jours",
+    "Repetir los días",
+    "Powtarzaj w dni",
+    "Повторять по дням"
+  ],
+  "重新读取": [
+    "重新读取",
+    "Reload",
+    "重新讀取",
+    "再読み込み",
+    "Recharger",
+    "Recargar",
+    "Wczytaj ponownie",
+    "Загрузить заново"
+  ],
+  "限速": [
+    "限速",
+    "Rate Limit",
+    "限速設定",
+    "速度制限",
+    "Limite de débit",
+    "Límite de velocidad",
+    "Limit prędkości",
+    "Ограничение скорости"
+  ],
+  "限速 ↓ {0} · ↑ {1}": [
+    "限速 ↓ {0} · ↑ {1}",
+    "Limit ↓ {0} · ↑ {1}",
+    "限速 ↓ {0} · ↑ {1}",
+    "制限 ↓ {0} · ↑ {1}",
+    "Limite ↓ {0} · ↑ {1}",
+    "Límite ↓ {0} · ↑ {1}",
+    "Limit ↓ {0} · ↑ {1}",
+    "Лимит ↓ {0} · ↑ {1}"
+  ],
+  "限速 未限速": [
+    "限速 未限速",
+    "No Rate Limit",
+    "限速 未限速",
+    "速度制限なし",
+    "Aucune limite de débit",
+    "Sin límite de velocidad",
+    "Brak limitu prędkości",
+    "Без ограничения скорости"
+  ],
+  "限速必须是有效数字": [
+    "限速必须是有效数字",
+    "Rate limit must be a valid number",
+    "限速必須是有效數字",
+    "速度制限には有効な数値を指定してください",
+    "La limite de débit doit être un nombre valide",
+    "El límite de velocidad debe ser un número válido",
+    "Limit prędkości musi być prawidłową liczbą",
+    "Лимит скорости должен быть допустимым числом"
+  ],
+  "限速必须是非负的有限数字": [
+    "限速必须是非负的有限数字",
+    "Rate limit must be a finite, nonnegative number",
+    "限速必須是非負的有限數字",
+    "速度制限には有限の非負数を指定してください",
+    "La limite doit être un nombre fini positif ou nul",
+    "El límite debe ser finito y no negativo",
+    "Limit prędkości musi być skończony i nieujemny",
+    "Лимит скорости должен быть конечным неотрицательным числом"
+  ],
+  "限速换算后不能小于 1 B/s": [
+    "限速换算后不能小于 1 B/s",
+    "Converted rate limit must be at least 1 B/s",
+    "限速換算後不能小於 1 B/s",
+    "換算後の速度制限は 1 B/s 以上にしてください",
+    "La limite convertie doit être d’au moins 1 B/s",
+    "El límite convertido debe ser de al menos 1 B/s",
+    "Przeliczony limit musi wynosić co najmniej 1 B/s",
+    "Лимит после пересчёта должен быть не менее 1 B/s"
+  ],
+  "限速数值过大": [
+    "限速数值过大",
+    "Rate limit value is too large",
+    "限速數值過大",
+    "速度制限が大きすぎます",
+    "Valeur de limite trop élevée",
+    "El límite de velocidad es demasiado grande",
+    "Wartość limitu prędkości jest zbyt duża",
+    "Значение лимита скорости слишком велико"
+  ],
+  "限速规则已删除": [
+    "限速规则已删除",
+    "Rate limit rule deleted",
+    "限速規則已刪除",
+    "速度制限ルールを削除しました",
+    "Règle de débit supprimée",
+    "Regla de velocidad eliminada",
+    "Reguła prędkości usunięta",
+    "Правило скорости удалено"
+  ],
+  "限速规则已添加": [
+    "限速规则已添加",
+    "Rate limit rule added",
+    "限速規則已添加",
+    "速度制限ルールを追加しました",
+    "Règle de débit ajoutée",
+    "Regla de velocidad añadida",
+    "Reguła prędkości dodana",
+    "Правило скорости добавлено"
+  ],
+  "限速规则（{0}）": [
+    "限速规则（{0}）",
+    "Rate Limit Rules ({0})",
+    "限速規則（{0}）",
+    "速度制限ルール（{0}）",
+    "Règles de débit ({0})",
+    "Reglas de velocidad ({0})",
+    "Reguły prędkości ({0})",
+    "Правила скорости ({0})"
+  ],
+  "限速：{0} / {1} 条规则生效\n{2}{3}": [
+    "限速：{0} / {1} 条规则生效\n{2}{3}",
+    "Rate limit: {0} / {1} rules active\n{2}{3}",
+    "限速：{0} / {1} 條規則生效\n{2}{3}",
+    "速度制限：{0} / {1} ルール有効\n{2}{3}",
+    "Débit : {0} / {1} règles actives\n{2}{3}",
+    "Velocidad: {0} / {1} reglas activas\n{2}{3}",
+    "Prędkość: {0} / {1} aktywnych reguł\n{2}{3}",
+    "Скорость: {0} / {1} правил активно\n{2}{3}"
+  ],
+  "限速：未设置独立规则{0}": [
+    "限速：未设置独立规则{0}",
+    "Rate limit: No device rules{0}",
+    "限速：未設置獨立規則{0}",
+    "速度制限：個別ルールなし{0}",
+    "Débit : aucune règle individuelle{0}",
+    "Velocidad: sin reglas individuales{0}",
+    "Prędkość: brak reguł indywidualnych{0}",
+    "Скорость: нет индивидуальных правил{0}"
+  ],
+  "顺序": [
+    "顺序",
+    "Order",
+    "順序",
+    "順序",
+    "Ordre",
+    "Orden",
+    "Kolejność",
+    "Порядок"
+  ],
+  "默认探测本机网络网关的 8686 端口": [
+    "默认探测本机网络网关的 8686 端口",
+    "Probe port 8686 on the default network gateway",
+    "默認探測本機網絡網關的 8686 端口",
+    "既定のゲートウェイのポート 8686 を確認します",
+    "Tester le port 8686 de la passerelle par défaut",
+    "Probar el puerto 8686 de la puerta de enlace predeterminada",
+    "Sprawdź port 8686 bramy domyślnej",
+    "Проверка порта 8686 шлюза по умолчанию"
+  ],
+  "默认网关 {0}": [
+    "默认网关 {0}",
+    "Default gateway {0}",
+    "默認網關 {0}",
+    "既定のゲートウェイ {0}",
+    "Passerelle par défaut {0}",
+    "Puerta de enlace predeterminada {0}",
+    "Brama domyślna {0}",
+    "Шлюз по умолчанию {0}"
+  ],
+  "默认限速": [
+    "默认限速",
+    "Default Rate Limit",
+    "默認限速",
+    "既定の速度制限",
+    "Limite de débit par défaut",
+    "Límite de velocidad predeterminado",
+    "Domyślny limit prędkości",
+    "Лимит скорости по умолчанию"
+  ],
+  "默认顺序": [
+    "默认顺序",
+    "Default order",
+    "默認順序",
+    "既定の順序",
+    "Ordre par défaut",
+    "Orden predeterminado",
+    "Kolejność domyślna",
+    "Порядок по умолчанию"
+  ]
+}

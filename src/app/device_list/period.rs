@@ -1,5 +1,6 @@
 use super::BandixApp;
 use crate::app::traffic_stats::date_range_ms;
+use crate::i18n::tr;
 use chrono::{Datelike, Duration, Local, Months, NaiveDate};
 use gpui_kit::component::{
     Sizable,
@@ -24,11 +25,11 @@ impl DevicePeriod {
     pub const ALL: [Self; 5] = [Self::All, Self::Today, Self::Week, Self::Month, Self::Year];
     fn label(self) -> &'static str {
         match self {
-            Self::All => "全部",
-            Self::Today => "今天",
-            Self::Week => "本周",
-            Self::Month => "本月",
-            Self::Year => "今年",
+            Self::All => tr("全部"),
+            Self::Today => tr("今天"),
+            Self::Week => tr("本周"),
+            Self::Month => tr("本月"),
+            Self::Year => tr("今年"),
         }
     }
     fn dates(self, today: NaiveDate) -> Option<(NaiveDate, NaiveDate)> {
@@ -77,8 +78,8 @@ pub(super) fn render(app: &BandixApp, expanded: bool) -> AnyElement {
                 .id("device-period")
                 .small()
                 .text_size(px(11.0))
-                .title_prefix("周期 ")
-                .accessibility_label("设备流量统计周期")
+                .title_prefix(tr("周期 "))
+                .accessibility_label(tr("设备流量统计周期"))
                 .w_full()
                 .h(px(28.0))
                 .menu_width(px(100.0)),

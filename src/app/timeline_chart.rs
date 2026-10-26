@@ -3,6 +3,7 @@
 mod interaction;
 mod tooltip;
 
+use super::preferences::SpeedUnit;
 use super::theme::*;
 use crate::services::api::UsageTimeline;
 use gpui_kit::component::plot::{
@@ -18,6 +19,7 @@ pub(super) struct TimelinePlot {
     interactive: bool,
     visible_range: Range<usize>,
     bounds: Rc<Cell<Option<Bounds<Pixels>>>>,
+    speed_unit: SpeedUnit,
 }
 
 impl TimelinePlot {
@@ -39,7 +41,13 @@ impl TimelinePlot {
             interactive,
             visible_range: 0..count,
             bounds: Rc::new(Cell::new(None)),
+            speed_unit: SpeedUnit::default(),
         }
+    }
+
+    pub(super) fn with_speed_unit(mut self, unit: SpeedUnit) -> Self {
+        self.speed_unit = unit;
+        self
     }
 
     pub(super) fn with_viewport(
@@ -192,6 +200,7 @@ impl Plot for TimelinePlot {
                             item,
                             &self.timeline.aggregation,
                             &self.timeline.network_type,
+                            self.speed_unit,
                         )),
                 )
                 .into_any_element(),

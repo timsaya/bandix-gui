@@ -1,0 +1,30 @@
+{
+  "generator": "built-in image_gen",
+  "transparent_background": true,
+  "concepts": [
+    {
+      "key": "01-mint-b",
+      "name": "薄荷 B",
+      "prompt": "Use case: logo-brand. Asset type: a single premium desktop application icon concept for Bandix, an application for monitoring network traffic, devices, connections and DNS. Primary request: an exceptionally simple, distinctive uppercase B monogram formed from a single thick continuous rounded mint-green ribbon, whose two clear dark negative-space counters subtly suggest two traffic lanes. Style: precise flat vector-like design, confident and restrained, no fine detail. Palette: mint #6EE7B7 glyph on a solid very dark navy #101620 rounded-square app tile, matching Bandix's dark UI. Composition: front-on square 1024x1024 icon, tile occupies about 90% of canvas with balanced transparent outer margin; centered bold glyph occupies about 65% of tile width. Optically balanced, generous negative space, crisp silhouette recognizable at 24 to 32 pixels. Transparent background only outside the filled rounded-square tile. No words, no label, no caption, no device mockup, no surrounding scene, no watermark. Exactly one icon, no grid or comparison sheet.",
+      "file": "01-mint-b.png"
+    },
+    {
+      "key": "02-duplex-flow",
+      "name": "双向流量",
+      "prompt": "Use case: logo-brand. Asset type: a single distinctive desktop application icon concept for Bandix, a network traffic monitor. Primary request: a compact symbol made of two bold interlocking rounded arrows, an orange arrow going up and a cyan arrow going down, forming a strong balanced continuous duplex flow emblem. The two forms should fit together elegantly with a clean dark separation and evoke upload/download immediately; avoid tiny decorations. Style: polished minimal flat geometric logo, precise and original, front view. Palette: upload orange #F97316 and download cyan #06B6D4 on a solid deep navy #101620 rounded-square app tile. Composition: square 1024x1024, rounded-square tile about 90% of the canvas, emblem centered at 65% of tile width; consistent substantial stroke thickness, robust at 24 to 32 pixels. Transparent background outside the filled app tile only. No text, no letters, no captions, no wifi glyph, no globes, no mockup, no shadows outside the tile, no watermark. Exactly one icon.",
+      "file": "02-duplex-flow.png"
+    },
+    {
+      "key": "03-packet-link",
+      "name": "网络节点",
+      "prompt": "Use case: logo-brand. Asset type: a single professional desktop app icon concept for Bandix, a network observability application. Primary request: an original compact network mark with three substantial white rounded packet nodes connected by two broad smooth cyan links, arranged in a clear triangular topology that subtly implies a forward flowing path. The nodes and links should read as a single highly recognizable geometric emblem, not a generic diagram. Keep it extremely simple and balanced, with no extra mini nodes or chart axes. Style: restrained modern flat brand mark with a very subtle rich blue tile gradient. Palette: cobalt blue to deep indigo rounded-square app tile, white packet nodes, bright icy cyan links. Composition: square 1024x1024, front view, tile about 90% of canvas, centered mark around 64% of tile width, large negative spaces and crisp edges suitable for small icons. Transparent background outside the filled tile only. No words, no lettering, no captions, no surrounding scene or mockup, no watermark. Exactly one icon.",
+      "file": "03-packet-link.png"
+    },
+    {
+      "key": "04-glass-b",
+      "name": "玻璃 B",
+      "prompt": "Use case: logo-brand. Asset type: a single refined desktop application icon concept for Bandix, a network monitoring app. Primary request: a bold sculpted uppercase B monogram built from two softly rounded translucent glass loops joined by a strong vertical stem. A subtle cyan-to-mint internal color transition suggests two streams of network data. The B silhouette and its two large counters must remain exceptionally clear. Style: premium restrained 2.5D glass icon, almost front-facing, gentle shallow depth, soft highlights, no excessive bloom or shiny ornament. Palette: icy cyan and mint glass on a smooth very dark navy rounded-square tile. Composition: square 1024x1024, tile about 90% of canvas, centered large B about 60% of tile width, generous margins and readable at 32 pixels. Background transparent outside the filled rounded-square tile only. No text other than the B-shaped symbol, no words, no labels, no captions, no mockup or scene, no watermark. Exactly one icon.",
+      "file": "04-glass-b.png"
+    }
+  ]
+}

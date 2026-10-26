@@ -1,3 +1,4 @@
+use crate::i18n::tr;
 use chrono::{Datelike, Duration, Local, NaiveDate, TimeZone};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -30,16 +31,16 @@ impl TrafficRangePreset {
 
     pub(super) fn label(self) -> &'static str {
         match self {
-            Self::Today => "今天",
-            Self::Yesterday => "昨天",
-            Self::ThisWeek => "本周",
-            Self::LastWeek => "上周",
-            Self::ThisMonth => "本月",
-            Self::LastMonth => "上月",
-            Self::Last7Days => "最近 7 天",
-            Self::Last30Days => "最近 30 天",
-            Self::Last90Days => "最近 90 天",
-            Self::LastYear => "最近一年",
+            Self::Today => tr("今天"),
+            Self::Yesterday => tr("昨天"),
+            Self::ThisWeek => tr("本周"),
+            Self::LastWeek => tr("上周"),
+            Self::ThisMonth => tr("本月"),
+            Self::LastMonth => tr("上月"),
+            Self::Last7Days => tr("最近 7 天"),
+            Self::Last30Days => tr("最近 30 天"),
+            Self::Last90Days => tr("最近 90 天"),
+            Self::LastYear => tr("最近一年"),
         }
     }
 
@@ -106,7 +107,7 @@ impl TrafficNetworkType {
         match self {
             Self::Wan => "WAN",
             Self::Lan => "LAN",
-            Self::All => "全部",
+            Self::All => tr("全部"),
         }
     }
 }
@@ -140,8 +141,8 @@ impl TrafficAggregation {
 
     pub(super) fn label(self) -> &'static str {
         match self {
-            Self::Hourly => "按小时",
-            Self::Daily => "按天",
+            Self::Hourly => tr("按小时"),
+            Self::Daily => tr("按天"),
         }
     }
 }
@@ -176,7 +177,11 @@ impl gpui_kit::component::select::SelectItem for TimelineDeviceOption {
     type Value = Option<String>;
 
     fn title(&self) -> gpui_kit::SharedString {
-        self.label.clone().into()
+        if self.mac.is_none() {
+            tr("全部设备").into()
+        } else {
+            self.label.clone().into()
+        }
     }
     fn value(&self) -> &Self::Value {
         &self.mac
