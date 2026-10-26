@@ -147,6 +147,31 @@ impl Endpoint {
         }
         Ok(())
     }
+
+    pub fn send_json_with_response<P: Serialize, T: DeserializeOwned>(
+        &self,
+        method: &str,
+        path: &str,
+        payload: &P,
+    ) -> Result<T, String> {
+        let body = serde_json::to_vec(payload)
+            .map_err(|error| tf("JSON 编码失败：{0}", &[format!("{}", error)]))?;
+        let response = self.request(method, path, Some(&body))?;
+        if !(200..300).contains(&response.status) {
+            return Err(response.error_message());
+        }
+
+        let envelope: ApiEnvelope<T> = serde_json::from_slice(&response.body)
+            .map_err(|error| tf("JSON 解析失败：{0}", &[format!("{}", error)]))?;
+        if envelope.status != "success" {
+            return Err(envelope
+                .message
+                .unwrap_or_else(|| tr("Bandix 接口返回错误").to_string()));
+        }
+        envelope
+            .data
+            .ok_or_else(|| tr("Bandix 接口未返回 data").to_string())
+    }
 }
 
 pub struct HttpResponse {

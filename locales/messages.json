@@ -1289,6 +1289,26 @@
     "Usuń",
     "Удалить"
   ],
+  "删除所选（{0}）": [
+    "删除所选（{0}）",
+    "Delete selected ({0})",
+    "刪除所選（{0}）",
+    "選択項目を削除（{0}）",
+    "Supprimer la sélection ({0})",
+    "Eliminar selección ({0})",
+    "Usuń wybrane ({0})",
+    "Удалить выбранные ({0})"
+  ],
+  "删除 {0} 台设备？": [
+    "删除 {0} 台设备？",
+    "Delete {0} devices?",
+    "刪除 {0} 台設備？",
+    "{0} 台のデバイスを削除しますか？",
+    "Supprimer {0} appareils ?",
+    "¿Eliminar {0} dispositivos?",
+    "Usunąć urządzenia ({0})?",
+    "Удалить устройства ({0})?"
+  ],
   "删除设备？": [
     "删除设备？",
     "Delete device?",
@@ -1298,6 +1318,46 @@
     "Eliminar dispositivo",
     "Usuń urządzenie",
     "Удалить устройство"
+  ],
+  "{0} 台设备删除失败：{1}": [
+    "{0} 台设备删除失败：{1}",
+    "Failed to delete {0} devices: {1}",
+    "{0} 台設備刪除失敗：{1}",
+    "{0} 台のデバイスを削除できませんでした：{1}",
+    "Échec de la suppression de {0} appareils : {1}",
+    "No se pudieron eliminar {0} dispositivos: {1}",
+    "Nie udało się usunąć urządzeń ({0}): {1}",
+    "Не удалось удалить устройства ({0}): {1}"
+  ],
+  "全选当前列表": [
+    "全选当前列表",
+    "Select all visible devices",
+    "全選目前列表",
+    "現在の一覧をすべて選択",
+    "Sélectionner tous les appareils visibles",
+    "Seleccionar todos los dispositivos visibles",
+    "Wybierz wszystkie widoczne urządzenia",
+    "Выбрать все видимые устройства"
+  ],
+  "选择设备 {0}": [
+    "选择设备 {0}",
+    "Select device {0}",
+    "選擇設備 {0}",
+    "デバイス {0} を選択",
+    "Sélectionner l’appareil {0}",
+    "Seleccionar dispositivo {0}",
+    "Wybierz urządzenie {0}",
+    "Выбрать устройство {0}"
+  ],
+  "将删除所选设备的流量历史、昵称、限速规则和配额，此操作无法撤销。": [
+    "将删除所选设备的流量历史、昵称、限速规则和配额，此操作无法撤销。",
+    "This deletes the selected devices’ traffic history, names, rate-limit rules, and quotas. This cannot be undone.",
+    "將刪除所選設備的流量歷史、暱稱、限速規則和配額，此操作無法復原。",
+    "選択したデバイスのトラフィック履歴、名前、速度制限ルール、クォータを削除します。この操作は元に戻せません。",
+    "Cette action supprime l’historique, les noms, les règles de limitation et les quotas des appareils sélectionnés. Elle est irréversible.",
+    "Esto elimina el historial, los nombres, las reglas de límite y las cuotas de los dispositivos seleccionados. No se puede deshacer.",
+    "Spowoduje to usunięcie historii, nazw, reguł limitów i limitów transferu wybranych urządzeń. Tej operacji nie można cofnąć.",
+    "Будут удалены история, имена, правила ограничения скорости и квоты выбранных устройств. Действие нельзя отменить."
   ],
   "删除配额": [
     "删除配额",
@@ -2578,6 +2638,26 @@
     "Inactivo",
     "Nieaktywne",
     "Неактивно"
+  ],
+  "版本信息": [
+    "版本信息",
+    "Version information",
+    "版本資訊",
+    "バージョン情報",
+    "Informations de version",
+    "Información de versión",
+    "Informacje o wersji",
+    "Информация о версии"
+  ],
+  "作者": [
+    "作者",
+    "Author",
+    "作者",
+    "作者",
+    "Auteur",
+    "Autor",
+    "Autor",
+    "Автор"
   ],
   "未知": [
     "未知",

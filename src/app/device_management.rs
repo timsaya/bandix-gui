@@ -43,8 +43,9 @@ pub(super) struct DeviceManagerState {
 }
 
 pub(super) struct DeleteDeviceState {
-    device: Device,
+    devices: Vec<Device>,
     endpoint: String,
+    batch: bool,
     busy: bool,
     error: Option<String>,
 }
@@ -376,14 +377,47 @@ impl BandixApp {
     }
 
     pub(super) fn request_delete_device(&mut self, device: Device, cx: &mut Context<Self>) {
+        self.request_delete_devices(vec![device], false, cx);
+    }
+
+    pub(super) fn request_delete_selected_devices(&mut self, cx: &mut Context<Self>) {
+        let devices = self
+            .data
+            .as_ref()
+            .and_then(|data| data.devices.as_ref().ok())
+            .map(|devices| {
+                devices
+                    .iter()
+                    .filter(|device| {
+                        self.device_list
+                            .selected_macs
+                            .contains(&device.mac.to_ascii_lowercase())
+                    })
+                    .cloned()
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default();
+        self.request_delete_devices(devices, true, cx);
+    }
+
+    fn request_delete_devices(
+        &mut self,
+        devices: Vec<Device>,
+        batch: bool,
+        cx: &mut Context<Self>,
+    ) {
+        if devices.is_empty() {
+            return;
+        }
         let Some(endpoint) = self.connected_endpoint() else {
             return;
         };
         self.realtime_chart.resume();
         self.timeline_chart.end_hover();
         self.delete_device = Some(DeleteDeviceState {
-            device,
+            devices,
             endpoint,
+            batch,
             busy: false,
             error: None,
         });
@@ -407,27 +441,74 @@ impl BandixApp {
         state.busy = true;
         state.error = None;
         let endpoint = state.endpoint.clone();
-        let mac = state.device.mac.clone();
+        let devices = state.devices.clone();
+        let batch = state.batch;
         cx.notify();
-        let operation = cx.background_spawn(async move { api::delete_device(&endpoint, &mac) });
+        let operation = cx.background_spawn(async move {
+            if batch {
+                let macs = devices
+                    .iter()
+                    .map(|device| device.mac.clone())
+                    .collect::<Vec<_>>();
+                let response = api::delete_devices_batch(&endpoint, &macs)?;
+                let processed = response
+                    .deleted
+                    .into_iter()
+                    .chain(response.not_found)
+                    .map(|mac| mac.to_ascii_lowercase())
+                    .collect::<Vec<_>>();
+                let failed = response
+                    .failed
+                    .into_iter()
+                    .map(|failure| (failure.mac.to_ascii_lowercase(), failure.message))
+                    .collect::<Vec<_>>();
+                Ok((processed, failed))
+            } else {
+                let device = &devices[0];
+                api::delete_device(&endpoint, &device.mac)?;
+                Ok((vec![device.mac.to_ascii_lowercase()], Vec::new()))
+            }
+        });
         cx.spawn_in(window, async move |this, window| {
             let result = operation.await;
-            _ = this.update_in(window, |app, _, cx| match result {
-                Ok(()) => {
-                    app.delete_device = None;
-                    app.device_manager = None;
-                    if let Some(endpoint) = app.connected_endpoint() {
-                        app.start_data_refresh(endpoint, cx);
+            _ = this.update_in(window, |app, _, cx| {
+                match result {
+                    Ok((processed, failed)) => {
+                        for mac in processed {
+                            app.device_list.selected_macs.remove(&mac);
+                        }
+                        if failed.is_empty() {
+                            app.delete_device = None;
+                            app.device_manager = None;
+                        } else if let Some(state) = &mut app.delete_device {
+                            let detail = failed
+                                .iter()
+                                .map(|(mac, error)| format!("{mac}：{error}"))
+                                .collect::<Vec<_>>()
+                                .join("；");
+                            let count = failed.len();
+                            state.devices.retain(|device| {
+                                failed
+                                    .iter()
+                                    .any(|(mac, _)| mac.eq_ignore_ascii_case(device.mac.as_str()))
+                            });
+                            state.busy = false;
+                            state.error =
+                                Some(tf("{0} 台设备删除失败：{1}", &[count.to_string(), detail]));
+                        }
+                        if let Some(endpoint) = app.connected_endpoint() {
+                            app.start_data_refresh(endpoint, cx);
+                        }
                     }
-                    cx.notify();
-                }
-                Err(error) => {
-                    if let Some(state) = &mut app.delete_device {
+                    Err(error) => {
+                        let Some(state) = &mut app.delete_device else {
+                            return;
+                        };
                         state.busy = false;
                         state.error = Some(error);
                     }
-                    cx.notify();
                 }
+                cx.notify();
             });
         })
         .detach();
@@ -786,6 +867,20 @@ fn empty_line(message: &'static str) -> impl IntoElement {
 }
 
 fn delete_confirmation(state: &DeleteDeviceState, cx: &mut Context<BandixApp>) -> impl IntoElement {
+    let count = state.devices.len();
+    let title = if count == 1 {
+        tr("删除设备？").to_string()
+    } else {
+        tf("删除 {0} 台设备？", &[count.to_string()])
+    };
+    let detail = if let [device] = state.devices.as_slice() {
+        tf(
+            "将删除 {0}（{1}）的流量历史、昵称、限速规则和配额，此操作无法撤销。",
+            &[device.display_name(), device.mac.clone()],
+        )
+    } else {
+        tr("将删除所选设备的流量历史、昵称、限速规则和配额，此操作无法撤销。").to_string()
+    };
     div()
         .id("delete-device-overlay")
         .occlude()
@@ -810,20 +905,14 @@ fn delete_confirmation(state: &DeleteDeviceState, cx: &mut Context<BandixApp>) -
                         .text_size(px(16.0))
                         .font_weight(FontWeight::SEMIBOLD)
                         .text_color(rgb(color_text()))
-                        .child(tr("删除设备？")),
+                        .child(title),
                 )
                 .child(
                     div()
                         .mt_3()
                         .text_size(px(12.0))
                         .text_color(rgb(color_muted()))
-                        .child(tf(
-                            "将删除 {0}（{1}）的流量历史、昵称、限速规则和配额，此操作无法撤销。",
-                            &[
-                                format!("{}", state.device.display_name()),
-                                format!("{}", state.device.mac),
-                            ],
-                        )),
+                        .child(detail),
                 )
                 .when_some(state.error.clone(), |view, error| {
                     view.child(

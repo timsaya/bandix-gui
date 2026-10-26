@@ -8,12 +8,16 @@ use super::{
 };
 use crate::i18n::{tf, tr};
 use crate::services::api::Device;
-use gpui_kit::component::Sizable;
 use gpui_kit::component::input::{Input, InputEvent, InputState};
+use gpui_kit::component::{
+    Disableable, Sizable,
+    button::{Button, ButtonVariants},
+    checkbox::Checkbox,
+};
 
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 mod details;
 pub(super) mod period;
@@ -52,6 +56,7 @@ pub(super) struct DeviceListState {
     search_input: Option<Entity<InputState>>,
     search_query: String,
     _search_subscription: Option<Subscription>,
+    pub(super) selected_macs: HashSet<String>,
     sort: DeviceSort,
     sort_storage: Option<preferences::SortStorage>,
     sort_storage_error: Option<String>,
@@ -105,6 +110,7 @@ impl DeviceListState {
         self.search_input = None;
         self.search_query.clear();
         self._search_subscription = None;
+        self.selected_macs.clear();
     }
 
     pub fn stabilize_order(&mut self, devices: &mut [Device]) {
@@ -126,6 +132,14 @@ impl DeviceListState {
             .iter()
             .map(|device| device.mac.to_ascii_lowercase())
             .collect();
+    }
+
+    pub fn retain_selection(&mut self, devices: &[Device]) {
+        let available = devices
+            .iter()
+            .map(|device| device.mac.to_ascii_lowercase())
+            .collect::<HashSet<_>>();
+        self.selected_macs.retain(|mac| available.contains(mac));
     }
 }
 
@@ -156,6 +170,7 @@ impl BandixApp {
             self.timeline_chart.end_hover();
         } else {
             window.blur(cx);
+            self.device_list.selected_macs.clear();
         }
         self.device_list.view.toggle_expanded();
         self.device_period.update(cx, |_, cx| cx.notify());
@@ -190,6 +205,33 @@ impl BandixApp {
         self.device_list.view.reset_expanded_scroll();
         cx.notify();
     }
+
+    pub(super) fn set_device_selected(
+        &mut self,
+        mac: String,
+        selected: bool,
+        cx: &mut Context<Self>,
+    ) {
+        let mac = mac.to_ascii_lowercase();
+        if selected {
+            self.device_list.selected_macs.insert(mac);
+        } else {
+            self.device_list.selected_macs.remove(&mac);
+        }
+        cx.notify();
+    }
+
+    fn set_devices_selected(&mut self, macs: Vec<String>, selected: bool, cx: &mut Context<Self>) {
+        for mac in macs {
+            let mac = mac.to_ascii_lowercase();
+            if selected {
+                self.device_list.selected_macs.insert(mac);
+            } else {
+                self.device_list.selected_macs.remove(&mac);
+            }
+        }
+        cx.notify();
+    }
 }
 
 pub(super) fn render(
@@ -207,11 +249,15 @@ pub(super) fn render(
     let mut matches = search::filter_devices(devices, query);
     app.device_list.sort.apply(&mut matches);
     let visible_count = matches.len();
+    let visible_macs = matches
+        .iter()
+        .map(|device| device.mac.to_ascii_lowercase())
+        .collect::<Vec<_>>();
     let rows = div().children(
         matches
             .into_iter()
             .cloned()
-            .map(|device| row::render(app, device, mode, cx).into_any_element()),
+            .map(|device| row::render(app, device, mode, expanded, cx).into_any_element()),
     );
     let error = app
         .data
@@ -287,6 +333,7 @@ pub(super) fn render(
                         .child(super::global_rate_limit::header_button(app, expanded, cx))
                         .child(sort_menu::render(app, expanded, cx))
                         .child(mode_switch(mode, cx))
+                        .when(expanded, |view| view.child(batch_delete_button(app, cx)))
                         .child(
                             div()
                                 .text_size(px(11.0))
@@ -330,7 +377,7 @@ pub(super) fn render(
                         ),
                 ),
         )
-        .child(table_header())
+        .child(table_header(app, expanded, visible_macs, cx))
         .child(body)
         .into_any_element()
 }
@@ -368,7 +415,16 @@ fn search_controls(app: &BandixApp) -> AnyElement {
         .into_any_element()
 }
 
-fn table_header() -> impl IntoElement {
+fn table_header(
+    app: &BandixApp,
+    expanded: bool,
+    visible_macs: Vec<String>,
+    cx: &mut Context<BandixApp>,
+) -> impl IntoElement {
+    let all_visible_selected = !visible_macs.is_empty()
+        && visible_macs
+            .iter()
+            .all(|mac| app.device_list.selected_macs.contains(mac));
     div()
         .flex_none()
         .flex()
@@ -377,8 +433,28 @@ fn table_header() -> impl IntoElement {
         .px_2()
         .rounded_md()
         .bg(rgb(color_table_header()))
-        .text_size(px(11.0))
+        .text_size(px(12.0))
         .text_color(rgb(color_muted()))
+        .when(expanded, |header| {
+            header.child(
+                div()
+                    .w(px(34.0))
+                    .flex_none()
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .child(
+                        Checkbox::new("select-visible-devices")
+                            .xsmall()
+                            .checked(all_visible_selected)
+                            .disabled(visible_macs.is_empty())
+                            .accessibility_label(tr("全选当前列表"))
+                            .on_change(cx.listener(move |app, checked, _, cx| {
+                                app.set_devices_selected(visible_macs.clone(), *checked, cx)
+                            })),
+                    ),
+            )
+        })
         .child(row::cell(1.9).child(tr("设备信息")))
         .child(row::cell(1.2).child(tr("LAN 流量")))
         .child(row::cell(1.2).child(tr("WAN 流量")))
@@ -390,6 +466,17 @@ fn table_header() -> impl IntoElement {
                 .text_right()
                 .child(tr("操作")),
         )
+}
+
+fn batch_delete_button(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
+    let selected = app.device_list.selected_macs.len();
+    Button::new("delete-selected-devices")
+        .danger()
+        .small()
+        .h(px(26.0))
+        .label(tf("删除所选（{0}）", &[selected.to_string()]))
+        .disabled(selected == 0)
+        .on_click(cx.listener(|app, _, _, cx| app.request_delete_selected_devices(cx)))
 }
 
 fn mode_switch(mode: DeviceListMode, cx: &mut Context<BandixApp>) -> impl IntoElement {

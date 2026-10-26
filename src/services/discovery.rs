@@ -1,5 +1,6 @@
 use super::http::{DEFAULT_PORT, Endpoint};
 use crate::i18n::{tf, tr};
+use serde::Deserialize;
 use std::net::Ipv4Addr;
 use std::process::Command;
 use std::time::Instant;
@@ -16,6 +17,7 @@ pub struct ProbeReport {
     pub endpoint: String,
     pub gateway: Option<String>,
     pub latency_ms: u128,
+    pub server_version: Option<String>,
     pub traffic: ModuleProbe,
     pub connection: ModuleProbe,
     pub dns: ModuleProbe,
@@ -54,6 +56,11 @@ pub fn probe_endpoint(input: &str) -> Result<ProbeReport, String> {
     endpoint.connect()?;
 
     let latency_ms = started.elapsed().as_millis();
+    let server_version = endpoint
+        .get_json::<SystemInfo>("/api/system/info")
+        .ok()
+        .map(|info| info.version)
+        .filter(|version| !version.trim().is_empty());
     let traffic = probe_api(&endpoint, "/api/traffic/devices");
     let connection = probe_api(&endpoint, "/api/connection/devices");
     let dns = probe_api(&endpoint, "/api/dns/stats");
@@ -62,10 +69,16 @@ pub fn probe_endpoint(input: &str) -> Result<ProbeReport, String> {
         endpoint: endpoint.display_url(),
         gateway: None,
         latency_ms,
+        server_version,
         traffic,
         connection,
         dns,
     })
+}
+
+#[derive(Deserialize)]
+struct SystemInfo {
+    version: String,
 }
 
 fn probe_api(endpoint: &Endpoint, path: &str) -> ModuleProbe {

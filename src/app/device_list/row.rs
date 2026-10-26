@@ -4,8 +4,8 @@ use crate::app::{BandixApp, theme::*, traffic_stats::format_timestamp};
 use crate::i18n::{tf, tr};
 use crate::services::api::{Device, format_bytes};
 use gpui_kit::assets::IconName;
-use gpui_kit::component::Icon;
 use gpui_kit::component::tooltip::Tooltip;
+use gpui_kit::component::{Icon, Sizable, checkbox::Checkbox};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
@@ -32,9 +32,14 @@ pub(super) fn render(
     app: &BandixApp,
     device: Device,
     mode: DeviceListMode,
+    selectable: bool,
     cx: &mut Context<BandixApp>,
 ) -> impl IntoElement {
     let online = device.is_online();
+    let selected = app
+        .device_list
+        .selected_macs
+        .contains(&device.mac.to_ascii_lowercase());
     div()
         .id(format!("device-row-{}", device.mac))
         .flex()
@@ -45,6 +50,10 @@ pub(super) fn render(
         .border_color(rgb(color_border()).opacity(0.72))
         .text_size(px(11.0))
         .text_color(rgb(color_text()))
+        .when(selected, |row| row.bg(rgb(color_accent()).opacity(0.07)))
+        .when(selectable, |row| {
+            row.child(device_checkbox(&device, selected, cx))
+        })
         .child(device_info(&device, mode))
         .child(traffic_cell(
             "lan",
@@ -71,6 +80,30 @@ pub(super) fn render(
             app.speed_unit,
         ))
         .child(actions(device, cx))
+}
+
+fn device_checkbox(
+    device: &Device,
+    selected: bool,
+    cx: &mut Context<BandixApp>,
+) -> impl IntoElement {
+    let mac = device.mac.clone();
+    let label = tf("选择设备 {0}", &[device.display_name()]);
+    div()
+        .w(px(34.0))
+        .flex_none()
+        .flex()
+        .items_center()
+        .justify_center()
+        .child(
+            Checkbox::new(format!("select-device-{mac}"))
+                .xsmall()
+                .checked(selected)
+                .accessibility_label(label)
+                .on_change(cx.listener(move |app, checked, _, cx| {
+                    app.set_device_selected(mac.clone(), *checked, cx)
+                })),
+        )
 }
 
 fn traffic_cell(
@@ -269,10 +302,11 @@ fn connection_icon(device: &Device) -> impl IntoElement {
 }
 
 fn wifi_band_tag(band: &'static str) -> impl IntoElement {
-    let color = if band == "2.4G" {
-        color_accent()
-    } else {
-        color_blue()
+    let color = match band {
+        "2.4G" => color_accent(),
+        "5G" => color_blue(),
+        "6G" => color_orange(),
+        _ => color_muted(),
     };
     connection_tag(band, color)
         .w(px(42.0))
@@ -325,6 +359,7 @@ fn traffic_line(
         .items_center()
         .gap_1()
         .whitespace_nowrap()
+        .text_size(px(12.0))
         .tooltip(move |window, cx| Tooltip::new(detail.clone()).build(window, cx))
         .child(line(arrow, color).flex_none())
         .child(
@@ -332,7 +367,7 @@ fn traffic_line(
                 .flex_none()
                 .font_weight(FontWeight::MEDIUM),
         )
-        .child(line(usage, color_muted()).text_size(px(10.0)))
+        .child(line(usage, color_muted()).text_size(px(11.0)))
 }
 
 fn actions(device: Device, cx: &mut Context<BandixApp>) -> impl IntoElement {

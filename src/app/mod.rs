@@ -499,6 +499,7 @@ impl BandixApp {
                 }
                 if let Ok(devices) = &mut data.devices {
                     app.device_list.stabilize_order(devices);
+                    app.device_list.retain_selection(devices);
                 }
                 app.data = Some(data);
                 app.device_list.period_pending = false;

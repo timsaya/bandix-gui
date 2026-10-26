@@ -52,7 +52,7 @@ pub(super) fn render(state: &DnsPage, cx: &Context<crate::app::BandixApp>) -> An
                                             cell(*width).child(text(
                                                 crate::i18n::tr(label),
                                                 color_muted(),
-                                                11.0,
+                                                12.0,
                                             ))
                                         })),
                                 )
@@ -118,16 +118,16 @@ fn row(index: usize, query: &DnsQuery) -> impl IntoElement {
                 .flex()
                 .flex_col()
                 .gap_1()
-                .child(text(date.to_string(), color_muted(), 10.0))
-                .child(text(time.to_string(), color_text(), 11.0)),
+                .child(text(date.to_string(), color_muted(), 11.0))
+                .child(text(time.to_string(), color_text(), 12.0)),
         )
         .child(
             cell(COLUMNS[1].1)
                 .id("domain")
-                .child(text(domain.clone(), color_text(), 11.0).text_ellipsis())
+                .child(text(domain.clone(), color_text(), 12.0).text_ellipsis())
                 .tooltip(move |window, cx| Tooltip::new(domain.clone()).build(window, cx)),
         )
-        .child(cell(COLUMNS[2].1).child(text(query.query_type.clone(), color_blue(), 11.0)))
+        .child(cell(COLUMNS[2].1).child(text(query.query_type.clone(), color_blue(), 12.0)))
         .child(
             cell(COLUMNS[3].1).child(
                 div()
@@ -152,7 +152,7 @@ fn row(index: usize, query: &DnsQuery) -> impl IntoElement {
                     .response_time_ms
                     .map_or_else(|| "—".into(), |ms| format!("{ms} ms")),
                 color_text(),
-                11.0,
+                12.0,
             )),
         )
         .child(
@@ -161,9 +161,9 @@ fn row(index: usize, query: &DnsQuery) -> impl IntoElement {
                 .flex()
                 .flex_col()
                 .gap_1()
-                .child(text(device.to_string(), color_text(), 11.0).text_ellipsis())
+                .child(text(device.to_string(), color_text(), 12.0).text_ellipsis())
                 .child(
-                    text(empty(query.device_ip()).to_string(), color_muted(), 10.0).text_ellipsis(),
+                    text(empty(query.device_ip()).to_string(), color_muted(), 11.0).text_ellipsis(),
                 )
                 .tooltip(move |window, cx| Tooltip::new(device_tip.clone()).build(window, cx)),
         )
@@ -171,7 +171,7 @@ fn row(index: usize, query: &DnsQuery) -> impl IntoElement {
             cell(COLUMNS[6].1)
                 .id("dns-server")
                 .child(
-                    text(empty(query.dns_server()).to_string(), color_muted(), 11.0)
+                    text(empty(query.dns_server()).to_string(), color_muted(), 12.0)
                         .text_ellipsis(),
                 )
                 .tooltip({
@@ -230,7 +230,7 @@ fn results(query: &DnsQuery) -> impl IntoElement {
                 } else {
                     color_text()
                 },
-                10.0,
+                11.0,
             )
             .text_ellipsis(),
         )

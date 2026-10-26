@@ -229,6 +229,30 @@ pub fn delete_device(endpoint: &str, mac: &str) -> ApiResult<()> {
     )
 }
 
+pub fn delete_devices_batch(
+    endpoint: &str,
+    macs: &[String],
+) -> ApiResult<BatchDeleteDevicesResponse> {
+    Endpoint::parse(endpoint)?.send_json_with_response(
+        "DELETE",
+        "/api/traffic/devices/batch",
+        &serde_json::json!({ "macs": macs }),
+    )
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct BatchDeleteDevicesResponse {
+    pub deleted: Vec<String>,
+    pub not_found: Vec<String>,
+    pub failed: Vec<BatchDeleteDeviceFailure>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct BatchDeleteDeviceFailure {
+    pub mac: String,
+    pub message: String,
+}
+
 #[derive(Clone, Debug, Deserialize)]
 struct DevicesResponse {
     #[serde(rename = "d")]
@@ -247,8 +271,8 @@ pub struct Device {
     #[serde(rename = "conn")]
     pub connection_type: String,
     pub uplink: String,
-    #[serde(rename = "w_ch")]
-    pub wifi_channel: u32,
+    #[serde(rename = "w_freq", default)]
+    pub wifi_frequency_mhz: u32,
     #[serde(rename = "l_rx_b", default)]
     pub lan_rx_bytes: u64,
     #[serde(rename = "l_tx_b", default)]
@@ -296,9 +320,10 @@ impl Device {
         if self.connection_type != "wifi" {
             return None;
         }
-        match self.wifi_channel {
-            1..=14 => Some("2.4G"),
-            15..=165 => Some("5G"),
+        match self.wifi_frequency_mhz {
+            2400..=2500 => Some("2.4G"),
+            4900..=5924 => Some("5G"),
+            5925..=7125 => Some("6G"),
             _ => None,
         }
     }

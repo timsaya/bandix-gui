@@ -74,7 +74,7 @@ pub(super) fn render(
                                     cell(*width).child(text(
                                         crate::i18n::tr(label),
                                         color_muted(),
-                                        11.0,
+                                        12.0,
                                     ))
                                 })),
                         )
@@ -187,9 +187,9 @@ fn row(
             } else {
                 color_download()
             },
-            11.0,
+            12.0,
         )))
-        .child(cell(COLUMNS[1].1).child(text(state, color, 10.0)))
+        .child(cell(COLUMNS[1].1).child(text(state, color, 12.0)))
         .child(address(
             "orig.src",
             COLUMNS[2].1,
@@ -237,7 +237,7 @@ fn row(
                 flow.flags.join(" · ")
             },
             color_muted(),
-            10.0,
+            11.0,
         )))
 }
 fn cell(width: f32) -> Div {
@@ -267,7 +267,7 @@ fn address(
         .flex()
         .flex_col()
         .gap_1()
-        .child(text(ip.to_string(), color_text(), 11.0).text_ellipsis())
+        .child(text(ip.to_string(), color_text(), 12.0).text_ellipsis())
         .child(text(
             if port == 0 {
                 "—".into()
@@ -275,13 +275,13 @@ fn address(
                 tf("端口 {0}", &[format!("{}", port)])
             },
             color_muted(),
-            10.0,
+            11.0,
         ));
     if let Some(location) = location {
-        result = result.child(text(location, color_download(), 10.0).text_ellipsis());
+        result = result.child(text(location, color_download(), 11.0).text_ellipsis());
     }
     if let Some(network) = network {
-        result = result.child(text(network, color_muted(), 10.0).text_ellipsis());
+        result = result.child(text(network, color_muted(), 11.0).text_ellipsis());
     }
     result.tooltip(move |window, cx| Tooltip::new(full.clone()).build(window, cx))
 }
@@ -350,11 +350,11 @@ fn usage(width: f32, packets: u64, bytes: u64, color: u32) -> Div {
         .flex()
         .flex_col()
         .gap_1()
-        .child(text(format_bytes(bytes), color, 11.0))
+        .child(text(format_bytes(bytes), color, 12.0))
         .child(text(
             tf("{0} 包", &[format!("{}", packets)]),
             color_muted(),
-            10.0,
+            11.0,
         ))
 }
 fn notice(message: &str, color: u32) -> AnyElement {

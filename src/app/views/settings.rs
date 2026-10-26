@@ -6,10 +6,13 @@ use gpui_kit::component::{
     Disableable, Sizable,
     button::{Button, ButtonVariants},
     input::Input,
+    link::Link,
     select::Select,
 };
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
+
+const AUTHOR_GITHUB_URL: &str = "https://github.com/timsaya";
 
 pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
     div()
@@ -35,6 +38,7 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoE
                     )
                 }),
         )
+        .child(version_information(app))
 }
 
 fn card() -> Div {
@@ -45,6 +49,75 @@ fn card() -> Div {
         .border_1()
         .border_color(rgb(color_border()))
         .p_4()
+}
+
+fn version_information(app: &BandixApp) -> impl IntoElement {
+    let server_version = match &app.discovery {
+        DiscoveryState::Connected(report) => report
+            .server_version
+            .as_ref()
+            .map(|version| format!("v{version}"))
+            .unwrap_or_else(|| tr("未知").to_string()),
+        DiscoveryState::Searching(_) => tr("连接中…").to_string(),
+        DiscoveryState::Idle | DiscoveryState::Failed(_) => tr("未连接").to_string(),
+    };
+
+    card()
+        .child(panel_title(tr("版本信息")))
+        .child(version_row(
+            "Bandix GUI",
+            format!("v{}", env!("CARGO_PKG_VERSION")),
+        ))
+        .child(
+            version_row("Bandix Server", server_version)
+                .border_t_1()
+                .border_color(rgb(color_border())),
+        )
+        .child(author_row().border_t_1().border_color(rgb(color_border())))
+}
+
+fn version_row(label: &'static str, version: String) -> Div {
+    div()
+        .py_3()
+        .flex()
+        .items_center()
+        .justify_between()
+        .gap_4()
+        .child(
+            div()
+                .text_size(px(11.0))
+                .font_weight(FontWeight::MEDIUM)
+                .text_color(rgb(color_text()))
+                .child(label),
+        )
+        .child(
+            div()
+                .text_size(px(11.0))
+                .text_color(rgb(color_muted()))
+                .child(version),
+        )
+}
+
+fn author_row() -> Div {
+    div()
+        .py_3()
+        .flex()
+        .items_center()
+        .justify_between()
+        .gap_4()
+        .child(
+            div()
+                .text_size(px(11.0))
+                .font_weight(FontWeight::MEDIUM)
+                .text_color(rgb(color_text()))
+                .child(tr("作者")),
+        )
+        .child(
+            Link::new("author-github")
+                .href(AUTHOR_GITHUB_URL)
+                .text_size(px(11.0))
+                .child("github.com/timsaya"),
+        )
 }
 
 fn service_connection(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
