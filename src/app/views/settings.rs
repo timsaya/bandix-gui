@@ -325,7 +325,7 @@ fn speed_unit_settings(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl Int
     .child(
         div().w(px(300.0)).flex_none().flex().gap_2().children(
             [
-                ("speed-unit-bytes", SpeedUnit::Bytes, "字节（MB/s）"),
+                ("speed-unit-bytes", SpeedUnit::Bytes, "字节（MiB/s）"),
                 ("speed-unit-bits", SpeedUnit::Bits, "比特（Mbps）"),
             ]
             .map(|(id, unit, label)| {

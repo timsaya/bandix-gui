@@ -141,10 +141,7 @@ pub fn fetch_usage_ranking(
     endpoint.get_json(&path)
 }
 
-pub fn fetch_device_controls(
-    endpoint: &str,
-    mac: &str,
-) -> ApiResult<(Vec<ScheduledRateLimit>, Option<TrafficQuotaStatus>)> {
+pub fn fetch_device_controls(endpoint: &str, mac: &str) -> ApiResult<DeviceControls> {
     let endpoint = Endpoint::parse(endpoint)?;
     let schedules = endpoint
         .get_json::<ScheduledRateLimitsResponse>("/api/traffic/limits/schedule")?
@@ -152,12 +149,16 @@ pub fn fetch_device_controls(
         .into_iter()
         .filter(|rule| rule.mac.eq_ignore_ascii_case(mac))
         .collect();
-    let quota = endpoint
-        .get_json::<TrafficQuotasResponse>("/api/traffic/quotas")?
+    let response = endpoint.get_json::<TrafficQuotasResponse>("/api/traffic/quotas")?;
+    let quota = response
         .quotas
         .into_iter()
         .find(|quota| quota.mac.eq_ignore_ascii_case(mac));
-    Ok((schedules, quota))
+    Ok(DeviceControls {
+        schedules,
+        quota,
+        supports_quota_modes: response.supports_quota_modes,
+    })
 }
 
 pub fn set_device_hostname(endpoint: &str, mac: &str, hostname: &str) -> ApiResult<()> {
@@ -197,20 +198,49 @@ pub fn delete_scheduled_limit(endpoint: &str, id: &str) -> ApiResult<()> {
     )
 }
 
-pub fn set_traffic_quota(endpoint: &str, mac: &str, limits: [u64; 6]) -> ApiResult<()> {
-    Endpoint::parse(endpoint)?.send_json(
-        "PUT",
-        "/api/traffic/quotas",
-        &serde_json::json!({
-            "mac": mac,
-            "minute_bytes": limits[0],
-            "hourly_bytes": limits[1],
-            "daily_bytes": limits[2],
-            "weekly_bytes": limits[3],
-            "monthly_bytes": limits[4],
-            "total_bytes": limits[5],
-        }),
-    )
+pub fn set_traffic_quota(endpoint: &str, mac: &str, config: &QuotaConfig) -> ApiResult<()> {
+    let endpoint = Endpoint::parse(endpoint)?;
+    // Older services silently ignore new fields. Recheck before a directional write.
+    if config.mode == QuotaMode::Directional
+        && !endpoint
+            .get_json::<TrafficQuotasResponse>("/api/traffic/quotas")?
+            .supports_quota_modes
+    {
+        return Err(tr("此服务端仅支持合计配额，请升级 Bandix 后使用独立配额").into());
+    }
+    endpoint.send_json("PUT", "/api/traffic/quotas", &config.payload(mac))
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct QuotaConfig {
+    pub mode: QuotaMode,
+    pub combined: [u64; 6],
+    pub upload: [u64; 6],
+    pub download: [u64; 6],
+}
+
+impl QuotaConfig {
+    fn payload(&self, mac: &str) -> serde_json::Value {
+        fn limits(values: [u64; 6]) -> serde_json::Value {
+            serde_json::json!({
+                "minute_bytes": values[0], "hourly_bytes": values[1],
+                "daily_bytes": values[2], "weekly_bytes": values[3],
+                "monthly_bytes": values[4], "total_bytes": values[5]
+            })
+        }
+        let directional = self.mode == QuotaMode::Directional;
+        let mut body = limits(if directional { [0; 6] } else { self.combined });
+        body["mac"] = mac.into();
+        body["mode"] = if directional {
+            "directional"
+        } else {
+            "combined"
+        }
+        .into();
+        body["upload"] = limits(if directional { self.upload } else { [0; 6] });
+        body["download"] = limits(if directional { self.download } else { [0; 6] });
+        body
+    }
 }
 
 pub fn delete_traffic_quota(endpoint: &str, mac: &str) -> ApiResult<()> {
@@ -362,9 +392,17 @@ struct ScheduledRateLimitsResponse {
     limits: Vec<ScheduledRateLimit>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-pub struct TrafficQuotaStatus {
-    pub mac: String,
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum QuotaMode {
+    #[default]
+    Combined,
+    Directional,
+}
+
+#[derive(Clone, Debug, Default, Deserialize)]
+#[serde(default)]
+pub struct QuotaPeriodStatus {
     pub minute_bytes: u64,
     pub hourly_bytes: u64,
     pub daily_bytes: u64,
@@ -381,7 +419,7 @@ pub struct TrafficQuotaStatus {
     pub exceeded_periods: Vec<String>,
 }
 
-impl TrafficQuotaStatus {
+impl QuotaPeriodStatus {
     pub fn limits(&self) -> [u64; 6] {
         [
             self.minute_bytes,
@@ -406,8 +444,27 @@ impl TrafficQuotaStatus {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct TrafficQuotaStatus {
+    pub mac: String,
+    #[serde(default)]
+    pub mode: QuotaMode,
+    #[serde(flatten)]
+    pub combined: QuotaPeriodStatus,
+    pub upload: Option<QuotaPeriodStatus>,
+    pub download: Option<QuotaPeriodStatus>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
 struct TrafficQuotasResponse {
     quotas: Vec<TrafficQuotaStatus>,
+    #[serde(default)]
+    supports_quota_modes: bool,
+}
+
+pub struct DeviceControls {
+    pub schedules: Vec<ScheduledRateLimit>,
+    pub quota: Option<TrafficQuotaStatus>,
+    pub supports_quota_modes: bool,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -966,7 +1023,7 @@ fn dns_queries_path(filter: &DnsQueryFilter, page: usize, page_size: usize) -> S
 }
 
 pub fn format_bytes(bytes: u64) -> String {
-    const UNITS: [&str; 5] = ["B", "KB", "MB", "GB", "TB"];
+    const UNITS: [&str; 5] = ["B", "KiB", "MiB", "GiB", "TiB"];
     let mut value = bytes as f64;
     let mut unit = 0;
     while value >= 1024.0 && unit < UNITS.len() - 1 {
@@ -1348,5 +1405,166 @@ mod tests {
         );
         let queries = fetch_dns_queries(&endpoint, &DnsQueryFilter::default(), 1, 20);
         assert!(queries.is_ok(), "dns queries: {:?}", queries.err());
+    }
+    fn quota_server(
+        replies: Vec<serde_json::Value>,
+    ) -> (
+        String,
+        std::thread::JoinHandle<Vec<(String, serde_json::Value)>>,
+    ) {
+        use std::io::{Read, Write};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let endpoint = listener.local_addr().unwrap().to_string();
+        let thread = std::thread::spawn(move || {
+            let mut requests = Vec::new();
+            for data in replies {
+                let (mut stream, _) = listener.accept().unwrap();
+                stream
+                    .set_read_timeout(Some(std::time::Duration::from_secs(2)))
+                    .unwrap();
+                let mut bytes = Vec::new();
+                let (header_end, length) = loop {
+                    let mut chunk = [0; 4096];
+                    let count = stream.read(&mut chunk).unwrap();
+                    assert!(count > 0);
+                    bytes.extend_from_slice(&chunk[..count]);
+                    if let Some(end) = bytes.windows(4).position(|part| part == b"\r\n\r\n") {
+                        let headers = String::from_utf8_lossy(&bytes[..end]);
+                        let length = headers
+                            .lines()
+                            .find_map(|line| {
+                                line.to_ascii_lowercase()
+                                    .strip_prefix("content-length: ")
+                                    .map(|v| v.parse::<usize>().unwrap())
+                            })
+                            .unwrap_or(0);
+                        if bytes.len() >= end + 4 + length {
+                            break (end, length);
+                        }
+                    }
+                };
+                let headers = String::from_utf8_lossy(&bytes[..header_end]);
+                let body = if length == 0 {
+                    serde_json::Value::Null
+                } else {
+                    serde_json::from_slice(&bytes[header_end + 4..header_end + 4 + length]).unwrap()
+                };
+                requests.push((headers.lines().next().unwrap().to_owned(), body));
+                let response = serde_json::json!({"status":"success", "data":data}).to_string();
+                write!(
+                    stream,
+                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    response.len(),
+                    response
+                )
+                .unwrap();
+            }
+            requests
+        });
+        (endpoint, thread)
+    }
+
+    #[test]
+    fn quota_modes_decode_old_and_new_service_responses() {
+        let legacy: TrafficQuotaStatus = serde_json::from_value(
+            serde_json::json!({"mac":"aa", "daily_bytes":100, "daily_used_bytes":75}),
+        )
+        .unwrap();
+        assert_eq!(legacy.mode, QuotaMode::Combined);
+        assert_eq!(legacy.combined.daily_used_bytes, 75);
+        assert!(legacy.upload.is_none());
+        let separate: TrafficQuotaStatus = serde_json::from_value(
+            serde_json::json!({"mac":"aa", "mode":"directional", "blocked":true,
+            "upload":{"daily_bytes":100,"daily_used_bytes":100,"blocked":true},
+            "download":{"daily_bytes":200,"daily_used_bytes":50,"blocked":false}}),
+        )
+        .unwrap();
+        assert_eq!(separate.mode, QuotaMode::Directional);
+        assert!(separate.upload.unwrap().blocked);
+        assert_eq!(separate.download.unwrap().daily_used_bytes, 50);
+        assert!(
+            serde_json::from_value::<TrafficQuotaStatus>(
+                serde_json::json!({"mac":"aa","mode":"both"})
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn quota_write_is_exclusive_and_keeps_large_byte_values() {
+        for mode in [QuotaMode::Combined, QuotaMode::Directional] {
+            let mut replies = Vec::new();
+            if mode == QuotaMode::Directional {
+                replies.push(serde_json::json!({"quotas":[],"supports_quota_modes":true}));
+            }
+            replies.push(serde_json::Value::Null);
+            let (endpoint, server) = quota_server(replies);
+            let config = QuotaConfig {
+                mode,
+                combined: [5_368_709_121; 6],
+                upload: [1_099_511_627_776; 6],
+                download: [9_007_199_254_740_993; 6],
+            };
+            set_traffic_quota(&endpoint, "aa:bb:cc:dd:ee:ff", &config).unwrap();
+            let requests = server.join().unwrap();
+            let (request, body) = requests.last().unwrap();
+            assert!(request.starts_with("PUT /api/traffic/quotas "));
+            for period in ["minute", "hourly", "daily", "weekly", "monthly", "total"] {
+                let key = format!("{period}_bytes");
+                if mode == QuotaMode::Combined {
+                    assert_eq!(requests.len(), 1); // Old servers need no capability endpoint extension.
+                    assert_eq!(body[&key], 5_368_709_121_u64);
+                    assert_eq!(body["upload"][&key], 0);
+                    assert_eq!(body["download"][&key], 0);
+                    assert_eq!(body["mode"], "combined");
+                } else {
+                    assert!(requests[0].0.starts_with("GET /api/traffic/quotas "));
+                    assert_eq!(body[&key], 0);
+                    assert_eq!(body["upload"][&key], 1_099_511_627_776_u64);
+                    assert_eq!(body["download"][&key], 9_007_199_254_740_993_u64);
+                    assert_eq!(body["mode"], "directional");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn legacy_service_cannot_silently_accept_a_directional_quota() {
+        for capability in [
+            serde_json::json!({"quotas":[]}),
+            serde_json::json!({"quotas":[],"supports_directional":true,"supports_quota_modes":false}),
+        ] {
+            let (endpoint, server) = quota_server(vec![capability]);
+            let error = set_traffic_quota(
+                &endpoint,
+                "aa",
+                &QuotaConfig {
+                    mode: QuotaMode::Directional,
+                    ..Default::default()
+                },
+            )
+            .unwrap_err();
+            assert_eq!(
+                error,
+                tr("此服务端仅支持合计配额，请升级 Bandix 后使用独立配额")
+            );
+            let requests = server.join().unwrap();
+            assert_eq!(requests.len(), 1);
+            assert!(requests[0].0.starts_with("GET "));
+        }
+    }
+
+    #[test]
+    fn empty_quota_lists_still_report_mode_capability() {
+        for supported in [false, true] {
+            let (endpoint, server) = quota_server(vec![
+                serde_json::json!({"limits":[]}),
+                serde_json::json!({"quotas":[],"supports_quota_modes":supported}),
+            ]);
+            let controls = fetch_device_controls(&endpoint, "aa").unwrap();
+            assert_eq!(controls.supports_quota_modes, supported);
+            assert!(controls.quota.is_none());
+            server.join().unwrap();
+        }
     }
 }

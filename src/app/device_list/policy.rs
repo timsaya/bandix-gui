@@ -7,7 +7,8 @@ use crate::app::quota_usage::{QuotaUsage, blocking_periods, configured_periods};
 use crate::app::theme::*;
 use crate::i18n::{tf, tr};
 use crate::services::api::{
-    ApiResult, DashboardData, GlobalRateLimit, ScheduledRateLimit, TrafficQuotaStatus, format_bytes,
+    ApiResult, DashboardData, GlobalRateLimit, QuotaMode, ScheduledRateLimit, TrafficQuotaStatus,
+    format_bytes,
 };
 use chrono::{Datelike, Local, Timelike};
 use gpui_kit::component::tooltip::Tooltip;
@@ -39,7 +40,14 @@ pub(super) fn render(
     );
     let quota = quota_status(data.map(|data| &data.quotas), mac);
     let tooltip = format!("{}\n\n{}", limits.detail, quota.detail);
-    let visible_periods = if mode == DeviceListMode::Detailed {
+    let directional = data
+        .and_then(|d| d.quotas.as_ref().ok())
+        .is_some_and(|quotas| {
+            quotas
+                .iter()
+                .any(|q| q.mac.eq_ignore_ascii_case(mac) && q.mode == QuotaMode::Directional)
+        });
+    let visible_periods = if mode == DeviceListMode::Detailed || directional {
         quota.usage_lines.len()
     } else {
         1
@@ -233,6 +241,73 @@ fn most_used_quota(quota: &TrafficQuotaStatus) -> Option<QuotaUsage> {
     })
 }
 
+fn directional_quota_status(quota: &TrafficQuotaStatus) -> StatusLine {
+    let upload_blocked = quota.upload.as_ref().is_some_and(|q| q.blocked);
+    let download_blocked = quota.download.as_ref().is_some_and(|q| q.blocked);
+    let text = match (upload_blocked, download_blocked) {
+        (true, true) => tr("上传、下载已阻断"),
+        (true, false) => tr("上传已阻断"),
+        (false, true) => tr("下载已阻断"),
+        _ => tr("独立上传／下载配额"),
+    };
+    let periods = configured_periods(quota).collect::<Vec<_>>();
+    let usage_lines = [
+        ("上传", quota.upload.as_ref()),
+        ("下载", quota.download.as_ref()),
+    ]
+    .into_iter()
+    .map(|(label, status)| {
+        let usage = periods
+            .iter()
+            .filter(|p| p.direction == Some(label))
+            .max_by(|a, b| {
+                (a.used as u128 * b.limit as u128).cmp(&(b.used as u128 * a.limit as u128))
+            });
+        let value = if status.is_none() {
+            tr("配额状态不可用").to_string()
+        } else if let Some(period) = usage {
+            format!(
+                "{} {} / {}",
+                tr(period.label),
+                format_bytes(period.used),
+                format_bytes(period.limit)
+            )
+        } else {
+            tr("不限").to_string()
+        };
+        format!(
+            "{} · {}{}",
+            tr(label),
+            value,
+            if status.is_some_and(|s| s.blocked) {
+                format!(" · {}", tr("已超限"))
+            } else {
+                String::new()
+            }
+        )
+    })
+    .collect::<Vec<_>>();
+    StatusLine {
+        text: text.into(),
+        detail: format!(
+            "{}\n{}\n{}",
+            tr("独立上传／下载配额"),
+            usage_lines.join("\n"),
+            periods
+                .iter()
+                .map(|p| p.text())
+                .collect::<Vec<_>>()
+                .join("\n")
+        ),
+        usage_lines,
+        color: if quota.combined.blocked || upload_blocked || download_blocked {
+            color_red()
+        } else {
+            color_accent()
+        },
+    }
+}
+
 fn quota_status(quotas: Option<&ApiResult<Vec<TrafficQuotaStatus>>>, mac: &str) -> StatusLine {
     let quotas = match quotas {
         Some(Ok(quotas)) => quotas,
@@ -250,6 +325,9 @@ fn quota_status(quotas: Option<&ApiResult<Vec<TrafficQuotaStatus>>>, mac: &str) 
             detail: tr("配额：未配置").into(),
         };
     };
+    if quota.mode == QuotaMode::Directional {
+        return directional_quota_status(quota);
+    }
     let usage = most_used_quota(quota);
     let blocked = blocking_periods(quota);
     let blocked_usage = blocked
@@ -261,7 +339,7 @@ fn quota_status(quotas: Option<&ApiResult<Vec<TrafficQuotaStatus>>>, mac: &str) 
         .collect::<Vec<_>>()
         .join("\n");
     StatusLine {
-        usage_lines: if quota.blocked {
+        usage_lines: if quota.combined.blocked {
             if blocked_usage.is_empty() {
                 vec![tr("超限周期与用量暂不可用").into()]
             } else {
@@ -270,32 +348,32 @@ fn quota_status(quotas: Option<&ApiResult<Vec<TrafficQuotaStatus>>>, mac: &str) 
         } else {
             Vec::new()
         },
-        text: if quota.blocked {
-            if blocked.len() > 1 {
-                tf("配额 超限阻断（{0} 项）", &[format!("{}", blocked.len())])
+        text: if quota.combined.blocked {
+            let status = if blocked.len() > 1 {
+                tf("超限阻断 · {0} 个周期", &[blocked.len().to_string()])
             } else {
-                tr("配额 超限阻断").into()
-            }
+                tr("超限阻断").to_string()
+            };
+            format!("{} · {status}", tr("合计配额"))
         } else if let Some(usage) = usage {
-            tf(
-                "配额 {0} {1} / {2}",
-                &[
-                    format!("{}", usage.label),
-                    format!("{}", format_bytes(usage.used)),
-                    format!("{}", format_bytes(usage.limit)),
-                ],
+            format!(
+                "{} · {} {} / {}",
+                tr("合计配额"),
+                tr(usage.label),
+                format_bytes(usage.used),
+                format_bytes(usage.limit)
             )
         } else {
-            tr("配额 不限额").into()
+            format!("{} · {}", tr("合计配额"), tr("不限"))
         },
-        color: if quota.blocked {
+        color: if quota.combined.blocked {
             color_red()
         } else if usage.is_some() {
             color_accent()
         } else {
             color_muted()
         },
-        detail: if quota.blocked {
+        detail: if quota.combined.blocked {
             tf(
                 "配额：WAN 超限阻断（用量 / 配额）\n{0}\n\n所有已配置周期\n{1}",
                 &[
@@ -404,10 +482,10 @@ mod tests {
             other_device,
         ]);
         let status = rate_status(Some(&rules), MAC, 1, 600, None, SpeedUnit::Bytes);
-        assert_eq!(status.text, "限速 ↓ 2.0 KB/s · ↑ 1.0 KB/s");
+        assert_eq!(status.text, "限速 ↓ 2.0 KiB/s · ↑ 1.0 KiB/s");
         let bits = rate_status(Some(&rules), MAC, 1, 600, None, SpeedUnit::Bits);
-        assert_eq!(bits.text, "限速 ↓ 16.4 Kbps · ↑ 8.2 Kbps");
-        assert!(bits.detail.contains("32.8 Kbps"));
+        assert_eq!(bits.text, "限速 ↓ 16.4 kbps · ↑ 8.2 kbps");
+        assert!(bits.detail.contains("32.8 kbps"));
         assert!(status.detail.contains("2 / 3 条规则生效"));
         assert_eq!(
             rate_status(Some(&rules), MAC, 2, 600, None, SpeedUnit::Bytes).text,
@@ -434,7 +512,7 @@ mod tests {
                 SpeedUnit::Bytes
             )
             .text,
-            "限速 ↓ 2.0 KB/s · ↑ 1.0 KB/s"
+            "限速 ↓ 2.0 KiB/s · ↑ 1.0 KiB/s"
         );
         policy.macs.push(MAC.to_uppercase());
         let status = rate_status(
@@ -445,7 +523,7 @@ mod tests {
             Some(&Ok(policy.clone())),
             SpeedUnit::Bytes,
         );
-        assert_eq!(status.text, "限速 ↓ 2.0 KB/s · ↑ 不限");
+        assert_eq!(status.text, "限速 ↓ 2.0 KiB/s · ↑ 不限");
         assert!(status.detail.contains("白名单豁免"));
         policy.macs.clear();
         assert_eq!(
@@ -458,7 +536,7 @@ mod tests {
                 SpeedUnit::Bytes
             )
             .text,
-            "限速 ↓ 4.0 KB/s · ↑ 1.0 KB/s"
+            "限速 ↓ 4.0 KiB/s · ↑ 1.0 KiB/s"
         );
         policy.enabled = false;
         assert_eq!(
@@ -479,11 +557,11 @@ mod tests {
     fn quota_uses_highest_ratio_and_reports_server_block_status() {
         let mut quota = quota();
         assert_eq!(most_used_quota(&quota).unwrap().label, "每天");
-        quota.daily_used_bytes = 120;
-        quota.blocked = true;
-        quota.exceeded_periods = vec!["daily".into()];
+        quota.combined.daily_used_bytes = 120;
+        quota.combined.blocked = true;
+        quota.combined.exceeded_periods = vec!["daily".into()];
         let status = quota_status(Some(&Ok(vec![quota])), MAC);
-        assert_eq!(status.text, "配额 超限阻断");
+        assert_eq!(status.text, "合计配额 · 超限阻断");
         assert_eq!(status.usage_lines, ["每天 120 B / 100 B"]);
         assert!(status.detail.contains("每天"));
         assert!(status.detail.contains("120 B / 100 B"));
@@ -492,15 +570,15 @@ mod tests {
     #[test]
     fn multiple_blocking_periods_include_their_own_usage_and_limits() {
         let mut quota = quota();
-        quota.blocked = true;
-        quota.hourly_used_bytes = 1500;
-        quota.daily_used_bytes = 120;
-        quota.exceeded_periods = vec!["hourly".into(), "daily".into()];
+        quota.combined.blocked = true;
+        quota.combined.hourly_used_bytes = 1500;
+        quota.combined.daily_used_bytes = 120;
+        quota.combined.exceeded_periods = vec!["hourly".into(), "daily".into()];
         let status = quota_status(Some(&Ok(vec![quota])), MAC);
-        assert_eq!(status.text, "配额 超限阻断（2 项）");
+        assert_eq!(status.text, "合计配额 · 超限阻断 · 2 个周期");
         assert_eq!(
             status.usage_lines,
-            ["每小时 1.5 KB / 1000 B", "每天 120 B / 100 B"]
+            ["每小时 1.5 KiB / 1000 B", "每天 120 B / 100 B"]
         );
         for usage in &status.usage_lines {
             assert!(status.detail.contains(usage));
@@ -510,12 +588,12 @@ mod tests {
     #[test]
     fn unlimited_unconfigured_and_unavailable_states_are_distinct() {
         let mut unlimited = quota();
-        unlimited.hourly_bytes = 0;
-        unlimited.daily_bytes = 0;
+        unlimited.combined.hourly_bytes = 0;
+        unlimited.combined.daily_bytes = 0;
         assert_eq!(most_used_quota(&unlimited), None);
         assert_eq!(
             quota_status(Some(&Ok(vec![unlimited])), MAC).text,
-            "配额 不限额"
+            "合计配额 · 不限"
         );
         assert_eq!(quota_status(Some(&Ok(vec![])), MAC).text, "配额 未配置");
         let failed = Err("HTTP 503".to_string());
@@ -546,6 +624,34 @@ mod tests {
             )
             .text,
             "限速 读取失败"
+        );
+    }
+    #[test]
+    fn separate_quota_summary_identifies_each_direction_and_its_usage() {
+        let mut quota: TrafficQuotaStatus = serde_json::from_value(serde_json::json!({
+            "mac":MAC, "mode":"directional", "blocked":true,
+            "upload":{"daily_bytes":100,"daily_used_bytes":100,"blocked":true,"exceeded_periods":["daily"]},
+            "download":{"daily_bytes":200,"daily_used_bytes":50,"blocked":false}
+        })).unwrap();
+        let status = quota_status(Some(&Ok(vec![quota.clone()])), MAC);
+        assert_eq!(status.text, "上传已阻断");
+        assert_eq!(
+            status.usage_lines,
+            [
+                "上传 · 每天 100 B / 100 B · 已超限",
+                "下载 · 每天 50 B / 200 B"
+            ]
+        );
+        quota.upload.as_mut().unwrap().blocked = false;
+        quota.download.as_mut().unwrap().blocked = true;
+        assert_eq!(
+            quota_status(Some(&Ok(vec![quota.clone()])), MAC).text,
+            "下载已阻断"
+        );
+        quota.upload.as_mut().unwrap().blocked = true;
+        assert_eq!(
+            quota_status(Some(&Ok(vec![quota])), MAC).text,
+            "上传、下载已阻断"
         );
     }
 }

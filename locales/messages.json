@@ -1589,15 +1589,15 @@
     "Domena",
     "Домен"
   ],
-  "字节（MB/s）": [
-    "字节（MB/s）",
-    "Bytes (MB/s)",
-    "字節（MB/s）",
-    "バイト（MB/s）",
-    "Octets (MB/s)",
-    "Bytes (MB/s)",
-    "Bajty (MB/s)",
-    "Байты (MB/s)"
+  "字节（MiB/s）": [
+    "字节（MiB/s）",
+    "Bytes (MiB/s)",
+    "字節（MiB/s）",
+    "バイト（MiB/s）",
+    "Octets (MiB/s)",
+    "Bytes (MiB/s)",
+    "Bajty (MiB/s)",
+    "Байты (MiB/s)"
   ],
   "实时流量": [
     "实时流量",
@@ -4348,5 +4348,145 @@
     "Orden predeterminado",
     "Kolejność domyślna",
     "Порядок по умолчанию"
+  ],
+  "上传、下载分别计量，超额只阻断对应方向；0 表示不限额": [
+    "上传、下载分别计量，超额只阻断对应方向；0 表示不限额",
+    "Upload and download are counted separately. Only the exhausted direction is blocked; 0 means unlimited.",
+    "上傳、下載分別計量，超額只阻斷對應方向；0 表示不限額",
+    "送信と受信を個別に計測し、上限に達した方向のみ遮断します。0 は無制限です。",
+    "L’envoi et la réception sont comptés séparément. Seul le sens ayant atteint sa limite est bloqué ; 0 signifie illimité.",
+    "La subida y la bajada se cuentan por separado. Solo se bloquea la dirección que alcanza el límite; 0 significa sin límite.",
+    "Wysyłanie i pobieranie są liczone osobno. Blokowany jest tylko kierunek, który wyczerpał limit; 0 oznacza brak limitu.",
+    "Отправка и загрузка учитываются отдельно. Блокируется только направление с исчерпанной квотой; 0 означает отсутствие лимита."
+  ],
+  "上传、下载已阻断": [
+    "上传、下载已阻断",
+    "Upload and download blocked",
+    "上傳、下載已阻斷",
+    "送信・受信が遮断されています",
+    "Envoi et réception bloqués",
+    "Subida y bajada bloqueadas",
+    "Wysyłanie i pobieranie zablokowane",
+    "Отправка и загрузка заблокированы"
+  ],
+  "上传已阻断": [
+    "上传已阻断",
+    "Upload blocked",
+    "上傳已阻斷",
+    "送信が遮断されています",
+    "Envoi bloqué",
+    "Subida bloqueada",
+    "Wysyłanie zablokowane",
+    "Отправка заблокирована"
+  ],
+  "上传配额": [
+    "上传配额",
+    "Upload quota",
+    "上傳配額",
+    "送信クォータ",
+    "Quota d’envoi",
+    "Cuota de subida",
+    "Limit wysyłania",
+    "Квота отправки"
+  ],
+  "下载已阻断": [
+    "下载已阻断",
+    "Download blocked",
+    "下載已阻斷",
+    "受信が遮断されています",
+    "Réception bloquée",
+    "Bajada bloqueada",
+    "Pobieranie zablokowane",
+    "Загрузка заблокирована"
+  ],
+  "下载配额": [
+    "下载配额",
+    "Download quota",
+    "下載配額",
+    "受信クォータ",
+    "Quota de réception",
+    "Cuota de bajada",
+    "Limit pobierania",
+    "Квота загрузки"
+  ],
+  "仅选中的模式生效；保存切换会保留用量，并清除另一模式的上限": [
+    "仅选中的模式生效；保存切换会保留用量，并清除另一模式的上限",
+    "Only the selected mode applies. Saving a mode change keeps usage and clears the other mode’s limits.",
+    "僅選取的模式生效；儲存切換會保留用量，並清除另一模式的上限",
+    "選択したモードのみ有効です。モード変更を保存すると使用量は保持され、他のモードの上限は解除されます。",
+    "Seul le mode sélectionné s’applique. Enregistrer le changement conserve l’utilisation et efface les limites de l’autre mode.",
+    "Solo se aplica el modo seleccionado. Guardar el cambio conserva el uso y elimina los límites del otro modo.",
+    "Działa tylko wybrany tryb. Zapis zmiany zachowuje zużycie i usuwa limity drugiego trybu.",
+    "Действует только выбранный режим. Сохранение смены режима сохраняет расход и сбрасывает лимиты другого режима."
+  ],
+  "合计配额": [
+    "合计配额",
+    "Combined quota",
+    "合計配額",
+    "合計クォータ",
+    "Quota cumulé",
+    "Cuota combinada",
+    "Łączny limit transferu",
+    "Общая квота"
+  ],
+  "已保存模式：合计配额": [
+    "已保存模式：合计配额",
+    "Saved mode: combined quota",
+    "已儲存模式：合計配額",
+    "保存済みモード：合計クォータ",
+    "Mode enregistré : quota cumulé",
+    "Modo guardado: cuota combinada",
+    "Zapisany tryb: łączny limit",
+    "Сохранённый режим: общая квота"
+  ],
+  "已保存模式：独立上传／下载配额": [
+    "已保存模式：独立上传／下载配额",
+    "Saved mode: separate upload/download quotas",
+    "已儲存模式：獨立上傳／下載配額",
+    "保存済みモード：送信・受信の個別クォータ",
+    "Mode enregistré : quotas distincts envoi/réception",
+    "Modo guardado: cuotas separadas de subida y bajada",
+    "Zapisany tryb: osobne limity wysyłania i pobierania",
+    "Сохранённый режим: отдельные квоты отправки и загрузки"
+  ],
+  "此服务端仅支持合计配额，请升级 Bandix 后使用独立配额": [
+    "此服务端仅支持合计配额，请升级 Bandix 后使用独立配额",
+    "This server supports combined quotas only. Update Bandix to use separate quotas.",
+    "此服務端僅支援合計配額，請升級 Bandix 後使用獨立配額",
+    "このサーバーは合計クォータのみ対応しています。個別クォータを使用するには Bandix を更新してください。",
+    "Ce serveur ne prend en charge que les quotas cumulés. Mettez Bandix à jour pour utiliser des quotas distincts.",
+    "Este servidor solo admite cuotas combinadas. Actualice Bandix para usar cuotas separadas.",
+    "Ten serwer obsługuje tylko łączny limit. Zaktualizuj Bandix, aby używać osobnych limitów.",
+    "Этот сервер поддерживает только общие квоты. Обновите Bandix для использования отдельных квот."
+  ],
+  "独立上传／下载配额": [
+    "独立上传／下载配额",
+    "Separate upload/download quotas",
+    "獨立上傳／下載配額",
+    "送信・受信の個別クォータ",
+    "Quotas distincts envoi/réception",
+    "Cuotas separadas de subida y bajada",
+    "Osobne limity wysyłania i pobierania",
+    "Отдельные квоты отправки и загрузки"
+  ],
+  "配额模式": [
+    "配额模式",
+    "Quota mode",
+    "配額模式",
+    "クォータモード",
+    "Mode de quota",
+    "Modo de cuota",
+    "Tryb limitu transferu",
+    "Режим квоты"
+  ],
+  "配额状态不可用": [
+    "配额状态不可用",
+    "Quota status unavailable",
+    "配額狀態無法取得",
+    "クォータ状態を取得できません",
+    "État du quota indisponible",
+    "Estado de cuota no disponible",
+    "Stan limitu niedostępny",
+    "Состояние квоты недоступно"
   ]
 }

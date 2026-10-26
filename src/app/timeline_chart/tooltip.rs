@@ -192,10 +192,10 @@ mod tests {
     fn missing_statistics_are_distinct_from_zero_and_networks_stay_separate() {
         let item = fixture();
         assert_eq!(rate(item.wan_tx_avg, SpeedUnit::Bytes), "0 B/s");
-        assert_eq!(rate(item.wan_rx_avg, SpeedUnit::Bytes), "1.0 KB/s");
+        assert_eq!(rate(item.wan_rx_avg, SpeedUnit::Bytes), "1.0 KiB/s");
         assert_eq!(rate(item.wan_tx_p95, SpeedUnit::Bytes), "—");
         assert_eq!(rate(item.wan_tx_avg, SpeedUnit::Bits), "0 bps");
-        assert_eq!(rate(item.wan_rx_avg, SpeedUnit::Bits), "8.2 Kbps");
+        assert_eq!(rate(item.wan_rx_avg, SpeedUnit::Bits), "8.2 kbps");
         assert_eq!(rate(item.wan_tx_p95, SpeedUnit::Bits), "—");
         assert_eq!(item.rx_bytes("wan"), 100);
         assert_eq!(item.rx_bytes("lan"), 80);

@@ -1,7 +1,9 @@
 use super::preferences::SpeedUnit;
 use super::{BandixApp, quota_usage::QUOTA_LABELS, theme::*};
 use crate::i18n::{tf, tr};
-use crate::services::api::{self, Device, ScheduledRateLimit, TrafficQuotaStatus};
+use crate::services::api::{
+    self, Device, QuotaConfig, QuotaMode, ScheduledRateLimit, TrafficQuotaStatus,
+};
 use gpui_kit::component::input::{Input, InputState};
 use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::prelude::FluentBuilder;
@@ -33,6 +35,12 @@ pub(super) struct DeviceManagerState {
     download_unit: Entity<UnitSelect>,
     upload_unit: Entity<UnitSelect>,
     quota_fields: [QuotaField; 6],
+    upload_quota_fields: [QuotaField; 6],
+    download_quota_fields: [QuotaField; 6],
+    quota_mode: QuotaMode,
+    supports_quota_modes: bool,
+    quota_ready: bool,
+    generation: u64,
     scroll: ScrollHandle,
     selected_days: [bool; 7],
     schedules: Vec<ScheduledRateLimit>,
@@ -51,6 +59,13 @@ pub(super) struct DeleteDeviceState {
 }
 
 impl DeviceManagerState {
+    fn can_save_quota(&self) -> bool {
+        self.quota_ready
+            && !self.loading
+            && !self.busy
+            && (self.quota_mode == QuotaMode::Combined || self.supports_quota_modes)
+    }
+
     fn new(
         device: Device,
         endpoint: String,
@@ -78,6 +93,15 @@ impl DeviceManagerState {
             download_unit,
             upload_unit,
             quota_fields,
+            upload_quota_fields: std::array::from_fn(|index| QuotaField::new(index, window, cx)),
+            download_quota_fields: std::array::from_fn(|index| QuotaField::new(index, window, cx)),
+            quota_mode: QuotaMode::Combined,
+            supports_quota_modes: false,
+            quota_ready: false,
+            generation: {
+                static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+                NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+            },
             scroll: ScrollHandle::new(),
             selected_days: [true; 7],
             schedules: Vec::new(),
@@ -125,6 +149,7 @@ impl BandixApp {
         ));
         cx.notify();
 
+        let generation = self.device_manager.as_ref().unwrap().generation;
         let request_mac = mac.clone();
         let operation =
             cx.background_spawn(async move { api::fetch_device_controls(&endpoint, &request_mac) });
@@ -134,14 +159,16 @@ impl BandixApp {
                 let Some(manager) = &mut app.device_manager else {
                     return;
                 };
-                if !manager.device.mac.eq_ignore_ascii_case(&mac) {
+                if manager.generation != generation {
                     return;
                 }
                 manager.loading = false;
                 match result {
-                    Ok((schedules, quota)) => {
-                        manager.schedules = schedules;
-                        manager.quota = quota;
+                    Ok(controls) => {
+                        manager.schedules = controls.schedules;
+                        manager.quota = controls.quota;
+                        manager.supports_quota_modes = controls.supports_quota_modes;
+                        manager.quota_ready = true;
                         hydrate_quota_inputs(manager, window, cx);
                     }
                     Err(error) => manager.message = Some((error, true)),
@@ -187,6 +214,7 @@ impl BandixApp {
             return;
         }
         let hostname = manager.nickname.read(cx).value().trim().to_string();
+        let generation = manager.generation;
         let endpoint = manager.endpoint.clone();
         let mac = manager.device.mac.clone();
         manager.busy = true;
@@ -202,6 +230,9 @@ impl BandixApp {
                 let Some(manager) = &mut app.device_manager else {
                     return;
                 };
+                if manager.generation != generation {
+                    return;
+                }
                 manager.busy = false;
                 match result {
                     Ok(hostname) => {
@@ -267,6 +298,7 @@ impl BandixApp {
             return;
         }
 
+        let generation = manager.generation;
         let endpoint = manager.endpoint.clone();
         let mac = manager.device.mac.clone();
         manager.busy = true;
@@ -279,7 +311,15 @@ impl BandixApp {
         cx.spawn_in(window, async move |this, window| {
             let result = operation.await;
             _ = this.update_in(window, |app, window, cx| {
-                finish_control_reload(app, result, tr("限速规则已添加"), window, cx);
+                finish_control_reload(
+                    app,
+                    generation,
+                    result,
+                    tr("限速规则已添加"),
+                    false,
+                    window,
+                    cx,
+                );
             });
         })
         .detach();
@@ -297,6 +337,7 @@ impl BandixApp {
         if manager.busy {
             return;
         }
+        let generation = manager.generation;
         let endpoint = manager.endpoint.clone();
         let mac = manager.device.mac.clone();
         manager.busy = true;
@@ -309,43 +350,86 @@ impl BandixApp {
         cx.spawn_in(window, async move |this, window| {
             let result = operation.await;
             _ = this.update_in(window, |app, window, cx| {
-                finish_control_reload(app, result, tr("限速规则已删除"), window, cx);
+                finish_control_reload(
+                    app,
+                    generation,
+                    result,
+                    tr("限速规则已删除"),
+                    false,
+                    window,
+                    cx,
+                );
             });
         })
         .detach();
+    }
+
+    fn select_quota_mode(&mut self, mode: QuotaMode, cx: &mut Context<Self>) {
+        if let Some(manager) = &mut self.device_manager
+            && manager.quota_ready
+            && !manager.busy
+            && !manager.loading
+            && (mode == QuotaMode::Combined || manager.supports_quota_modes)
+        {
+            manager.quota_mode = mode;
+            cx.notify();
+        }
     }
 
     pub(super) fn save_traffic_quota(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let Some(manager) = &mut self.device_manager else {
             return;
         };
-        if manager.busy {
+        if !manager.can_save_quota() {
             return;
         }
-        let mut limits = [0_u64; 6];
-        for (index, field) in manager.quota_fields.iter().enumerate() {
-            match field.value(cx) {
-                Ok(value) => limits[index] = value,
-                Err(error) => {
-                    manager.message = Some((format!("{}：{error}", QUOTA_LABELS[index]), true));
-                    cx.notify();
-                    return;
+        let mut config = QuotaConfig {
+            mode: manager.quota_mode,
+            ..Default::default()
+        };
+        let groups = if manager.quota_mode == QuotaMode::Combined {
+            vec![(&manager.quota_fields, &mut config.combined)]
+        } else {
+            vec![
+                (&manager.upload_quota_fields, &mut config.upload),
+                (&manager.download_quota_fields, &mut config.download),
+            ]
+        };
+        for (fields, limits) in groups {
+            for (index, field) in fields.iter().enumerate() {
+                match field.value(cx) {
+                    Ok(value) => limits[index] = value,
+                    Err(error) => {
+                        manager.message =
+                            Some((format!("{}：{error}", tr(QUOTA_LABELS[index])), true));
+                        cx.notify();
+                        return;
+                    }
                 }
             }
         }
+        let generation = manager.generation;
         let endpoint = manager.endpoint.clone();
         let mac = manager.device.mac.clone();
         manager.busy = true;
         manager.message = None;
         cx.notify();
         let operation = cx.background_spawn(async move {
-            api::set_traffic_quota(&endpoint, &mac, limits)?;
+            api::set_traffic_quota(&endpoint, &mac, &config)?;
             api::fetch_device_controls(&endpoint, &mac)
         });
         cx.spawn_in(window, async move |this, window| {
             let result = operation.await;
             _ = this.update_in(window, |app, window, cx| {
-                finish_control_reload(app, result, tr("流量配额已保存"), window, cx);
+                finish_control_reload(
+                    app,
+                    generation,
+                    result,
+                    tr("流量配额已保存"),
+                    true,
+                    window,
+                    cx,
+                );
             });
         })
         .detach();
@@ -358,6 +442,7 @@ impl BandixApp {
         if manager.busy || manager.quota.is_none() {
             return;
         }
+        let generation = manager.generation;
         let endpoint = manager.endpoint.clone();
         let mac = manager.device.mac.clone();
         manager.busy = true;
@@ -370,7 +455,15 @@ impl BandixApp {
         cx.spawn_in(window, async move |this, window| {
             let result = operation.await;
             _ = this.update_in(window, |app, window, cx| {
-                finish_control_reload(app, result, tr("流量配额已删除"), window, cx);
+                finish_control_reload(
+                    app,
+                    generation,
+                    result,
+                    tr("流量配额已删除"),
+                    true,
+                    window,
+                    cx,
+                );
             });
         })
         .detach();
@@ -517,22 +610,31 @@ impl BandixApp {
 
 fn finish_control_reload(
     app: &mut BandixApp,
-    result: api::ApiResult<(Vec<ScheduledRateLimit>, Option<TrafficQuotaStatus>)>,
+    generation: u64,
+    result: api::ApiResult<api::DeviceControls>,
     success: &str,
+    hydrate: bool,
     window: &mut Window,
     cx: &mut Context<BandixApp>,
 ) {
     let Some(manager) = &mut app.device_manager else {
         return;
     };
+    if manager.generation != generation {
+        return;
+    }
     manager.busy = false;
     match result {
-        Ok((schedules, quota)) => {
-            manager.schedules = schedules;
-            manager.quota = quota;
+        Ok(controls) => {
+            manager.schedules = controls.schedules;
+            manager.quota = controls.quota;
+            manager.supports_quota_modes = controls.supports_quota_modes;
+            manager.quota_ready = true;
             manager.message = Some((success.to_string(), false));
             manager.scroll.set_offset(point(px(0.0), px(0.0)));
-            hydrate_quota_inputs(manager, window, cx);
+            if hydrate {
+                hydrate_quota_inputs(manager, window, cx);
+            }
             let endpoint = manager.endpoint.clone();
             app.start_data_refresh(endpoint, cx);
         }
@@ -546,13 +648,32 @@ fn hydrate_quota_inputs(
     window: &mut Window,
     cx: &mut Context<BandixApp>,
 ) {
-    let limits = manager
+    manager.quota_mode = manager.quota.as_ref().map(|q| q.mode).unwrap_or_default();
+    let combined = manager
         .quota
         .as_ref()
-        .map(TrafficQuotaStatus::limits)
+        .map(|q| q.combined.limits())
         .unwrap_or_default();
-    for (index, (field, value)) in manager.quota_fields.iter().zip(limits).enumerate() {
-        field.set_bytes(value, index, window, cx);
+    let upload = manager
+        .quota
+        .as_ref()
+        .and_then(|q| q.upload.as_ref())
+        .map(|q| q.limits())
+        .unwrap_or_default();
+    let download = manager
+        .quota
+        .as_ref()
+        .and_then(|q| q.download.as_ref())
+        .map(|q| q.limits())
+        .unwrap_or_default();
+    for (fields, limits) in [
+        (&manager.quota_fields, combined),
+        (&manager.upload_quota_fields, upload),
+        (&manager.download_quota_fields, download),
+    ] {
+        for (index, (field, value)) in fields.iter().zip(limits).enumerate() {
+            field.set_bytes(value, index, window, cx);
+        }
     }
 }
 

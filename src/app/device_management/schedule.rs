@@ -38,10 +38,10 @@ impl RateUnit {
 
     fn label(self) -> &'static str {
         match self {
-            Self::Kilobytes => "KB/s",
-            Self::Megabytes => "MB/s",
-            Self::Gigabytes => "GB/s",
-            Self::Kilobits => "Kbps",
+            Self::Kilobytes => "KiB/s",
+            Self::Megabytes => "MiB/s",
+            Self::Gigabytes => "GiB/s",
+            Self::Kilobits => "kbps",
             Self::Megabits => "Mbps",
             Self::Gigabits => "Gbps",
         }

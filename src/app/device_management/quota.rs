@@ -1,17 +1,17 @@
 //! Explicit byte units for each traffic quota period, matching LuCI.
 
 use super::{
-    BandixApp, DeviceManagerState, QUOTA_LABELS, action_button, empty_line, manager_form_footer,
-    manager_section,
+    BandixApp, DeviceManagerState, QUOTA_LABELS, empty_line, manager_form_footer, manager_section,
 };
 use crate::app::{
     quota_usage::{blocking_periods, configured_periods},
     theme::*,
 };
 use crate::i18n::{tf, tr};
-use crate::services::api::format_bytes;
+use crate::services::api::{QuotaMode, format_bytes};
 use gpui_kit::component::{
-    IndexPath,
+    Disableable, IndexPath, Sizable,
+    button::Button,
     input::{Input, InputState},
     select::{Select, SelectItem, SelectState},
 };
@@ -39,10 +39,10 @@ impl QuotaUnit {
     fn label(self) -> &'static str {
         match self {
             Self::Bytes => "B",
-            Self::Kilobytes => "KB",
-            Self::Megabytes => "MB",
-            Self::Gigabytes => "GB",
-            Self::Terabytes => "TB",
+            Self::Kilobytes => "KiB",
+            Self::Megabytes => "MiB",
+            Self::Gigabytes => "GiB",
+            Self::Terabytes => "TiB",
         }
     }
 
@@ -122,7 +122,13 @@ impl QuotaField {
             .update(cx, |state, cx| state.set_selected_value(&unit, window, cx));
     }
 
-    fn render(&self, index: usize, label: &'static str, disabled: bool) -> impl IntoElement {
+    fn render(
+        &self,
+        index: usize,
+        label: &'static str,
+        scope: &'static str,
+        disabled: bool,
+    ) -> impl IntoElement {
         div()
             .id(format!("quota-field-{index}"))
             .flex_1()
@@ -144,7 +150,7 @@ impl QuotaField {
                             Input::new(&self.number)
                                 .aria_label(tf(
                                     "{0}配额",
-                                    &[format!("{}", crate::i18n::tr(&(label)))],
+                                    &[format!("{} · {}", tr(scope), tr(label))],
                                 ))
                                 .disabled(disabled)
                                 .w_full()
@@ -158,7 +164,7 @@ impl QuotaField {
                                 .id(format!("quota-unit-{index}"))
                                 .accessibility_label(tf(
                                     "{0}配额单位",
-                                    &[format!("{}", crate::i18n::tr(&(label)))],
+                                    &[format!("{} · {}", tr(scope), tr(label))],
                                 ))
                                 .disabled(disabled)
                                 .w_full()
@@ -171,7 +177,7 @@ impl QuotaField {
 }
 
 fn edit_value(bytes: u64, index: usize) -> (String, QuotaUnit) {
-    // LuCI defaults minute quotas to MB and the other periods to GB.
+    // LuCI defaults minute quotas to MiB and the other periods to GiB.
     if bytes == 0 {
         return (
             "0".into(),
@@ -222,18 +228,49 @@ pub(super) fn render(
     manager: &DeviceManagerState,
     cx: &mut Context<BandixApp>,
 ) -> impl IntoElement {
-    let mut status_card = manager_section(tr("配额状态"), tr("统计 WAN 上传与下载的合计流量"));
+    let directional = manager
+        .quota
+        .as_ref()
+        .is_some_and(|q| q.mode == QuotaMode::Directional);
+    let mut status_card = manager_section(
+        tr("配额状态"),
+        if directional {
+            tr("已保存模式：独立上传／下载配额")
+        } else {
+            tr("已保存模式：合计配额")
+        },
+    );
     if manager.loading {
         status_card = status_card.child(empty_line(tr("正在读取配额…")));
+    } else if !manager.quota_ready {
+        status_card = status_card.child(empty_line(tr("配额状态不可用")));
     } else if let Some(quota) = manager.quota.as_ref() {
+        if directional {
+            for (label, status) in [
+                (tr("上传"), quota.upload.as_ref()),
+                (tr("下载"), quota.download.as_ref()),
+            ] {
+                let text = match status {
+                    Some(s) if s.blocked => tr("已超限"),
+                    Some(_) => tr("配额正常"),
+                    None => tr("配额状态不可用"),
+                };
+                status_card = status_card.child(
+                    div()
+                        .mb_2()
+                        .text_size(px(12.0))
+                        .child(format!("{label} · {text}")),
+                );
+            }
+        }
         let blocked = blocking_periods(quota);
         let periods = configured_periods(quota).collect::<Vec<_>>();
-        let color = if quota.blocked {
+        let color = if quota.combined.blocked {
             color_red()
         } else {
             color_accent()
         };
-        let status = if quota.blocked {
+        let status = if quota.combined.blocked {
             if blocked.is_empty() {
                 tr("超限阻断").to_string()
             } else {
@@ -254,7 +291,7 @@ pub(super) fn render(
                     .child(status),
             ),
         );
-        if quota.blocked && blocked.is_empty() {
+        if quota.combined.blocked && blocked.is_empty() {
             status_card = status_card.child(empty_line(tr("超限周期与用量暂不可用")));
         }
         if periods.is_empty() {
@@ -272,7 +309,9 @@ pub(super) fn render(
                         .child(div().w(px(60.0))),
                 )
                 .children(periods.into_iter().map(|period| {
-                    let exceeded = blocked.iter().any(|candidate| candidate.key == period.key);
+                    let exceeded = blocked.iter().any(|candidate| {
+                        candidate.key == period.key && candidate.direction == period.direction
+                    });
                     div()
                         .py_2()
                         .flex()
@@ -284,7 +323,7 @@ pub(super) fn render(
                             div()
                                 .flex_1()
                                 .text_color(rgb(color_muted()))
-                                .child(period.label),
+                                .child(period.label_text()),
                         )
                         .child(
                             div()
@@ -305,13 +344,16 @@ pub(super) fn render(
                         )
                 }));
         }
-        status_card = status_card.child(manager_form_footer().child(action_button(
-            "delete-quota",
-            tr("删除配额"),
-            color_red(),
-            cx,
-            |app, window, cx| app.remove_traffic_quota(window, cx),
-        )));
+        status_card = status_card.child(
+            manager_form_footer().child(
+                Button::new("delete-quota")
+                    .label(tr("删除配额"))
+                    .disabled(manager.busy)
+                    .on_click(
+                        cx.listener(|app, _, window, cx| app.remove_traffic_quota(window, cx)),
+                    ),
+            ),
+        );
     } else {
         status_card = status_card.child(empty_line(tr("尚未设置配额，可在上方卡片设置")));
     }
@@ -319,34 +361,120 @@ pub(super) fn render(
 }
 
 fn editor_card(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> impl IntoElement {
-    manager_section(
-        if manager.quota.is_some() {
-            tr("编辑配额")
-        } else {
-            tr("新增配额")
-        },
-        tr("每个周期独立设置数值和单位；0 表示不限额"),
+    let disabled = !manager.can_save_quota();
+    let directional = manager.quota_mode == QuotaMode::Directional;
+    let mut editor = manager_section(
+        tr("配额模式"),
+        tr("仅选中的模式生效；保存切换会保留用量，并清除另一模式的上限"),
     )
-    .children((0..3).map(|row| {
+    .child(
+        div().flex().gap_2().mb_3().children(
+            [
+                ("quota-mode-combined", QuotaMode::Combined, tr("合计配额")),
+                (
+                    "quota-mode-directional",
+                    QuotaMode::Directional,
+                    tr("独立上传／下载配额"),
+                ),
+            ]
+            .map(|(id, mode, label)| {
+                Button::new(id)
+                    .small()
+                    .label(label)
+                    .disabled(
+                        manager.busy
+                            || manager.loading
+                            || !manager.quota_ready
+                            || (mode == QuotaMode::Directional && !manager.supports_quota_modes),
+                    )
+                    .when(manager.quota_mode == mode, |button| {
+                        button.bg(rgb(color_accent()).opacity(0.2))
+                    })
+                    .on_click(cx.listener(move |app, _, _, cx| app.select_quota_mode(mode, cx)))
+            }),
+        ),
+    )
+    .child(
         div()
-            .flex()
-            .gap_4()
-            .when(row > 0, |view| view.mt_4())
-            .children((row * 2..row * 2 + 2).map(|index| {
-                manager.quota_fields[index].render(index, QUOTA_LABELS[index], manager.busy)
-            }))
-    }))
-    .child(manager_form_footer().child(action_button(
-        "save-quota",
-        if manager.busy {
-            tr("正在保存…")
-        } else {
-            tr("保存配额")
-        },
-        color_accent(),
-        cx,
-        |app, window, cx| app.save_traffic_quota(window, cx),
-    )))
+            .mb_3()
+            .text_size(px(11.0))
+            .text_color(rgb(color_muted()))
+            .child(if directional {
+                tr("上传、下载分别计量，超额只阻断对应方向；0 表示不限额")
+            } else {
+                tr("统计 WAN 上传与下载的合计流量")
+            }),
+    );
+    if manager.quota_ready && !manager.supports_quota_modes {
+        editor = editor.child(
+            div()
+                .mb_3()
+                .text_size(px(11.0))
+                .text_color(rgb(color_muted()))
+                .child(tr("此服务端仅支持合计配额，请升级 Bandix 后使用独立配额")),
+        );
+    }
+    if directional {
+        editor = editor.child(
+            div().flex().gap_4().children(
+                [
+                    (tr("上传配额"), &manager.upload_quota_fields, 6),
+                    (tr("下载配额"), &manager.download_quota_fields, 12),
+                ]
+                .map(|(label, fields, offset)| {
+                    div()
+                        .flex_1()
+                        .min_w_0()
+                        .border_1()
+                        .border_color(rgb(color_border()))
+                        .rounded_lg()
+                        .p_3()
+                        .child(
+                            div()
+                                .mb_3()
+                                .text_size(px(13.0))
+                                .font_weight(FontWeight::SEMIBOLD)
+                                .child(label),
+                        )
+                        .children((0..6).map(|index| {
+                            div().mb_3().child(fields[index].render(
+                                index + offset,
+                                QUOTA_LABELS[index],
+                                label,
+                                disabled,
+                            ))
+                        }))
+                }),
+            ),
+        );
+    } else {
+        editor = editor.children((0..3).map(|row| {
+            div()
+                .flex()
+                .gap_4()
+                .when(row > 0, |view| view.mt_4())
+                .children((row * 2..row * 2 + 2).map(|index| {
+                    manager.quota_fields[index].render(
+                        index,
+                        QUOTA_LABELS[index],
+                        "合计配额",
+                        disabled,
+                    )
+                }))
+        }));
+    }
+    editor.child(
+        manager_form_footer().child(
+            Button::new("save-quota")
+                .label(if manager.busy {
+                    tr("正在保存…")
+                } else {
+                    tr("保存配额")
+                })
+                .disabled(disabled)
+                .on_click(cx.listener(|app, _, window, cx| app.save_traffic_quota(window, cx))),
+        ),
+    )
 }
 
 #[cfg(test)]
@@ -405,7 +533,7 @@ mod tests {
             "inf",
             "1e100",
             "abc",
-            "12 MB",
+            "12 MiB",
             "0.000000000001",
             "18446744073709551615",
         ] {

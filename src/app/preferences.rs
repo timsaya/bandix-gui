@@ -60,7 +60,7 @@ impl SpeedUnit {
         if self == Self::Bytes {
             return format_rate(bytes_per_second);
         }
-        const UNITS: [&str; 7] = ["bps", "Kbps", "Mbps", "Gbps", "Tbps", "Pbps", "Ebps"];
+        const UNITS: [&str; 7] = ["bps", "kbps", "Mbps", "Gbps", "Tbps", "Pbps", "Ebps"];
         // The server always returns B/s. Use u128 so multiplying by eight cannot overflow.
         let bits = u128::from(bytes_per_second) * 8;
         let mut value = bits as f64;
@@ -262,7 +262,7 @@ mod tests {
             (0, "0 bps"),
             (1, "8 bps"),
             (124, "992 bps"),
-            (125, "1.0 Kbps"),
+            (125, "1.0 kbps"),
             (125_000, "1.0 Mbps"),
             (125_000_000, "1.0 Gbps"),
             (125_000_000_000, "1.0 Tbps"),
@@ -270,8 +270,8 @@ mod tests {
         ] {
             assert_eq!(SpeedUnit::Bits.format(bytes), expected);
         }
-        assert_eq!(SpeedUnit::Bytes.format(1024), "1.0 KB/s");
-        assert_eq!(SpeedUnit::Bytes.format(1_048_576), "1.0 MB/s");
+        assert_eq!(SpeedUnit::Bytes.format(1024), "1.0 KiB/s");
+        assert_eq!(SpeedUnit::Bytes.format(1_048_576), "1.0 MiB/s");
         assert_eq!(SpeedUnit::Bits.format(1_048_576), "8.4 Mbps");
     }
 
