@@ -5,14 +5,13 @@ mod services;
 
 use app::BandixApp;
 use assets::Assets;
-use gpui_kit::component::{Theme, ThemeMode};
 use gpui_kit::*;
 
 fn main() {
     gpui_kit::application().with_assets(Assets).run(|cx| {
         gpui_kit::init(cx);
         cx.set_app_identity("bandix-gui", "Bandix");
-        Theme::change(ThemeMode::Dark, None, cx);
+        app::initialize_theme(cx);
 
         let bounds = Bounds::centered(None, size(px(1280.0), px(820.0)), cx);
         let options = WindowOptions {

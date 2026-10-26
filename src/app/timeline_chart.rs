@@ -156,14 +156,14 @@ impl Plot for TimelinePlot {
             let origin = point(bounds.left() + px(left), bounds.bottom() - px(height));
             window.paint_quad(fill(
                 Bounds::new(origin, size(px(width), px(upload_height))),
-                rgb(UPLOAD).opacity(0.82),
+                rgb(color_upload()).opacity(0.82),
             ));
             window.paint_quad(fill(
                 Bounds::new(
                     origin + point(px(0.0), px(upload_height)),
                     size(px(width), px(download_height)),
                 ),
-                rgb(DOWNLOAD).opacity(0.76),
+                rgb(color_download()).opacity(0.76),
             ));
         }
     }

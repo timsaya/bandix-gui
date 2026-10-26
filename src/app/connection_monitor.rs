@@ -264,7 +264,7 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
         .inset_0()
         .size_full()
         .occlude()
-        .bg(rgb(0x03060a).opacity(0.82))
+        .bg(rgb(color_overlay()).opacity(overlay_opacity()))
         .flex()
         .items_center()
         .justify_center()
@@ -276,9 +276,9 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                 .flex()
                 .flex_col()
                 .rounded_xl()
-                .bg(rgb(SURFACE))
+                .bg(rgb(color_surface()))
                 .border_1()
-                .border_color(rgb(BORDER))
+                .border_color(rgb(color_border()))
                 .child(
                     div()
                         .flex_none()
@@ -287,7 +287,7 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                         .items_center()
                         .justify_between()
                         .border_b_1()
-                        .border_color(rgb(BORDER))
+                        .border_color(rgb(color_border()))
                         .child(
                             div()
                                 .flex()
@@ -298,7 +298,7 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                                         "连接详情 · {0}",
                                         &[format!("{}", details.device.display_name())],
                                     ),
-                                    TEXT,
+                                    color_text(),
                                     16.0,
                                 ))
                                 .child(text(
@@ -311,7 +311,7 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                                             &details.device.mac
                                         }
                                     ),
-                                    MUTED,
+                                    color_muted(),
                                     11.0,
                                 )),
                         )
@@ -380,7 +380,7 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                                     filtered_count.unwrap_or(0),
                                     data.map_or(0, |data| data.items.len())
                                 ),
-                                MUTED,
+                                color_muted(),
                                 11.0,
                             ))
                         }),
@@ -395,7 +395,7 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                         .items_center()
                         .gap_2()
                         .border_t_1()
-                        .border_color(rgb(BORDER))
+                        .border_color(rgb(color_border()))
                         .child(text(
                             data.map_or_else(
                                 || "—".into(),
@@ -406,7 +406,7 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                                     )
                                 },
                             ),
-                            MUTED,
+                            color_muted(),
                             11.0,
                         ))
                         .child(div().ml_auto().child(filter(
@@ -432,7 +432,7 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                             } else {
                                 "—".into()
                             },
-                            TEXT,
+                            color_text(),
                             11.0,
                         ))
                         .child(

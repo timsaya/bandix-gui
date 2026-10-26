@@ -150,7 +150,7 @@ impl TimeSelection {
                             .menu_max_h(px(220.0)),
                     ),
                 )
-                .child(div().text_color(rgb(MUTED)).child(":"))
+                .child(div().text_color(rgb(color_muted())).child(":"))
                 .child(
                     div().w(px(76.0)).h(px(36.0)).flex_none().child(
                         Select::new(&self.minute)
@@ -214,7 +214,7 @@ fn field_label(label: &'static str) -> Div {
     div()
         .mb_1()
         .text_size(px(11.0))
-        .text_color(rgb(MUTED))
+        .text_color(rgb(color_muted()))
         .child(crate::i18n::text(&label))
 }
 
@@ -330,20 +330,24 @@ fn editor_card(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> imp
                         .text_size(px(11.0))
                         .border_1()
                         .border_color(
-                            rgb(if active { ACCENT } else { BORDER }).opacity(if active {
-                                0.4
+                            rgb(if active {
+                                color_accent()
                             } else {
-                                1.0
-                            }),
+                                color_border()
+                            })
+                            .opacity(if active { 0.4 } else { 1.0 }),
                         )
-                        .bg(
-                            rgb(if active { ACCENT } else { SURFACE_2 }).opacity(if active {
-                                0.12
-                            } else {
-                                1.0
-                            }),
-                        )
-                        .text_color(rgb(if active { ACCENT } else { MUTED }))
+                        .bg(rgb(if active {
+                            color_accent()
+                        } else {
+                            color_surface_alt()
+                        })
+                        .opacity(if active { 0.12 } else { 1.0 }))
+                        .text_color(rgb(if active {
+                            color_accent()
+                        } else {
+                            color_muted()
+                        }))
                         .on_click(
                             cx.listener(move |app, _, _, cx| app.toggle_schedule_day(index, cx)),
                         )
@@ -378,7 +382,7 @@ fn editor_card(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> imp
         } else {
             tr("添加规则")
         },
-        ACCENT,
+        color_accent(),
         cx,
         |app, window, cx| app.add_schedule_rule(window, cx),
     )))
@@ -415,7 +419,9 @@ fn schedule_rule_row(
         .flex()
         .items_center()
         .gap_4()
-        .when(index > 0, |row| row.border_t_1().border_color(rgb(BORDER)))
+        .when(index > 0, |row| {
+            row.border_t_1().border_color(rgb(color_border()))
+        })
         .child(
             div()
                 .flex_1()
@@ -423,14 +429,14 @@ fn schedule_rule_row(
                 .child(
                     div()
                         .text_size(px(13.0))
-                        .text_color(rgb(TEXT))
+                        .text_color(rgb(color_text()))
                         .child(format!("{} – {}", rule.time_slot.start, rule.time_slot.end)),
                 )
                 .child(
                     div()
                         .mt_1()
                         .text_size(px(11.0))
-                        .text_color(rgb(MUTED))
+                        .text_color(rgb(color_muted()))
                         .child(days),
                 ),
         )
@@ -438,7 +444,7 @@ fn schedule_rule_row(
             div()
                 .w(px(190.0))
                 .text_size(px(11.0))
-                .text_color(rgb(MUTED))
+                .text_color(rgb(color_muted()))
                 .child(div().child(tf(
                     "下载  {0}",
                     &[format!(
@@ -464,8 +470,12 @@ fn schedule_rule_row(
                 .flex()
                 .items_center()
                 .text_size(px(11.0))
-                .text_color(rgb(MUTED))
-                .hover(|style| style.bg(rgb(RED).opacity(0.1)).text_color(rgb(RED)))
+                .text_color(rgb(color_muted()))
+                .hover(|style| {
+                    style
+                        .bg(rgb(color_red()).opacity(0.1))
+                        .text_color(rgb(color_red()))
+                })
                 .on_click(cx.listener(move |app, _, window, cx| {
                     app.delete_schedule_rule(id.clone(), window, cx)
                 }))

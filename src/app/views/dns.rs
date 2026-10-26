@@ -24,7 +24,7 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement
         return data_notice(
             tr("暂无 DNS 数据"),
             tr("请先连接 Bandix 服务。").into(),
-            MUTED,
+            color_muted(),
         )
         .into_any_element();
     };
@@ -43,9 +43,8 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement
                 .child(summary(stats))
                 .child(rankings(app, stats, cx))
                 .into_any_element(),
-            Err(error) => {
-                data_notice(tr("DNS 统计接口请求失败"), error.clone(), RED).into_any_element()
-            }
+            Err(error) => data_notice(tr("DNS 统计接口请求失败"), error.clone(), color_red())
+                .into_any_element(),
         })
         .child(queries(app, cx))
         .into_any_element()
@@ -69,7 +68,7 @@ fn summary(stats: &DnsStats) -> Div {
                                 .saturating_add(stats.total_responses)
                                 .to_string(),
                         ))
-                        .child(text(tr("查询与响应"), MUTED, 11.0)),
+                        .child(text(tr("查询与响应"), color_muted(), 11.0)),
                 )
                 .child(
                     div()
@@ -79,17 +78,17 @@ fn summary(stats: &DnsStats) -> Div {
                         .gap_3()
                         .child(text(
                             tf("{0} 查询", &[format!("{}", stats.total_queries)]),
-                            BLUE,
+                            color_blue(),
                             11.0,
                         ))
                         .child(text(
                             tf("{0} 响应", &[format!("{}", stats.total_responses)]),
-                            ACCENT,
+                            color_accent(),
                             11.0,
                         ))
                         .child(text(
                             tf("{0} 台设备", &[format!("{}", stats.unique_devices)]),
-                            MUTED,
+                            color_muted(),
                             11.0,
                         )),
                 )
@@ -104,12 +103,16 @@ fn summary(stats: &DnsStats) -> Div {
                                 "{0}% 成功率",
                                 &[format!("{:.2}", stats.success_rate * 100.0)],
                             ),
-                            ACCENT,
+                            color_accent(),
                             10.0,
                         ))
                         .child(text(
                             tf("{0} 失败", &[format!("{}", stats.failure_count)]),
-                            if stats.failure_count > 0 { RED } else { MUTED },
+                            if stats.failure_count > 0 {
+                                color_red()
+                            } else {
+                                color_muted()
+                            },
                             10.0,
                         ))
                         .child(text(
@@ -117,7 +120,7 @@ fn summary(stats: &DnsStats) -> Div {
                                 "{0} 无响应",
                                 &[format!("{}", stats.queries_without_response)],
                             ),
-                            MUTED,
+                            color_muted(),
                             10.0,
                         )),
                 ),
@@ -136,7 +139,7 @@ fn summary(stats: &DnsStats) -> Div {
                                 .latest_response_time_ms
                                 .map_or_else(|| "—".into(), |ms| format!("{ms} ms")),
                         ))
-                        .child(text(tr("响应时间"), MUTED, 11.0)),
+                        .child(text(tr("响应时间"), color_muted(), 11.0)),
                 )
                 .child(
                     div()
@@ -149,24 +152,24 @@ fn summary(stats: &DnsStats) -> Div {
                                 "{0} ms 平均",
                                 &[format!("{:.2}", stats.avg_response_time_ms)],
                             ),
-                            TEXT,
+                            color_text(),
                             11.0,
                         ))
                         .child(text(
                             tf("{0} ms 最快", &[format!("{}", stats.min_response_time_ms)]),
-                            ACCENT,
+                            color_accent(),
                             11.0,
                         ))
                         .child(text(
                             tf("{0} ms 最慢", &[format!("{}", stats.max_response_time_ms)]),
-                            ORANGE,
+                            color_orange(),
                             11.0,
                         )),
                 )
                 .child(
                     text(
                         format!("{} ms P95", stats.response_time_percentiles.p95),
-                        MUTED,
+                        color_muted(),
                         10.0,
                     )
                     .mt_1(),
@@ -190,8 +193,8 @@ fn rankings(app: &BandixApp, stats: &DnsStats, cx: &mut Context<BandixApp>) -> D
                 .items_center()
                 .gap_3()
                 .when(expanded, |view| view.pb_3())
-                .child(text(tr("查询排行"), TEXT, 14.0))
-                .child(text(tr("全局查询次数"), MUTED, 10.0))
+                .child(text(tr("查询排行"), color_text(), 14.0))
+                .child(text(tr("全局查询次数"), color_muted(), 10.0))
                 .when(expanded, |view| {
                     view.child(
                         div().ml_auto().flex().gap_1().children(
@@ -202,7 +205,9 @@ fn rankings(app: &BandixApp, stats: &DnsStats, cx: &mut Context<BandixApp>) -> D
                                         .h(px(26.0))
                                         .label(crate::i18n::text(&label))
                                         .when(selected == ranking, |button| {
-                                            button.bg(rgb(SURFACE_2)).text_color(rgb(BLUE))
+                                            button
+                                                .bg(rgb(color_surface_alt()))
+                                                .text_color(rgb(color_blue()))
                                         })
                                         .on_click(cx.listener(move |app, _, _, cx| {
                                             app.dns_page.ranking = ranking;
@@ -240,7 +245,7 @@ fn rankings(app: &BandixApp, stats: &DnsStats, cx: &mut Context<BandixApp>) -> D
                     .flex()
                     .items_center()
                     .justify_center()
-                    .child(text(tr("暂无排行数据"), MUTED, 11.0))
+                    .child(text(tr("暂无排行数据"), color_muted(), 11.0))
                     .into_any_element()
             } else {
                 div()
@@ -282,7 +287,7 @@ fn ranking_row(index: usize, item: &DnsTopItem, total: usize) -> impl IntoElemen
                 .top_0()
                 .h_full()
                 .w(relative(ratio))
-                .bg(rgb(BLUE).opacity(0.10)),
+                .bg(rgb(color_blue()).opacity(0.10)),
         )
         .child(
             div()
@@ -293,19 +298,19 @@ fn ranking_row(index: usize, item: &DnsTopItem, total: usize) -> impl IntoElemen
                 .items_center()
                 .gap_2()
                 .child(
-                    text(format!("{:02}", index + 1), MUTED, 10.0)
+                    text(format!("{:02}", index + 1), color_muted(), 10.0)
                         .w(px(22.0))
                         .flex_none(),
                 )
                 .child(
-                    text(name.clone(), TEXT, 11.0)
+                    text(name.clone(), color_text(), 11.0)
                         .flex_1()
                         .min_w_0()
                         .text_ellipsis(),
                 )
-                .child(text(item.count.to_string(), TEXT, 11.0).flex_none())
+                .child(text(item.count.to_string(), color_text(), 11.0).flex_none())
                 .child(
-                    text(format!("{:.1}%", ratio * 100.0), MUTED, 10.0)
+                    text(format!("{:.1}%", ratio * 100.0), color_muted(), 10.0)
                         .w(px(48.0))
                         .text_right(),
                 ),
@@ -328,8 +333,8 @@ fn queries(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
                 .items_center()
                 .gap_3()
                 .pb_3()
-                .child(text(tr("DNS 查询记录"), TEXT, 14.0))
-                .child(text(tr("不包含 DoH 和 DoT"), MUTED, 10.0)),
+                .child(text(tr("DNS 查询记录"), color_text(), 14.0))
+                .child(text(tr("不包含 DoH 和 DoT"), color_muted(), 10.0)),
         )
         .child(
             div()
@@ -389,7 +394,7 @@ fn queries(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
                             |data| tf("共 {0} 条记录", &[format!("{}", data.total)]),
                         )
                     },
-                    MUTED,
+                    color_muted(),
                     11.0,
                 ))
                 .child(div().ml_auto().child(select(
@@ -415,7 +420,7 @@ fn queries(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
                             |data| format!("{} / {}", state.page, data.total_pages),
                         )
                     },
-                    TEXT,
+                    color_text(),
                     11.0,
                 ))
                 .child(
@@ -463,13 +468,13 @@ fn card() -> Div {
         .flex_1()
         .min_w_0()
         .rounded_xl()
-        .bg(rgb(SURFACE))
+        .bg(rgb(color_surface()))
         .border_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .p_4()
 }
 fn value(value: String) -> Div {
-    text(value, TEXT, 20.0)
+    text(value, color_text(), 20.0)
         .whitespace_nowrap()
         .font_weight(FontWeight::SEMIBOLD)
 }

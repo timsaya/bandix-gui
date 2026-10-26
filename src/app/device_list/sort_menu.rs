@@ -15,17 +15,17 @@ pub(super) fn render(app: &BandixApp, expanded: bool, cx: &mut Context<BandixApp
     }
     Popover::new("device-sort-menu")
         .anchor(Anchor::TopLeft)
-        .bg(rgb(SURFACE))
-        .border_color(rgb(BORDER))
+        .bg(rgb(color_surface()))
+        .border_color(rgb(color_border()))
         .trigger(
             Button::new("device-sort-trigger")
                 .small()
                 .h(px(28.0))
                 .px_2()
                 .text_size(px(11.0))
-                .bg(rgb(SURFACE_2))
-                .border_color(rgb(BORDER))
-                .text_color(rgb(BLUE))
+                .bg(rgb(color_surface_alt()))
+                .border_color(rgb(color_border()))
+                .text_color(rgb(color_blue()))
                 .label(app.device_list.sort.summary())
                 .accessibility_label(tr("设备排序"))
                 .tooltip(app.device_list.sort.tooltip()),
@@ -44,7 +44,7 @@ fn panel(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
         .flex_col()
         .gap_3()
         .text_size(px(11.0))
-        .text_color(rgb(TEXT))
+        .text_color(rgb(color_text()))
         .child(
             div()
                 .flex()
@@ -66,9 +66,21 @@ fn panel(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
                                     .px_2()
                                     .text_size(px(11.0))
                                     .label(field.label())
-                                    .bg(rgb(if selected { SURFACE_2 } else { SURFACE }))
-                                    .border_color(rgb(if selected { BLUE } else { BORDER }))
-                                    .text_color(rgb(if selected { BLUE } else { MUTED }))
+                                    .bg(rgb(if selected {
+                                        color_surface_alt()
+                                    } else {
+                                        color_surface()
+                                    }))
+                                    .border_color(rgb(if selected {
+                                        color_blue()
+                                    } else {
+                                        color_border()
+                                    }))
+                                    .text_color(rgb(if selected {
+                                        color_blue()
+                                    } else {
+                                        color_muted()
+                                    }))
                                     .on_click(cx.listener(move |app, _, _, cx| {
                                         app.device_list.sort.select(field);
                                         app.save_device_sort(cx);
@@ -89,7 +101,7 @@ fn panel(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
                         .gap_1()
                         .p_1()
                         .rounded_md()
-                        .bg(rgb(BG))
+                        .bg(rgb(color_bg()))
                         .children(
                             [
                                 (SortDirection::Ascending, "device-sort-ascending"),
@@ -104,14 +116,14 @@ fn panel(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
                                     .label(direction.label())
                                     .disabled(!sortable)
                                     .bg(rgb(if direction == sort.direction {
-                                        SURFACE_2
+                                        color_surface_alt()
                                     } else {
-                                        BG
+                                        color_bg()
                                     }))
                                     .text_color(rgb(if direction == sort.direction {
-                                        BLUE
+                                        color_blue()
                                     } else {
-                                        MUTED
+                                        color_muted()
                                     }))
                                     .on_click(cx.listener(move |app, _, _, cx| {
                                         if app.device_list.sort.direction != direction {
@@ -128,21 +140,25 @@ fn panel(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
                 .small()
                 .label(tr("在线始终在前"))
                 .checked(sort.online_first)
-                .color(rgb(ACCENT))
+                .color(rgb(color_accent()))
                 .on_change(cx.listener(|app, checked, _, cx| {
                     app.device_list.sort.online_first = *checked;
                     app.save_device_sort(cx);
                 })),
         )
         .child(
-            div().pt_2().border_t_1().border_color(rgb(BORDER)).child(
-                Button::new("reset-device-sort")
-                    .small()
-                    .w_full()
-                    .h(px(28.0))
-                    .label(tr("恢复默认排序"))
-                    .on_click(cx.listener(|app, _, _, cx| app.reset_device_sort(cx))),
-            ),
+            div()
+                .pt_2()
+                .border_t_1()
+                .border_color(rgb(color_border()))
+                .child(
+                    Button::new("reset-device-sort")
+                        .small()
+                        .w_full()
+                        .h(px(28.0))
+                        .label(tr("恢复默认排序"))
+                        .on_click(cx.listener(|app, _, _, cx| app.reset_device_sort(cx))),
+                ),
         )
         .when_some(
             app.device_list.sort_storage_error.as_ref(),
@@ -150,7 +166,7 @@ fn panel(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
                 view.child(
                     div()
                         .text_size(px(11.0))
-                        .text_color(rgb(RED))
+                        .text_color(rgb(color_red()))
                         .child(error.clone()),
                 )
             },
@@ -158,5 +174,8 @@ fn panel(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
 }
 
 fn label(text: &'static str) -> Div {
-    div().text_size(px(11.0)).text_color(rgb(MUTED)).child(text)
+    div()
+        .text_size(px(11.0))
+        .text_color(rgb(color_muted()))
+        .child(text)
 }

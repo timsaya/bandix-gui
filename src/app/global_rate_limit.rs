@@ -303,7 +303,11 @@ pub(super) fn header_button(
     let policy = app.data.as_ref().map(|data| &data.global_rate_limit);
     let (color, tooltip) = match policy {
         Some(Ok(policy)) => (
-            if policy.enabled { ACCENT } else { MUTED },
+            if policy.enabled {
+                color_accent()
+            } else {
+                color_muted()
+            },
             tf(
                 "全局限速：{0} · 豁免 {1} 台\n每台设备上限：↓ {2} · ↑ {3}",
                 &[
@@ -328,10 +332,10 @@ pub(super) fn header_button(
             ),
         ),
         Some(Err(error)) => (
-            RED,
+            color_red(),
             tf("全局限速状态不可用：{0}；点击重试", &[format!("{}", error)]),
         ),
-        None => (MUTED, tr("全局限速").into()),
+        None => (color_muted(), tr("全局限速").into()),
     };
     Button::new("global-rate-limit")
         .small()
@@ -350,25 +354,25 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
         return div().into_any_element();
     };
     let disabled = state.busy || !state.loaded;
-    div().id("global-rate-overlay").absolute().inset_0().size_full().occlude().bg(rgb(0x03060a).opacity(0.82))
+    div().id("global-rate-overlay").absolute().inset_0().size_full().occlude().bg(rgb(color_overlay()).opacity(overlay_opacity()))
         .flex().items_center().justify_center().child(
-        div().w(px(680.0)).h(relative(0.88)).max_h(px(760.0)).flex().flex_col().rounded_xl().bg(rgb(SURFACE)).border_1().border_color(rgb(BORDER))
-            .child(div().flex().items_center().justify_between().p_4().border_b_1().border_color(rgb(BORDER))
-                .child(div().text_size(px(16.0)).text_color(rgb(TEXT)).child(tr("全局限速")))
+        div().w(px(680.0)).h(relative(0.88)).max_h(px(760.0)).flex().flex_col().rounded_xl().bg(rgb(color_surface())).border_1().border_color(rgb(color_border()))
+            .child(div().flex().items_center().justify_between().p_4().border_b_1().border_color(rgb(color_border()))
+                .child(div().text_size(px(16.0)).text_color(rgb(color_text())).child(tr("全局限速")))
                 .child(Button::new("close-global-rate").small().label(tr("关闭")).disabled(state.busy).on_click(cx.listener(|app,_,window,cx| {app.global_rate_limit=None;window.blur(cx);cx.notify();}))))
             .child(div().id("global-rate-scroll").flex_1().min_h_0().overflow_y_scroll().track_scroll(&state.scroll).p_4()
                 .child(div().flex().flex_col().gap_4()
-                    .when(state.busy, |view| view.child(note(if state.loaded { tr("正在保存…") } else { tr("正在读取全局限速设置…") },MUTED)))
-                    .when_some(state.message.as_ref(), |view,(message,error)| view.child(note(message,if *error {RED}else{ACCENT})))
-                    .child(Switch::new("global-rate-enabled").small().label(tr("启用全局限速")).checked(state.policy.as_ref().is_some_and(|policy|policy.enabled)).disabled(disabled).color(rgb(ACCENT))
+                    .when(state.busy, |view| view.child(note(if state.loaded { tr("正在保存…") } else { tr("正在读取全局限速设置…") },color_muted())))
+                    .when_some(state.message.as_ref(), |view,(message,error)| view.child(note(message,if *error {color_red()}else{color_accent()})))
+                    .child(Switch::new("global-rate-enabled").small().label(tr("启用全局限速")).checked(state.policy.as_ref().is_some_and(|policy|policy.enabled)).disabled(disabled).color(rgb(color_accent()))
                         .on_change(cx.listener(|app,enabled,window,cx| app.change_global_rate_limit(Change::Enabled(*enabled),window,cx))))
-                    .child(note(tr("对每台非豁免设备的 WAN 流量分别限速；白名单不豁免独立规则和流量配额。"),MUTED))
-                    .child(div().rounded_lg().bg(rgb(SURFACE_2)).p_3().flex().flex_col().gap_3()
-                        .child(note(tr("默认限速"),TEXT))
+                    .child(note(tr("对每台非豁免设备的 WAN 流量分别限速；白名单不豁免独立规则和流量配额。"),color_muted()))
+                    .child(div().rounded_lg().bg(rgb(color_surface_alt())).p_3().flex().flex_col().gap_3()
+                        .child(note(tr("默认限速"),color_text()))
                         .child(div().flex().gap_3()
                             .child(schedule::rate_field("global-upload-unit",tr("上传上限"),&state.upload,&state.upload_unit,disabled))
                             .child(schedule::rate_field("global-download-unit",tr("下载上限"),&state.download,&state.download_unit,disabled)))
-                        .child(note(tr("0 表示不限速"),MUTED))
+                        .child(note(tr("0 表示不限速"),color_muted()))
                         .child(Button::new("save-global-rate").small().label(tr("保存限速")).disabled(disabled).on_click(cx.listener(|app,_,window,cx|app.save_global_limits(window,cx)))))
                     .child(whitelist(app,state,cx))
                     .when(!state.loaded && !state.busy,|view|view.child(Button::new("reload-global-rate").small().label(tr("重新读取")).on_click(cx.listener(|app,_,window,cx|app.change_global_rate_limit(Change::Reload,window,cx)))))
@@ -390,17 +394,17 @@ fn whitelist(
         .unwrap_or_default();
     div()
         .rounded_lg()
-        .bg(rgb(SURFACE_2))
+        .bg(rgb(color_surface_alt()))
         .p_3()
         .flex()
         .flex_col()
         .gap_3()
         .child(note(
             &tf("豁免设备（白名单）· {0} 台", &[format!("{}", macs.len())]),
-            TEXT,
+            color_text(),
         ))
         .when(macs.is_empty(), |view| {
-            view.child(note(tr("暂无豁免设备"), MUTED))
+            view.child(note(tr("暂无豁免设备"), color_muted()))
         })
         .children(macs.iter().map(|mac| {
             let device = app
@@ -421,14 +425,14 @@ fn whitelist(
                 .items_center()
                 .gap_3()
                 .border_b_1()
-                .border_color(rgb(BORDER))
+                .border_color(rgb(color_border()))
                 .pb_2()
                 .child(
                     div()
                         .flex_1()
                         .min_w_0()
-                        .child(note(&title, TEXT))
-                        .child(note(&mac, MUTED)),
+                        .child(note(&title, color_text()))
+                        .child(note(&mac, color_muted())),
                 )
                 .child(
                     Button::new(SharedString::from(format!("remove-exemption-{mac}")))

@@ -1,10 +1,13 @@
 //! Persistent display preferences, independent of server-side traffic settings.
 
-use super::BandixApp;
+use super::{BandixApp, theme};
 use crate::i18n::Language;
 use crate::i18n::{tf, tr};
 use crate::services::api::format_rate;
-use gpui_kit::Context;
+use gpui_kit::{
+    App, Context, WindowAppearance,
+    component::{Theme, ThemeMode},
+};
 use serde::{Deserialize, Serialize};
 use std::{
     fs,
@@ -18,6 +21,38 @@ pub(super) enum SpeedUnit {
     #[default]
     Bytes,
     Bits,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub(super) enum ColorScheme {
+    Auto,
+    #[default]
+    Dark,
+    Light,
+}
+
+impl ColorScheme {
+    pub const ALL: [Self; 3] = [Self::Auto, Self::Dark, Self::Light];
+
+    pub(super) fn appearance_override(self) -> Option<WindowAppearance> {
+        match self {
+            Self::Auto => None,
+            Self::Dark => Some(WindowAppearance::Dark),
+            Self::Light => Some(WindowAppearance::Light),
+        }
+    }
+
+    fn is_dark(self, system: WindowAppearance) -> bool {
+        match self {
+            Self::Dark => true,
+            Self::Light => false,
+            Self::Auto => matches!(
+                system,
+                WindowAppearance::Dark | WindowAppearance::VibrantDark
+            ),
+        }
+    }
 }
 
 impl SpeedUnit {
@@ -48,6 +83,7 @@ struct DisplayPreferences {
     speed_unit: SpeedUnit,
     language: Language,
     refresh_interval_secs: u64,
+    color_scheme: ColorScheme,
 }
 
 impl Default for DisplayPreferences {
@@ -56,6 +92,7 @@ impl Default for DisplayPreferences {
             speed_unit: SpeedUnit::default(),
             language: Language::default(),
             refresh_interval_secs: 1,
+            color_scheme: ColorScheme::default(),
         }
     }
 }
@@ -83,6 +120,10 @@ impl DisplayStorage {
     pub fn load_refresh_interval(&self) -> Result<u64, String> {
         self.read()
             .map(|preferences| preferences.refresh_interval_secs.clamp(1, 60))
+    }
+
+    pub fn load_color_scheme(&self) -> Result<ColorScheme, String> {
+        self.read().map(|preferences| preferences.color_scheme)
     }
 
     fn read(&self) -> Result<DisplayPreferences, String> {
@@ -114,6 +155,12 @@ impl DisplayStorage {
         self.write(preferences)
     }
 
+    pub fn save_color_scheme(&self, color_scheme: ColorScheme) -> Result<(), String> {
+        let mut preferences = self.read().unwrap_or_default();
+        preferences.color_scheme = color_scheme;
+        self.write(preferences)
+    }
+
     fn write(&self, preferences: DisplayPreferences) -> Result<(), String> {
         let parent = self.path.parent().ok_or(tr("配置路径缺少父目录"))?;
         let write = || -> io::Result<()> {
@@ -130,6 +177,28 @@ impl DisplayStorage {
 }
 
 impl BandixApp {
+    pub(super) fn apply_color_scheme(&mut self, color_scheme: ColorScheme, cx: &mut Context<Self>) {
+        self.color_scheme = color_scheme;
+        cx.set_window_appearance(color_scheme.appearance_override());
+        apply_effective_theme(color_scheme, cx.window_appearance(), cx);
+        self.display_settings_error = DisplayStorage::for_user()
+            .and_then(|storage| storage.save_color_scheme(color_scheme))
+            .err()
+            .map(|error| tf("主题已切换，但保存失败：{0}", &[error]));
+        cx.notify();
+    }
+
+    pub(super) fn sync_system_color_scheme(
+        &mut self,
+        appearance: WindowAppearance,
+        cx: &mut Context<Self>,
+    ) {
+        if self.color_scheme == ColorScheme::Auto {
+            apply_effective_theme(self.color_scheme, appearance, cx);
+            cx.notify();
+        }
+    }
+
     pub(super) fn set_language(
         &mut self,
         language: Language,
@@ -163,6 +232,24 @@ impl BandixApp {
             .map(|error| tf("速度单位已切换，但保存失败：{0}", &[format!("{}", error)]));
         cx.notify();
     }
+}
+
+pub(super) fn apply_effective_theme(
+    color_scheme: ColorScheme,
+    appearance: WindowAppearance,
+    cx: &mut App,
+) {
+    let dark = color_scheme.is_dark(appearance);
+    theme::set_dark(dark);
+    Theme::change(
+        if dark {
+            ThemeMode::Dark
+        } else {
+            ThemeMode::Light
+        },
+        None,
+        cx,
+    );
 }
 
 #[cfg(test)]
@@ -219,6 +306,7 @@ mod tests {
             Language::SimplifiedChinese
         );
         assert_eq!(storage.load_refresh_interval().unwrap(), 1);
+        assert_eq!(storage.load_color_scheme().unwrap(), ColorScheme::Dark);
         storage.save_refresh_interval(10).unwrap();
         for language in Language::ALL {
             storage.save_language(language).unwrap();
@@ -234,6 +322,38 @@ mod tests {
             storage.save(SpeedUnit::Bits).unwrap();
             assert_eq!(storage.load_refresh_interval().unwrap(), 10);
         }
+    }
+
+    #[test]
+    fn color_scheme_defaults_to_dark_roundtrips_and_resolves_auto() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("display.json");
+        let storage = DisplayStorage { path: path.clone() };
+        fs::write(&path, br#"{"language":"en","speed_unit":"bits"}"#).unwrap();
+        assert_eq!(storage.load_color_scheme().unwrap(), ColorScheme::Dark);
+
+        for scheme in ColorScheme::ALL {
+            storage.save_color_scheme(scheme).unwrap();
+            let reopened = DisplayStorage { path: path.clone() };
+            assert_eq!(reopened.load_color_scheme().unwrap(), scheme);
+            assert_eq!(reopened.load_language().unwrap(), Language::English);
+            assert_eq!(reopened.load().unwrap(), SpeedUnit::Bits);
+        }
+        storage.save_color_scheme(ColorScheme::Auto).unwrap();
+        storage.save_language(Language::Japanese).unwrap();
+        storage.save(SpeedUnit::Bytes).unwrap();
+        storage.save_refresh_interval(30).unwrap();
+        assert_eq!(storage.load_color_scheme().unwrap(), ColorScheme::Auto);
+
+        assert!(ColorScheme::Dark.is_dark(WindowAppearance::Light));
+        assert!(!ColorScheme::Light.is_dark(WindowAppearance::Dark));
+        assert!(ColorScheme::Auto.is_dark(WindowAppearance::VibrantDark));
+        assert!(!ColorScheme::Auto.is_dark(WindowAppearance::VibrantLight));
+        assert_eq!(ColorScheme::Auto.appearance_override(), None);
+        assert_eq!(
+            ColorScheme::Dark.appearance_override(),
+            Some(WindowAppearance::Dark)
+        );
     }
 
     #[test]

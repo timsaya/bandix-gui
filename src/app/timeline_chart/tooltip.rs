@@ -19,12 +19,12 @@ pub(super) fn render(
         .w(px(300.0))
         .p_2()
         .rounded_lg()
-        .bg(rgb(SURFACE_2))
+        .bg(rgb(color_surface_alt()))
         .border_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .shadow_lg()
         .text_size(px(10.0))
-        .text_color(rgb(TEXT))
+        .text_color(rgb(color_text()))
         .child(
             div()
                 .font_weight(FontWeight::SEMIBOLD)
@@ -71,13 +71,13 @@ fn network_section(item: &UsageIncrement, wan: bool, speed_unit: SpeedUnit) -> i
         .mt_1()
         .pt_1()
         .border_t_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .child(
             div()
                 .h(px(17.0))
                 .flex()
                 .items_center()
-                .text_color(rgb(MUTED))
+                .text_color(rgb(color_muted()))
                 .child(div().w(px(64.0)).child(if wan {
                     tr("WAN 流量")
                 } else {
@@ -110,7 +110,7 @@ fn value_row(
         .child(
             div()
                 .w(px(64.0))
-                .text_color(rgb(MUTED))
+                .text_color(rgb(color_muted()))
                 .child(crate::i18n::text(&label)),
         )
         .child(
@@ -119,7 +119,7 @@ fn value_row(
                 .text_right()
                 .whitespace_nowrap()
                 .text_size(px(if emphasized { 14.0 } else { 10.0 }))
-                .text_color(rgb(UPLOAD))
+                .text_color(rgb(color_upload()))
                 .child(upload),
         )
         .child(
@@ -128,7 +128,7 @@ fn value_row(
                 .text_right()
                 .whitespace_nowrap()
                 .text_size(px(if emphasized { 14.0 } else { 10.0 }))
-                .text_color(rgb(DOWNLOAD))
+                .text_color(rgb(color_download()))
                 .child(download),
         )
 }

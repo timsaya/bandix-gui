@@ -111,7 +111,7 @@ pub(super) fn expanded_panel(id: &'static str, content: impl IntoElement) -> imp
         .min_w_0()
         .min_h_0()
         .occlude()
-        .bg(rgb(BG))
+        .bg(rgb(color_bg()))
         .pl_3()
         .pr_4()
         .pt_4()

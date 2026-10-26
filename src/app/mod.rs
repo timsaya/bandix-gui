@@ -35,10 +35,10 @@ use gpui_kit::component::{
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use page::Page;
-use preferences::{DisplayStorage, SpeedUnit};
+use preferences::{ColorScheme, DisplayStorage, SpeedUnit, apply_effective_theme};
 use realtime_chart::RealtimeChartState;
 use std::time::Duration;
-use theme::BG;
+use theme::*;
 use traffic_stats::{
     TimelineDeviceOption, TrafficAggregation, TrafficNetworkType, TrafficRangePreset,
     date_range_ms, timeline_device_options, today,
@@ -79,9 +79,11 @@ pub struct BandixApp {
     data_generation: u64,
     refresh_interval_secs: u64,
     speed_unit: SpeedUnit,
+    color_scheme: ColorScheme,
     language: Language,
     language_select: Entity<SelectState<Vec<Language>>>,
     _language_subscription: Subscription,
+    _appearance_subscription: Subscription,
     display_settings_error: Option<String>,
     auto_refresh_generation: u64,
     device_list: DeviceListState,
@@ -94,6 +96,14 @@ pub struct BandixApp {
     timeline_chart: chart_zoom::ChartZoomState,
     device_manager: Option<DeviceManagerState>,
     delete_device: Option<DeleteDeviceState>,
+}
+
+pub(crate) fn initialize_theme(cx: &mut App) {
+    let color_scheme = DisplayStorage::for_user()
+        .and_then(|storage| storage.load_color_scheme())
+        .unwrap_or_default();
+    cx.set_window_appearance(color_scheme.appearance_override());
+    apply_effective_theme(color_scheme, cx.window_appearance(), cx);
 }
 
 impl BandixApp {
@@ -112,6 +122,11 @@ impl BandixApp {
         let refresh_interval_secs = DisplayStorage::for_user()
             .and_then(|storage| storage.load_refresh_interval())
             .unwrap_or(1);
+        let color_scheme = DisplayStorage::for_user()
+            .and_then(|storage| storage.load_color_scheme())
+            .unwrap_or_default();
+        cx.set_window_appearance(color_scheme.appearance_override());
+        apply_effective_theme(color_scheme, cx.window_appearance(), cx);
         language.activate();
         let language_index = Language::ALL
             .iter()
@@ -134,6 +149,9 @@ impl BandixApp {
                 }
             },
         );
+        let appearance_subscription = cx.observe_window_appearance(window, |app, window, cx| {
+            app.sync_system_color_scheme(window.appearance(), cx);
+        });
         let connection_page = connection_monitor::ConnectionPage::new(window, cx);
         let dns_page = dns_monitor::DnsPage::new(window, cx);
         let device_list = DeviceListState::load_preferences();
@@ -310,9 +328,11 @@ impl BandixApp {
             data_generation: 0,
             refresh_interval_secs,
             speed_unit,
+            color_scheme,
             language,
             language_select,
             _language_subscription: language_subscription,
+            _appearance_subscription: appearance_subscription,
             display_settings_error,
             auto_refresh_generation: 0,
             device_list,
@@ -742,7 +762,7 @@ impl Render for BandixApp {
             .min_h_0()
             .relative()
             .flex()
-            .bg(rgb(BG))
+            .bg(rgb(color_bg()))
             .font_family("-apple-system, BlinkMacSystemFont, PingFang SC, sans-serif")
             .child(shell::sidebar(self, cx))
             .child(
@@ -780,9 +800,9 @@ impl Render for BandixApp {
                 |frame| {
                     frame.child(
                         gpui_kit::component::TitleBar::new()
-                            .bg(rgb(theme::SIDEBAR))
-                            .border_color(rgb(theme::BORDER))
-                            .text_color(rgb(theme::TEXT))
+                            .bg(rgb(theme::color_sidebar()))
+                            .border_color(rgb(theme::color_border()))
+                            .text_color(rgb(theme::color_text()))
                             .text_size(px(13.0))
                             .child(
                                 div()

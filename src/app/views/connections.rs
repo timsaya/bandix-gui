@@ -11,14 +11,15 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement
         return data_notice(
             tr("暂无连接数据"),
             tr("请先连接 Bandix 服务。").into(),
-            MUTED,
+            color_muted(),
         )
         .into_any_element();
     };
     let stats = match &data.connection_stats {
         Ok(stats) => stats,
         Err(error) => {
-            return data_notice(tr("连接统计接口请求失败"), error.clone(), RED).into_any_element();
+            return data_notice(tr("连接统计接口请求失败"), error.clone(), color_red())
+                .into_any_element();
         }
     };
     let query = app
@@ -41,9 +42,9 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement
         .child(
             div()
                 .rounded_xl()
-                .bg(rgb(SURFACE))
+                .bg(rgb(color_surface()))
                 .border_1()
-                .border_color(rgb(BORDER))
+                .border_color(rgb(color_border()))
                 .p_4()
                 .child(
                     div()
@@ -58,10 +59,10 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement
                                 .flex()
                                 .flex_col()
                                 .gap_1()
-                                .child(text(tr("设备连接统计"), TEXT, 14.0))
+                                .child(text(tr("设备连接统计"), color_text(), 14.0))
                                 .child(text(
                                     tr("仅统计局域网设备的连接，数量可能与全局总连接数不同。"),
-                                    MUTED,
+                                    color_muted(),
                                     10.0,
                                 )),
                         )
@@ -86,7 +87,7 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement
                                     ],
                                 )
                             },
-                            MUTED,
+                            color_muted(),
                             11.0,
                         )),
                 )
@@ -103,7 +104,7 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement
                             } else {
                                 tr("没有匹配的设备")
                             },
-                            MUTED,
+                            color_muted(),
                             12.0,
                         ))
                         .into_any_element()
@@ -132,44 +133,49 @@ fn summary(global: &GlobalConnectionStats) -> Div {
             tr("总连接"),
             global.total_connections.to_string(),
             String::new(),
-            BLUE,
+            color_blue(),
             "⇄",
         ))
         .child(
-            protocol_card(tr("TCP 连接"), global.tcp_connections, "TCP", ACCENT)
-                .min_w(px(330.0))
-                .id("connection-tcp-summary")
-                .child(
-                    div()
-                        .mt_2()
-                        .flex()
-                        .items_center()
-                        .gap_2()
-                        .child(status(
-                            "EST",
-                            global.established_tcp,
-                            ACCENT,
-                            tr("ESTABLISHED · 已建立连接"),
-                        ))
-                        .child(status(
-                            "WAIT",
-                            global.time_wait_tcp,
-                            ORANGE,
-                            tr("TIME_WAIT · 等待关闭"),
-                        ))
-                        .child(status(
-                            "CLOSE",
-                            global.close_wait_tcp,
-                            MUTED,
-                            tr("CLOSE_WAIT · 等待本地关闭"),
-                        )),
-                ),
+            protocol_card(
+                tr("TCP 连接"),
+                global.tcp_connections,
+                "TCP",
+                color_accent(),
+            )
+            .min_w(px(330.0))
+            .id("connection-tcp-summary")
+            .child(
+                div()
+                    .mt_2()
+                    .flex()
+                    .items_center()
+                    .gap_2()
+                    .child(status(
+                        "EST",
+                        global.established_tcp,
+                        color_accent(),
+                        tr("ESTABLISHED · 已建立连接"),
+                    ))
+                    .child(status(
+                        "WAIT",
+                        global.time_wait_tcp,
+                        color_orange(),
+                        tr("TIME_WAIT · 等待关闭"),
+                    ))
+                    .child(status(
+                        "CLOSE",
+                        global.close_wait_tcp,
+                        color_muted(),
+                        tr("CLOSE_WAIT · 等待本地关闭"),
+                    )),
+            ),
         )
         .child(protocol_card(
             tr("UDP 连接"),
             global.udp_connections,
             "UDP",
-            DOWNLOAD,
+            color_download(),
         ))
 }
 fn protocol_card(label: &'static str, count: u32, protocol: &'static str, color: u32) -> Div {
@@ -178,22 +184,22 @@ fn protocol_card(label: &'static str, count: u32, protocol: &'static str, color:
         .min_w(px(175.0))
         .p_4()
         .rounded_xl()
-        .bg(rgb(SURFACE))
+        .bg(rgb(color_surface()))
         .border_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .child(
             div()
                 .flex()
                 .h(px(28.0))
                 .items_center()
                 .justify_between()
-                .child(text(crate::i18n::tr(label), MUTED, 11.0))
+                .child(text(crate::i18n::tr(label), color_muted(), 11.0))
                 .child(text(protocol, color, 12.0)),
         )
         .child(
-            div()
-                .mt_2()
-                .child(text(count.to_string(), TEXT, 23.0).font_weight(FontWeight::SEMIBOLD)),
+            div().mt_2().child(
+                text(count.to_string(), color_text(), 23.0).font_weight(FontWeight::SEMIBOLD),
+            ),
         )
 }
 
@@ -213,7 +219,7 @@ fn header() -> Div {
         .items_center()
         .h(px(34.0))
         .rounded_md()
-        .bg(rgb(0x0d131d))
+        .bg(rgb(color_table_header()))
         .children(
             [
                 ("设备信息", 2.2),
@@ -223,14 +229,16 @@ fn header() -> Div {
                 ("总连接", 0.8),
             ]
             .into_iter()
-            .map(|(label, weight)| cell(weight).child(text(crate::i18n::tr(label), MUTED, 11.0))),
+            .map(|(label, weight)| {
+                cell(weight).child(text(crate::i18n::tr(label), color_muted(), 11.0))
+            }),
         )
         .child(
             div()
                 .w(px(76.0))
                 .flex_none()
                 .px_2()
-                .child(text(tr("操作"), MUTED, 11.0)),
+                .child(text(tr("操作"), color_muted(), 11.0)),
         )
 }
 fn row(device: &DeviceConnection, cx: &mut Context<BandixApp>) -> AnyElement {
@@ -244,11 +252,11 @@ fn row(device: &DeviceConnection, cx: &mut Context<BandixApp>) -> AnyElement {
         .items_center()
         .h(px(84.0))
         .border_b_1()
-        .border_color(rgb(BORDER).opacity(0.7))
+        .border_color(rgb(color_border()).opacity(0.7))
         .child(
             cell(2.2)
                 .gap_1()
-                .child(text(device.display_name().to_string(), TEXT, 12.0).text_ellipsis())
+                .child(text(device.display_name().to_string(), color_text(), 12.0).text_ellipsis())
                 .child(text(
                     if device.ip.is_empty() {
                         "—"
@@ -256,7 +264,7 @@ fn row(device: &DeviceConnection, cx: &mut Context<BandixApp>) -> AnyElement {
                         &device.ip
                     }
                     .to_string(),
-                    MUTED,
+                    color_muted(),
                     11.0,
                 ))
                 .child(text(
@@ -266,12 +274,20 @@ fn row(device: &DeviceConnection, cx: &mut Context<BandixApp>) -> AnyElement {
                         &device.mac
                     }
                     .to_string(),
-                    MUTED,
+                    color_muted(),
                     10.0,
                 )),
         )
-        .child(cell(0.65).child(text(device.tcp_connections.to_string(), ACCENT, 17.0)))
-        .child(cell(0.65).child(text(device.udp_connections.to_string(), DOWNLOAD, 17.0)))
+        .child(cell(0.65).child(text(
+            device.tcp_connections.to_string(),
+            color_accent(),
+            17.0,
+        )))
+        .child(cell(0.65).child(text(
+            device.udp_connections.to_string(),
+            color_download(),
+            17.0,
+        )))
         .child(
             cell(2.0).child(
                 div()
@@ -281,26 +297,26 @@ fn row(device: &DeviceConnection, cx: &mut Context<BandixApp>) -> AnyElement {
                     .child(status(
                         "EST",
                         device.established_tcp,
-                        ACCENT,
+                        color_accent(),
                         tr("ESTABLISHED · 已建立连接"),
                     ))
                     .child(status(
                         "WAIT",
                         device.time_wait_tcp,
-                        ORANGE,
+                        color_orange(),
                         tr("TIME_WAIT · 等待关闭"),
                     ))
                     .child(status(
                         "CLOSE",
                         device.close_wait_tcp,
-                        MUTED,
+                        color_muted(),
                         tr("CLOSE_WAIT · 等待本地关闭"),
                     )),
             ),
         )
         .child(
             cell(0.8).child(
-                text(device.total_connections.to_string(), TEXT, 17.0)
+                text(device.total_connections.to_string(), color_text(), 17.0)
                     .font_weight(FontWeight::SEMIBOLD),
             ),
         )
@@ -336,7 +352,7 @@ fn status(
         .items_center()
         .gap_1()
         .child(text(crate::i18n::tr(label), color, 9.0))
-        .child(text(count.to_string(), TEXT, 10.0))
+        .child(text(count.to_string(), color_text(), 10.0))
         .tooltip(move |window, cx| Tooltip::new(description).build(window, cx))
 }
 fn text(value: impl Into<SharedString>, color: u32, size: f32) -> Div {

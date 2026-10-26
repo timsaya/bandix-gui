@@ -493,7 +493,7 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
         .flex()
         .items_center()
         .justify_center()
-        .bg(rgb(0x03060a).opacity(0.82))
+        .bg(rgb(color_overlay()).opacity(overlay_opacity()))
         .child(
             div()
                 .w(px(780.0))
@@ -501,9 +501,9 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                 .flex()
                 .flex_col()
                 .rounded_xl()
-                .bg(rgb(SURFACE))
+                .bg(rgb(color_surface()))
                 .border_1()
-                .border_color(rgb(BORDER))
+                .border_color(rgb(color_border()))
                 .child(manager_header(manager, cx))
                 .child(manager_tabs(manager, cx))
                 .child(
@@ -513,7 +513,7 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                         .min_h_0()
                         .relative()
                         .p_5()
-                        .bg(rgb(BG).opacity(0.4))
+                        .bg(rgb(color_bg()).opacity(0.4))
                         .overflow_y_scroll()
                         .track_scroll(&manager.scroll)
                         .vertical_scrollbar(&manager.scroll)
@@ -523,9 +523,18 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                                     .mb_3()
                                     .p_3()
                                     .rounded_lg()
-                                    .bg(rgb(if is_error { RED } else { ACCENT }).opacity(0.1))
+                                    .bg(rgb(if is_error {
+                                        color_red()
+                                    } else {
+                                        color_accent()
+                                    })
+                                    .opacity(0.1))
                                     .text_size(px(12.0))
-                                    .text_color(rgb(if is_error { RED } else { ACCENT }))
+                                    .text_color(rgb(if is_error {
+                                        color_red()
+                                    } else {
+                                        color_accent()
+                                    }))
                                     .child(message),
                             )
                         })
@@ -543,7 +552,7 @@ fn manager_header(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> 
         .px_5()
         .py_4()
         .border_b_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .child(
             div()
                 .flex()
@@ -553,13 +562,13 @@ fn manager_header(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> 
                     div()
                         .text_size(px(16.0))
                         .font_weight(FontWeight::SEMIBOLD)
-                        .text_color(rgb(TEXT))
+                        .text_color(rgb(color_text()))
                         .child(tr("设备设置")),
                 )
                 .child(
                     div()
                         .text_size(px(11.0))
-                        .text_color(rgb(MUTED))
+                        .text_color(rgb(color_muted()))
                         .child(format!(
                             "{} · {} · {}",
                             manager.device.display_name(),
@@ -577,9 +586,9 @@ fn manager_header(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> 
                 .flex()
                 .items_center()
                 .justify_center()
-                .bg(rgb(SURFACE_2))
-                .text_color(rgb(MUTED))
-                .hover(|style| style.text_color(rgb(TEXT)))
+                .bg(rgb(color_surface_alt()))
+                .text_color(rgb(color_muted()))
+                .hover(|style| style.text_color(rgb(color_text())))
                 .on_click(cx.listener(|app, _, _, cx| app.close_device_manager(cx)))
                 .child("×"),
         )
@@ -590,7 +599,7 @@ fn manager_tabs(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> im
         .flex()
         .px_5()
         .border_b_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .child(manager_tab(
             "device-manager-tab-nickname",
             tr("昵称"),
@@ -637,8 +646,12 @@ fn manager_tab(
         } else {
             FontWeight::NORMAL
         })
-        .text_color(rgb(if active { ACCENT } else { MUTED }))
-        .hover(|style| style.text_color(rgb(TEXT)))
+        .text_color(rgb(if active {
+            color_accent()
+        } else {
+            color_muted()
+        }))
+        .hover(|style| style.text_color(rgb(color_text())))
         .when(active, |view| {
             view.child(
                 div()
@@ -648,7 +661,7 @@ fn manager_tab(
                     .right_3()
                     .h(px(2.0))
                     .rounded_full()
-                    .bg(rgb(ACCENT)),
+                    .bg(rgb(color_accent())),
             )
         })
         .on_click(cx.listener(move |app, _, _, cx| app.select_device_manager_tab(tab, cx)))
@@ -677,7 +690,7 @@ fn nickname_section(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -
             .child(action_button(
                 "save-device-nickname",
                 tr("保存昵称"),
-                ACCENT,
+                color_accent(),
                 cx,
                 |app, window, cx| app.save_device_nickname(window, cx),
             )),
@@ -689,9 +702,9 @@ fn manager_section(title: impl Into<SharedString>, detail: &'static str) -> Div 
         .mb_4()
         .p_5()
         .rounded_xl()
-        .bg(rgb(SURFACE))
+        .bg(rgb(color_surface()))
         .border_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .child(
             div().mb_4().flex().items_center().gap_4().child(
                 div()
@@ -701,14 +714,14 @@ fn manager_section(title: impl Into<SharedString>, detail: &'static str) -> Div 
                         div()
                             .text_size(px(14.0))
                             .font_weight(FontWeight::SEMIBOLD)
-                            .text_color(rgb(TEXT))
+                            .text_color(rgb(color_text()))
                             .child(title.into()),
                     )
                     .child(
                         div()
                             .mt_1()
                             .text_size(px(11.0))
-                            .text_color(rgb(MUTED))
+                            .text_color(rgb(color_muted()))
                             .child(detail),
                     ),
             ),
@@ -720,7 +733,7 @@ fn manager_form_footer() -> Div {
         .mt_4()
         .pt_4()
         .border_t_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .flex()
         .items_center()
         .justify_end()
@@ -731,9 +744,9 @@ fn input_box(state: &Entity<InputState>) -> Div {
     div()
         .h(px(36.0))
         .rounded_lg()
-        .bg(rgb(0x0c111a))
+        .bg(rgb(color_input()))
         .border_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .child(Input::new(state).appearance(false).cleanable(true))
 }
 
@@ -768,7 +781,7 @@ fn empty_line(message: &'static str) -> impl IntoElement {
     div()
         .py_3()
         .text_size(px(11.0))
-        .text_color(rgb(MUTED))
+        .text_color(rgb(color_muted()))
         .child(message)
 }
 
@@ -783,27 +796,27 @@ fn delete_confirmation(state: &DeleteDeviceState, cx: &mut Context<BandixApp>) -
         .flex()
         .items_center()
         .justify_center()
-        .bg(rgb(0x03060a).opacity(0.82))
+        .bg(rgb(color_overlay()).opacity(overlay_opacity()))
         .child(
             div()
                 .w(px(430.0))
                 .p_5()
                 .rounded_xl()
-                .bg(rgb(SURFACE))
+                .bg(rgb(color_surface()))
                 .border_1()
-                .border_color(rgb(RED).opacity(0.4))
+                .border_color(rgb(color_red()).opacity(0.4))
                 .child(
                     div()
                         .text_size(px(16.0))
                         .font_weight(FontWeight::SEMIBOLD)
-                        .text_color(rgb(TEXT))
+                        .text_color(rgb(color_text()))
                         .child(tr("删除设备？")),
                 )
                 .child(
                     div()
                         .mt_3()
                         .text_size(px(12.0))
-                        .text_color(rgb(MUTED))
+                        .text_color(rgb(color_muted()))
                         .child(tf(
                             "将删除 {0}（{1}）的流量历史、昵称、限速规则和配额，此操作无法撤销。",
                             &[
@@ -817,7 +830,7 @@ fn delete_confirmation(state: &DeleteDeviceState, cx: &mut Context<BandixApp>) -
                         div()
                             .mt_3()
                             .text_size(px(11.0))
-                            .text_color(rgb(RED))
+                            .text_color(rgb(color_red()))
                             .child(error),
                     )
                 })
@@ -836,8 +849,8 @@ fn delete_confirmation(state: &DeleteDeviceState, cx: &mut Context<BandixApp>) -
                                 .cursor_pointer()
                                 .flex()
                                 .items_center()
-                                .bg(rgb(SURFACE_2))
-                                .text_color(rgb(TEXT))
+                                .bg(rgb(color_surface_alt()))
+                                .text_color(rgb(color_text()))
                                 .on_click(cx.listener(|app, _, _, cx| app.cancel_delete_device(cx)))
                                 .child(tr("取消")),
                         )
@@ -850,7 +863,7 @@ fn delete_confirmation(state: &DeleteDeviceState, cx: &mut Context<BandixApp>) -
                                 .cursor_pointer()
                                 .flex()
                                 .items_center()
-                                .bg(rgb(RED))
+                                .bg(rgb(color_red()))
                                 .text_color(rgb(0xffffff))
                                 .on_click(cx.listener(|app, _, window, cx| {
                                     app.confirm_delete_device(window, cx)

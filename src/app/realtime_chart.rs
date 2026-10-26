@@ -92,7 +92,7 @@ pub(super) fn render(
             .items_center()
             .justify_center()
             .text_size(px(11.0))
-            .text_color(rgb(MUTED))
+            .text_color(rgb(color_muted()))
             .child(tr("暂无实时指标"))
             .into_any_element()
     } else {
@@ -118,7 +118,7 @@ pub(super) fn render(
                     .items_end()
                     .justify_between()
                     .text_size(px(10.0))
-                    .text_color(rgb(MUTED))
+                    .text_color(rgb(color_muted()))
                     .children((0_u64..=4).rev().map(move |tick| {
                         div().child(speed_unit.format(tick_step.saturating_mul(tick)))
                     })),
@@ -131,7 +131,7 @@ pub(super) fn render(
                     .h_full()
                     .relative()
                     .border_b_1()
-                    .border_color(rgb(BORDER))
+                    .border_color(rgb(color_border()))
                     .on_hover(cx.listener(|app, hovered, _, cx| {
                         app.set_realtime_chart_hover(*hovered, cx);
                     }))
@@ -150,7 +150,7 @@ pub(super) fn render(
                             .left_0()
                             .w_full()
                             .border_t_1()
-                            .border_color(rgb(BORDER).opacity(0.55))
+                            .border_color(rgb(color_border()).opacity(0.55))
                     }))
                     .child(chart)
                     .child(wheel_capture(cx, move |app, event, window, cx| {
@@ -166,9 +166,9 @@ pub(super) fn render(
         .h(px(292.0))
         .p_4()
         .rounded_xl()
-        .bg(rgb(SURFACE))
+        .bg(rgb(color_surface()))
         .border_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .child(
             panel_title(tr("实时流量")).child(
                 div()
@@ -177,17 +177,22 @@ pub(super) fn render(
                     .items_center()
                     .gap_3()
                     .child(legend(
-                        UPLOAD,
+                        color_upload(),
                         tf("上传 {0}", &[format!("{}", speed_unit.format(upload))]),
                     ))
                     .child(legend(
-                        DOWNLOAD,
+                        color_download(),
                         tf("下载 {0}", &[format!("{}", speed_unit.format(download))]),
                     ))
-                    .child(div().text_size(px(10.0)).text_color(rgb(MUTED)).child(tf(
-                        "保留 {0} 秒",
-                        &[format!("{}", metrics.retention_seconds)],
-                    ))),
+                    .child(
+                        div()
+                            .text_size(px(10.0))
+                            .text_color(rgb(color_muted()))
+                            .child(tf(
+                                "保留 {0} 秒",
+                                &[format!("{}", metrics.retention_seconds)],
+                            )),
+                    ),
             ),
         )
         .child(plot)
@@ -198,7 +203,7 @@ pub(super) fn render(
                 .flex()
                 .justify_between()
                 .text_size(px(10.0))
-                .text_color(rgb(MUTED))
+                .text_color(rgb(color_muted()))
                 .child(first_time)
                 .child(last_time),
         )
@@ -210,7 +215,7 @@ fn legend(color: u32, label: String) -> impl IntoElement {
         .items_center()
         .gap_2()
         .text_size(px(11.0))
-        .text_color(rgb(MUTED))
+        .text_color(rgb(color_muted()))
         .child(div().w(px(14.0)).h(px(2.0)).rounded_full().bg(rgb(color)))
         .child(crate::i18n::text(&label))
 }

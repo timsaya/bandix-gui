@@ -12,12 +12,12 @@ pub(super) fn render(sample: &TrafficSample, speed_unit: SpeedUnit) -> impl Into
         .w(px(310.0))
         .p_2()
         .rounded_lg()
-        .bg(rgb(SURFACE_2))
+        .bg(rgb(color_surface_alt()))
         .border_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .shadow_lg()
         .text_size(px(10.0))
-        .text_color(rgb(TEXT))
+        .text_color(rgb(color_text()))
         .child(
             div()
                 .font_weight(FontWeight::SEMIBOLD)
@@ -31,13 +31,13 @@ pub(super) fn render(sample: &TrafficSample, speed_unit: SpeedUnit) -> impl Into
                 .child(kpi(
                     tr("WAN 实时上传"),
                     sample.wan.upload_rate,
-                    UPLOAD,
+                    color_upload(),
                     speed_unit,
                 ))
                 .child(kpi(
                     tr("WAN 实时下载"),
                     sample.wan.download_rate,
-                    DOWNLOAD,
+                    color_download(),
                     speed_unit,
                 )),
         )
@@ -65,7 +65,7 @@ fn kpi(label: &'static str, rate: u64, color: u32, speed_unit: SpeedUnit) -> imp
         .child(
             div()
                 .text_size(px(10.0))
-                .text_color(rgb(MUTED))
+                .text_color(rgb(color_muted()))
                 .child(crate::i18n::text(&label)),
         )
         .child(
@@ -83,11 +83,11 @@ fn section_header(title: &'static str) -> impl IntoElement {
         .mt_1()
         .pt_1()
         .border_t_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .h(px(21.0))
         .flex()
         .items_center()
-        .text_color(rgb(MUTED))
+        .text_color(rgb(color_muted()))
         .child(
             div()
                 .w(px(64.0))
@@ -126,7 +126,7 @@ fn value_row(label: &'static str, upload: String, download: String) -> impl Into
         .child(
             div()
                 .w(px(64.0))
-                .text_color(rgb(MUTED))
+                .text_color(rgb(color_muted()))
                 .child(crate::i18n::text(&label)),
         )
         .child(
@@ -134,7 +134,7 @@ fn value_row(label: &'static str, upload: String, download: String) -> impl Into
                 .flex_1()
                 .text_right()
                 .whitespace_nowrap()
-                .text_color(rgb(UPLOAD))
+                .text_color(rgb(color_upload()))
                 .child(upload),
         )
         .child(
@@ -142,7 +142,7 @@ fn value_row(label: &'static str, upload: String, download: String) -> impl Into
                 .flex_1()
                 .text_right()
                 .whitespace_nowrap()
-                .text_color(rgb(DOWNLOAD))
+                .text_color(rgb(color_download()))
                 .child(download),
         )
 }

@@ -38,12 +38,12 @@ impl RealtimePlot {
             .y_domain(0.0, axis_maximum as f64)
             .y_padding(0.0, 0.0)
             .y(|sample| sample.wan.upload_rate as f64)
-            .stroke(rgb(UPLOAD))
-            .fill(series_fill(UPLOAD, 0.16))
+            .stroke(rgb(color_upload()))
+            .fill(series_fill(color_upload(), 0.16))
             .linear()
             .y(|sample| sample.wan.download_rate as f64)
-            .stroke(rgb(DOWNLOAD))
-            .fill(series_fill(DOWNLOAD, 0.12))
+            .stroke(rgb(color_download()))
+            .fill(series_fill(color_download(), 0.12))
             .linear();
         Self {
             area,
@@ -121,7 +121,7 @@ impl Plot for RealtimePlot {
                         .h_full()
                         .border_l_1()
                         .border_dashed()
-                        .border_color(rgb(MUTED).opacity(0.85)),
+                        .border_color(rgb(color_muted()).opacity(0.85)),
                 )
                 .child(
                     div()
@@ -132,7 +132,7 @@ impl Plot for RealtimePlot {
                         .w_full()
                         .border_t_1()
                         .border_dashed()
-                        .border_color(rgb(MUTED).opacity(0.85)),
+                        .border_color(rgb(color_muted()).opacity(0.85)),
                 )
                 .child(
                     Tooltip::new(cursor, bounds.size)
@@ -141,8 +141,15 @@ impl Plot for RealtimePlot {
                         .dots(state.dots.iter().enumerate().map(|(index, point)| {
                             Dot::new(*point)
                                 .size(px(5.0))
-                                .stroke(rgb(SURFACE).into())
-                                .fill(rgb(if index == 0 { UPLOAD } else { DOWNLOAD }).into())
+                                .stroke(rgb(color_surface()).into())
+                                .fill(
+                                    rgb(if index == 0 {
+                                        color_upload()
+                                    } else {
+                                        color_download()
+                                    })
+                                    .into(),
+                                )
                         }))
                         .child(
                             anchored()

@@ -176,9 +176,9 @@ fn rate_status(
             )
         },
         color: if download == 0 && upload == 0 {
-            MUTED
+            color_muted()
         } else {
-            BLUE
+            color_blue()
         },
         detail: if rules.is_empty() {
             tf("限速：未设置独立规则{0}", &[format!("{}", global_detail)])
@@ -246,7 +246,7 @@ fn quota_status(quotas: Option<&ApiResult<Vec<TrafficQuotaStatus>>>, mac: &str) 
         return StatusLine {
             usage_lines: Vec::new(),
             text: tr("配额 未配置").into(),
-            color: MUTED,
+            color: color_muted(),
             detail: tr("配额：未配置").into(),
         };
     };
@@ -289,11 +289,11 @@ fn quota_status(quotas: Option<&ApiResult<Vec<TrafficQuotaStatus>>>, mac: &str) 
             tr("配额 不限额").into()
         },
         color: if quota.blocked {
-            RED
+            color_red()
         } else if usage.is_some() {
-            ACCENT
+            color_accent()
         } else {
-            MUTED
+            color_muted()
         },
         detail: if quota.blocked {
             tf(
@@ -329,7 +329,11 @@ fn unavailable(label: &str, error: Option<&String>) -> StatusLine {
                 tr("正在读取…")
             }
         ),
-        color: if error.is_some() { RED } else { MUTED },
+        color: if error.is_some() {
+            color_red()
+        } else {
+            color_muted()
+        },
         detail: error
             .map(|error| {
                 tf(

@@ -17,9 +17,9 @@ pub(super) fn stat_card(
         .min_w(px(175.0))
         .p_4()
         .rounded_xl()
-        .bg(rgb(SURFACE))
+        .bg(rgb(color_surface()))
         .border_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .child(
             div()
                 .flex()
@@ -28,7 +28,7 @@ pub(super) fn stat_card(
                 .child(
                     div()
                         .text_size(px(11.0))
-                        .text_color(rgb(MUTED))
+                        .text_color(rgb(color_muted()))
                         .child(crate::i18n::text(&label)),
                 )
                 .child(
@@ -49,7 +49,7 @@ pub(super) fn stat_card(
                 .mt_2()
                 .text_size(px(23.0))
                 .font_weight(FontWeight::SEMIBOLD)
-                .text_color(rgb(TEXT))
+                .text_color(rgb(color_text()))
                 .child(value),
         );
 
@@ -80,15 +80,15 @@ pub(super) fn traffic_summary_card(
         .px_4()
         .py_3()
         .rounded_xl()
-        .bg(rgb(SURFACE))
+        .bg(rgb(color_surface()))
         .border_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .child(
             div()
                 .mb_1()
                 .text_size(px(11.0))
                 .font_weight(FontWeight::SEMIBOLD)
-                .text_color(rgb(MUTED))
+                .text_color(rgb(color_muted()))
                 .child(crate::i18n::text(&label)),
         )
         .child(
@@ -100,14 +100,14 @@ pub(super) fn traffic_summary_card(
                     "↑",
                     upload_rate,
                     upload_bytes,
-                    UPLOAD,
+                    color_upload(),
                     speed_unit,
                 ))
                 .child(traffic_summary_row(
                     "↓",
                     download_rate,
                     download_bytes,
-                    DOWNLOAD,
+                    color_download(),
                     speed_unit,
                 )),
         )
@@ -149,7 +149,7 @@ fn traffic_summary_row(
                 .flex_none()
                 .whitespace_nowrap()
                 .text_size(px(11.0))
-                .text_color(rgb(MUTED))
+                .text_color(rgb(color_muted()))
                 .child(format!("({})", format_bytes(bytes))),
         )
 }
@@ -163,14 +163,14 @@ fn panel_heading(title: &'static str, detail: Option<&'static str>) -> Div {
         div()
             .text_size(px(14.0))
             .font_weight(FontWeight::SEMIBOLD)
-            .text_color(rgb(TEXT))
+            .text_color(rgb(color_text()))
             .child(crate::i18n::text(&title)),
     );
     let content = match detail {
         Some(detail) => content.child(
             div()
                 .text_size(px(10.0))
-                .text_color(rgb(MUTED))
+                .text_color(rgb(color_muted()))
                 .child(detail),
         ),
         None => content,
@@ -189,9 +189,9 @@ fn panel_heading(title: &'static str, detail: Option<&'static str>) -> Div {
 pub(super) fn data_notice(title: &'static str, detail: String, color: u32) -> impl IntoElement {
     div()
         .rounded_xl()
-        .bg(rgb(SURFACE))
+        .bg(rgb(color_surface()))
         .border_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .p_5()
         .child(
             div()
@@ -204,7 +204,7 @@ pub(super) fn data_notice(title: &'static str, detail: String, color: u32) -> im
             div()
                 .mt_2()
                 .text_size(px(11.0))
-                .text_color(rgb(MUTED))
+                .text_color(rgb(color_muted()))
                 .child(detail),
         )
 }

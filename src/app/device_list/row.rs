@@ -42,9 +42,9 @@ pub(super) fn render(
         .h(px(mode.row_height()))
         .px_2()
         .border_b_1()
-        .border_color(rgb(BORDER).opacity(0.72))
+        .border_color(rgb(color_border()).opacity(0.72))
         .text_size(px(11.0))
-        .text_color(rgb(TEXT))
+        .text_color(rgb(color_text()))
         .child(device_info(&device, mode))
         .child(traffic_cell(
             "lan",
@@ -88,14 +88,22 @@ fn traffic_cell(
             "↑",
             upload_rate,
             upload_bytes,
-            if online { UPLOAD } else { MUTED },
+            if online {
+                color_upload()
+            } else {
+                color_muted()
+            },
             speed_unit,
         ))
         .child(traffic_line(
             "↓",
             download_rate,
             download_bytes,
-            if online { DOWNLOAD } else { MUTED },
+            if online {
+                color_download()
+            } else {
+                color_muted()
+            },
             speed_unit,
         ))
 }
@@ -111,7 +119,11 @@ pub(super) fn line(text: impl Into<SharedString>, color: u32) -> Div {
 }
 
 fn device_info(device: &Device, mode: DeviceListMode) -> impl IntoElement {
-    let status_color = if device.is_online() { ACCENT } else { MUTED };
+    let status_color = if device.is_online() {
+        color_accent()
+    } else {
+        color_muted()
+    };
     let nickname = device.hostname.trim();
     let nickname = if nickname.is_empty() { "-" } else { nickname };
     let interface = device.uplink.trim();
@@ -173,7 +185,7 @@ fn device_info(device: &Device, mode: DeviceListMode) -> impl IntoElement {
                         .child(div().size(px(6.0)).rounded_full().bg(rgb(status_color))),
                 )
                 .child(
-                    line(nickname.to_string(), TEXT)
+                    line(nickname.to_string(), color_text())
                         .text_size(px(12.0))
                         .font_weight(FontWeight::MEDIUM),
                 ),
@@ -186,7 +198,7 @@ fn device_info(device: &Device, mode: DeviceListMode) -> impl IntoElement {
                 .gap(px(CONNECTION_GAP))
                 .min_w_0()
                 .child(connection_icon(device))
-                .child(line(device.ip.clone(), MUTED))
+                .child(line(device.ip.clone(), color_muted()))
                 .when_some(device.wifi_band(), |info, band| {
                     info.child(wifi_band_tag(band))
                 }),
@@ -201,7 +213,7 @@ fn device_info(device: &Device, mode: DeviceListMode) -> impl IntoElement {
                     .min_w_0()
                     .flex()
                     .items_center()
-                    .child(connection_tag(interface.to_string(), MUTED)),
+                    .child(connection_tag(interface.to_string(), color_muted())),
             )
             .child(
                 line(
@@ -213,20 +225,23 @@ fn device_info(device: &Device, mode: DeviceListMode) -> impl IntoElement {
                             ipv6.join(", ")
                         }
                     ),
-                    MUTED,
+                    color_muted(),
                 )
                 .pl(px(DEVICE_META_INDENT))
                 .h(px(16.0)),
             )
             .child(
-                line(device.mac.clone(), MUTED)
+                line(device.mac.clone(), color_muted())
                     .pl(px(DEVICE_META_INDENT))
                     .h(px(16.0)),
             )
             .child(
-                line(tf("最后在线 {0}", &[format!("{}", last_online)]), MUTED)
-                    .pl(px(DEVICE_META_INDENT))
-                    .h(px(16.0)),
+                line(
+                    tf("最后在线 {0}", &[format!("{}", last_online)]),
+                    color_muted(),
+                )
+                .pl(px(DEVICE_META_INDENT))
+                .h(px(16.0)),
             )
         })
 }
@@ -249,12 +264,16 @@ fn connection_icon(device: &Device) -> impl IntoElement {
         .child(
             Icon::new(icon)
                 .size(px(CONNECTION_ICON_SIZE))
-                .text_color(rgb(MUTED)),
+                .text_color(rgb(color_muted())),
         )
 }
 
 fn wifi_band_tag(band: &'static str) -> impl IntoElement {
-    let color = if band == "2.4G" { ACCENT } else { BLUE };
+    let color = if band == "2.4G" {
+        color_accent()
+    } else {
+        color_blue()
+    };
     connection_tag(band, color)
         .w(px(42.0))
         .justify_center()
@@ -313,7 +332,7 @@ fn traffic_line(
                 .flex_none()
                 .font_weight(FontWeight::MEDIUM),
         )
-        .child(line(usage, MUTED).text_size(px(10.0)))
+        .child(line(usage, color_muted()).text_size(px(10.0)))
 }
 
 fn actions(device: Device, cx: &mut Context<BandixApp>) -> impl IntoElement {
@@ -326,18 +345,24 @@ fn actions(device: Device, cx: &mut Context<BandixApp>) -> impl IntoElement {
         .justify_end()
         .gap_2()
         .child(
-            action_button(format!("settings-device-{}", device.mac), tr("设置"), BLUE).on_click(
-                cx.listener(move |app, _, window, cx| {
-                    app.open_device_manager(settings.clone(), window, cx);
-                }),
-            ),
+            action_button(
+                format!("settings-device-{}", device.mac),
+                tr("设置"),
+                color_blue(),
+            )
+            .on_click(cx.listener(move |app, _, window, cx| {
+                app.open_device_manager(settings.clone(), window, cx);
+            })),
         )
         .child(
-            action_button(format!("delete-device-{}", device.mac), tr("删除"), RED).on_click(
-                cx.listener(move |app, _, _, cx| {
-                    app.request_delete_device(device.clone(), cx);
-                }),
-            ),
+            action_button(
+                format!("delete-device-{}", device.mac),
+                tr("删除"),
+                color_red(),
+            )
+            .on_click(cx.listener(move |app, _, _, cx| {
+                app.request_delete_device(device.clone(), cx);
+            })),
         )
 }
 

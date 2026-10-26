@@ -25,7 +25,7 @@ pub(super) fn render(
     cx: &Context<crate::app::BandixApp>,
 ) -> AnyElement {
     if details.loading {
-        return notice(tr("正在读取连接…"), MUTED);
+        return notice(tr("正在读取连接…"), color_muted());
     }
     let flows = match &details.data {
         Some(Ok(data)) => data,
@@ -35,18 +35,18 @@ pub(super) fn render(
                     "连接明细读取失败：{0}\n可尝试缩小每页条数，或调整筛选后重试。",
                     &[format!("{}", error)],
                 ),
-                RED,
+                color_red(),
             );
         }
-        None => return notice(tr("暂无连接数据"), MUTED),
+        None => return notice(tr("暂无连接数据"), color_muted()),
     };
     if flows.items.is_empty() {
-        return notice(tr("没有符合条件的连接"), MUTED);
+        return notice(tr("没有符合条件的连接"), color_muted());
     }
     let query = details.search.read(cx).value();
     let matches = matching_flows(flows, query.trim());
     if matches.is_empty() {
-        return notice(tr("没有符合条件的连接"), MUTED);
+        return notice(tr("没有符合条件的连接"), color_muted());
     }
     div()
         .relative()
@@ -69,9 +69,13 @@ pub(super) fn render(
                                 .h(px(34.0))
                                 .items_center()
                                 .rounded_md()
-                                .bg(rgb(0x0d131d))
+                                .bg(rgb(color_table_header()))
                                 .children(COLUMNS.iter().map(|(label, width)| {
-                                    cell(*width).child(text(crate::i18n::tr(label), MUTED, 11.0))
+                                    cell(*width).child(text(
+                                        crate::i18n::tr(label),
+                                        color_muted(),
+                                        11.0,
+                                    ))
                                 })),
                         )
                         .children(
@@ -163,10 +167,10 @@ fn row(
 ) -> impl IntoElement {
     let state = flow.state.as_deref().unwrap_or("—");
     let color = match state {
-        "ESTABLISHED" => ACCENT,
-        "CLOSE" | "CLOSE_WAIT" | "LAST_ACK" => MUTED,
-        "—" => MUTED,
-        _ => ORANGE,
+        "ESTABLISHED" => color_accent(),
+        "CLOSE" | "CLOSE_WAIT" | "LAST_ACK" => color_muted(),
+        "—" => color_muted(),
+        _ => color_orange(),
     };
     div()
         .id(("connection-flow", index))
@@ -175,13 +179,13 @@ fn row(
         .min_h(px(82.0))
         .py_2()
         .border_b_1()
-        .border_color(rgb(BORDER).opacity(0.7))
+        .border_color(rgb(color_border()).opacity(0.7))
         .child(cell(COLUMNS[0].1).child(text(
             flow.protocol.to_uppercase(),
             if flow.protocol.eq_ignore_ascii_case("tcp") {
-                ACCENT
+                color_accent()
             } else {
-                DOWNLOAD
+                color_download()
             },
             11.0,
         )))
@@ -204,7 +208,7 @@ fn row(
             COLUMNS[4].1,
             flow.orig_packets,
             flow.orig_bytes,
-            UPLOAD,
+            color_upload(),
         ))
         .child(address(
             "repl.src",
@@ -224,7 +228,7 @@ fn row(
             COLUMNS[7].1,
             flow.repl_packets,
             flow.repl_bytes,
-            DOWNLOAD,
+            color_download(),
         ))
         .child(cell(COLUMNS[8].1).child(text(
             if flow.flags.is_empty() {
@@ -232,7 +236,7 @@ fn row(
             } else {
                 flow.flags.join(" · ")
             },
-            MUTED,
+            color_muted(),
             10.0,
         )))
 }
@@ -263,21 +267,21 @@ fn address(
         .flex()
         .flex_col()
         .gap_1()
-        .child(text(ip.to_string(), TEXT, 11.0).text_ellipsis())
+        .child(text(ip.to_string(), color_text(), 11.0).text_ellipsis())
         .child(text(
             if port == 0 {
                 "—".into()
             } else {
                 tf("端口 {0}", &[format!("{}", port)])
             },
-            MUTED,
+            color_muted(),
             10.0,
         ));
     if let Some(location) = location {
-        result = result.child(text(location, DOWNLOAD, 10.0).text_ellipsis());
+        result = result.child(text(location, color_download(), 10.0).text_ellipsis());
     }
     if let Some(network) = network {
-        result = result.child(text(network, MUTED, 10.0).text_ellipsis());
+        result = result.child(text(network, color_muted(), 10.0).text_ellipsis());
     }
     result.tooltip(move |window, cx| Tooltip::new(full.clone()).build(window, cx))
 }
@@ -347,7 +351,11 @@ fn usage(width: f32, packets: u64, bytes: u64, color: u32) -> Div {
         .flex_col()
         .gap_1()
         .child(text(format_bytes(bytes), color, 11.0))
-        .child(text(tf("{0} 包", &[format!("{}", packets)]), MUTED, 10.0))
+        .child(text(
+            tf("{0} 包", &[format!("{}", packets)]),
+            color_muted(),
+            10.0,
+        ))
 }
 fn notice(message: &str, color: u32) -> AnyElement {
     div()

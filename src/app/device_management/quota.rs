@@ -131,7 +131,7 @@ impl QuotaField {
                 div()
                     .mb_1()
                     .text_size(px(11.0))
-                    .text_color(rgb(MUTED))
+                    .text_color(rgb(color_muted()))
                     .child(crate::i18n::text(&label)),
             )
             .child(
@@ -228,7 +228,11 @@ pub(super) fn render(
     } else if let Some(quota) = manager.quota.as_ref() {
         let blocked = blocking_periods(quota);
         let periods = configured_periods(quota).collect::<Vec<_>>();
-        let color = if quota.blocked { RED } else { ACCENT };
+        let color = if quota.blocked {
+            color_red()
+        } else {
+            color_accent()
+        };
         let status = if quota.blocked {
             if blocked.is_empty() {
                 tr("超限阻断").to_string()
@@ -262,7 +266,7 @@ pub(super) fn render(
                         .pb_2()
                         .flex()
                         .text_size(px(10.0))
-                        .text_color(rgb(MUTED))
+                        .text_color(rgb(color_muted()))
                         .child(div().flex_1().child(tr("配额周期")))
                         .child(div().child(tr("已用流量 / 配额")))
                         .child(div().w(px(60.0))),
@@ -274,12 +278,17 @@ pub(super) fn render(
                         .flex()
                         .items_center()
                         .border_t_1()
-                        .border_color(rgb(BORDER))
+                        .border_color(rgb(color_border()))
                         .text_size(px(12.0))
-                        .child(div().flex_1().text_color(rgb(MUTED)).child(period.label))
                         .child(
                             div()
-                                .text_color(rgb(if exceeded { RED } else { TEXT }))
+                                .flex_1()
+                                .text_color(rgb(color_muted()))
+                                .child(period.label),
+                        )
+                        .child(
+                            div()
+                                .text_color(rgb(if exceeded { color_red() } else { color_text() }))
                                 .child(format!(
                                     "{} / {}",
                                     format_bytes(period.used),
@@ -291,7 +300,7 @@ pub(super) fn render(
                                 .w(px(60.0))
                                 .text_right()
                                 .text_size(px(10.0))
-                                .text_color(rgb(RED))
+                                .text_color(rgb(color_red()))
                                 .child(if exceeded { tr("已超限") } else { "" }),
                         )
                 }));
@@ -299,7 +308,7 @@ pub(super) fn render(
         status_card = status_card.child(manager_form_footer().child(action_button(
             "delete-quota",
             tr("删除配额"),
-            RED,
+            color_red(),
             cx,
             |app, window, cx| app.remove_traffic_quota(window, cx),
         )));
@@ -334,7 +343,7 @@ fn editor_card(manager: &DeviceManagerState, cx: &mut Context<BandixApp>) -> imp
         } else {
             tr("保存配额")
         },
-        ACCENT,
+        color_accent(),
         cx,
         |app, window, cx| app.save_traffic_quota(window, cx),
     )))

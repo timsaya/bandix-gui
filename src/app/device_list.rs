@@ -224,7 +224,7 @@ pub(super) fn render(
             .items_center()
             .justify_center()
             .text_size(px(11.0))
-            .text_color(rgb(MUTED))
+            .text_color(rgb(color_muted()))
             .child(tr("正在读取所选周期用量…"))
             .when(expanded, |view| view.flex_1())
             .into_any_element()
@@ -232,7 +232,11 @@ pub(super) fn render(
         div()
             .flex_1()
             .min_h_0()
-            .child(data_notice(tr("设备接口请求失败"), error.clone(), RED))
+            .child(data_notice(
+                tr("设备接口请求失败"),
+                error.clone(),
+                color_red(),
+            ))
             .into_any_element()
     } else if visible_count == 0 {
         div()
@@ -241,7 +245,7 @@ pub(super) fn render(
             .items_center()
             .justify_center()
             .text_size(px(11.0))
-            .text_color(rgb(MUTED))
+            .text_color(rgb(color_muted()))
             .child(if devices.is_empty() {
                 tr("暂无设备数据")
             } else {
@@ -263,9 +267,9 @@ pub(super) fn render(
         .w_full()
         .min_w_0()
         .rounded_xl()
-        .bg(rgb(SURFACE))
+        .bg(rgb(color_surface()))
         .border_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .p_4()
         .when(expanded, |view| view.h_full().min_h_0().flex().flex_col())
         .child(
@@ -283,16 +287,22 @@ pub(super) fn render(
                         .child(super::global_rate_limit::header_button(app, expanded, cx))
                         .child(sort_menu::render(app, expanded, cx))
                         .child(mode_switch(mode, cx))
-                        .child(div().text_size(px(11.0)).text_color(rgb(MUTED)).child(
-                            if query.is_empty() {
-                                tf("{0} 台设备", &[format!("{}", devices.len())])
-                            } else {
-                                tf(
-                                    "{0} / {1} 台设备",
-                                    &[format!("{}", visible_count), format!("{}", devices.len())],
-                                )
-                            },
-                        ))
+                        .child(
+                            div()
+                                .text_size(px(11.0))
+                                .text_color(rgb(color_muted()))
+                                .child(if query.is_empty() {
+                                    tf("{0} 台设备", &[format!("{}", devices.len())])
+                                } else {
+                                    tf(
+                                        "{0} / {1} 台设备",
+                                        &[
+                                            format!("{}", visible_count),
+                                            format!("{}", devices.len()),
+                                        ],
+                                    )
+                                }),
+                        )
                         .child(
                             div()
                                 .id(if expanded {
@@ -307,8 +317,8 @@ pub(super) fn render(
                                 .flex()
                                 .items_center()
                                 .text_size(px(11.0))
-                                .text_color(rgb(BLUE))
-                                .hover(|style| style.bg(rgb(SURFACE_2)))
+                                .text_color(rgb(color_blue()))
+                                .hover(|style| style.bg(rgb(color_surface_alt())))
                                 .on_click(cx.listener(|app, _, window, cx| {
                                     app.toggle_device_list_expanded(window, cx)
                                 }))
@@ -343,9 +353,9 @@ fn search_controls(app: &BandixApp) -> AnyElement {
                 .min_w_0()
                 .h(px(28.0))
                 .rounded_md()
-                .bg(rgb(SURFACE_2))
+                .bg(rgb(color_surface_alt()))
                 .border_1()
-                .border_color(rgb(BORDER))
+                .border_color(rgb(color_border()))
                 .child(
                     Input::new(input)
                         .small()
@@ -366,9 +376,9 @@ fn table_header() -> impl IntoElement {
         .h(px(34.0))
         .px_2()
         .rounded_md()
-        .bg(rgb(0x0d131d))
+        .bg(rgb(color_table_header()))
         .text_size(px(11.0))
-        .text_color(rgb(MUTED))
+        .text_color(rgb(color_muted()))
         .child(row::cell(1.9).child(tr("设备信息")))
         .child(row::cell(1.2).child(tr("LAN 流量")))
         .child(row::cell(1.2).child(tr("WAN 流量")))
@@ -388,7 +398,7 @@ fn mode_switch(mode: DeviceListMode, cx: &mut Context<BandixApp>) -> impl IntoEl
         .gap_1()
         .p_1()
         .rounded_md()
-        .bg(rgb(BG))
+        .bg(rgb(color_bg()))
         .children(
             [
                 (DeviceListMode::Simple, "简易"),
@@ -406,9 +416,13 @@ fn mode_switch(mode: DeviceListMode, cx: &mut Context<BandixApp>) -> impl IntoEl
                     .rounded_md()
                     .cursor_pointer()
                     .text_size(px(11.0))
-                    .text_color(rgb(if mode == option { TEXT } else { MUTED }))
-                    .when(mode == option, |button| button.bg(rgb(SURFACE_2)))
-                    .hover(|style| style.bg(rgb(SURFACE_2)))
+                    .text_color(rgb(if mode == option {
+                        color_text()
+                    } else {
+                        color_muted()
+                    }))
+                    .when(mode == option, |button| button.bg(rgb(color_surface_alt())))
+                    .hover(|style| style.bg(rgb(color_surface_alt())))
                     .on_click(cx.listener(move |app, _, _, cx| {
                         app.device_list.mode = option;
                         cx.notify();

@@ -46,16 +46,15 @@ pub(super) fn render(
             .items_center()
             .justify_center()
             .text_size(px(11.0))
-            .text_color(rgb(MUTED))
+            .text_color(rgb(color_muted()))
             .child(tr("暂无排行数据"))
             .into_any_element(),
-        Some(Err(error)) => {
-            data_notice(tr("流量用量排行接口请求失败"), error.clone(), RED).into_any_element()
-        }
+        Some(Err(error)) => data_notice(tr("流量用量排行接口请求失败"), error.clone(), color_red())
+            .into_any_element(),
         None => data_notice(
             tr("暂无排行数据"),
             tr("选择时间范围和网络类型后查询。").to_string(),
-            MUTED,
+            color_muted(),
         )
         .into_any_element(),
     };
@@ -67,9 +66,9 @@ pub(super) fn render(
         .w_full()
         .min_w_0()
         .rounded_xl()
-        .bg(rgb(SURFACE))
+        .bg(rgb(color_surface()))
         .border_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .p_4()
         .when(expanded, |view| view.h_full().min_h_0().flex().flex_col())
         .child(
@@ -81,7 +80,7 @@ pub(super) fn render(
                     .child(
                         div()
                             .text_size(px(11.0))
-                            .text_color(rgb(MUTED))
+                            .text_color(rgb(color_muted()))
                             .child(tf("{0} 台设备", &[format!("{}", item_count)])),
                     )
                     .child(
@@ -98,8 +97,8 @@ pub(super) fn render(
                             .flex()
                             .items_center()
                             .text_size(px(11.0))
-                            .text_color(rgb(BLUE))
-                            .hover(|style| style.bg(rgb(SURFACE_2)))
+                            .text_color(rgb(color_blue()))
+                            .hover(|style| style.bg(rgb(color_surface_alt())))
                             .on_click(
                                 cx.listener(|app, _, _, cx| app.toggle_ranking_list_expanded(cx)),
                             )
@@ -118,7 +117,7 @@ pub(super) fn render(
                     .flex_none()
                     .mb_2()
                     .text_size(px(10.0))
-                    .text_color(rgb(MUTED))
+                    .text_color(rgb(color_muted()))
                     .child(tf(
                         "{0} → {1} · {2} · 总计 {3}（↓ {4} / ↑ {5}）",
                         &[
@@ -145,9 +144,9 @@ fn table_header() -> impl IntoElement {
         .h(px(34.0))
         .px_2()
         .rounded_md()
-        .bg(rgb(0x0d131d))
+        .bg(rgb(color_table_header()))
         .text_size(px(11.0))
-        .text_color(rgb(MUTED))
+        .text_color(rgb(color_muted()))
         .child(div().w(px(54.0)).child(tr("排名")))
         .child(div().flex_1().min_w_0().child(tr("设备")))
         .child(div().w(px(120.0)).text_right().child(tr("下载")))
@@ -169,7 +168,7 @@ fn ranking_row(item: UsageItem) -> impl IntoElement {
         .h(px(ROW_HEIGHT))
         .overflow_hidden()
         .border_b_1()
-        .border_color(rgb(BORDER).opacity(0.72))
+        .border_color(rgb(color_border()).opacity(0.72))
         .child(
             div()
                 .id(format!("usage-ranking-share-{}", item.mac))
@@ -180,8 +179,8 @@ fn ranking_row(item: UsageItem) -> impl IntoElement {
                 .w(relative((percentage / 100.0) as f32))
                 .bg(linear_gradient(
                     90.0,
-                    linear_color_stop(rgb(BLUE).opacity(0.18), 0.0),
-                    linear_color_stop(rgb(BLUE).opacity(0.10), 1.0),
+                    linear_color_stop(rgb(color_blue()).opacity(0.18), 0.0),
+                    linear_color_stop(rgb(color_blue()).opacity(0.10), 1.0),
                 )),
         )
         .child(
@@ -196,7 +195,11 @@ fn ranking_row(item: UsageItem) -> impl IntoElement {
                     div()
                         .w(px(54.0))
                         .font_weight(FontWeight::SEMIBOLD)
-                        .text_color(rgb(if item.rank <= 3 { ORANGE } else { MUTED }))
+                        .text_color(rgb(if item.rank <= 3 {
+                            color_orange()
+                        } else {
+                            color_muted()
+                        }))
                         .child(format!("#{}", item.rank)),
                 )
                 .child(
@@ -211,7 +214,7 @@ fn ranking_row(item: UsageItem) -> impl IntoElement {
                             div()
                                 .whitespace_nowrap()
                                 .text_ellipsis()
-                                .text_color(rgb(TEXT))
+                                .text_color(rgb(color_text()))
                                 .font_weight(FontWeight::MEDIUM)
                                 .child(item.display_name()),
                         )
@@ -220,7 +223,7 @@ fn ranking_row(item: UsageItem) -> impl IntoElement {
                                 .whitespace_nowrap()
                                 .text_ellipsis()
                                 .text_size(px(11.0))
-                                .text_color(rgb(MUTED))
+                                .text_color(rgb(color_muted()))
                                 .child(item.mac),
                         ),
                 )
@@ -229,7 +232,7 @@ fn ranking_row(item: UsageItem) -> impl IntoElement {
                         .w(px(120.0))
                         .text_right()
                         .whitespace_nowrap()
-                        .text_color(rgb(DOWNLOAD))
+                        .text_color(rgb(color_download()))
                         .child(format_bytes(item.rx_bytes)),
                 )
                 .child(
@@ -237,7 +240,7 @@ fn ranking_row(item: UsageItem) -> impl IntoElement {
                         .w(px(120.0))
                         .text_right()
                         .whitespace_nowrap()
-                        .text_color(rgb(UPLOAD))
+                        .text_color(rgb(color_upload()))
                         .child(format_bytes(item.tx_bytes)),
                 )
                 .child(
@@ -245,7 +248,7 @@ fn ranking_row(item: UsageItem) -> impl IntoElement {
                         .w(px(120.0))
                         .text_right()
                         .whitespace_nowrap()
-                        .text_color(rgb(TEXT))
+                        .text_color(rgb(color_text()))
                         .child(format_bytes(item.total_bytes)),
                 )
                 .child(
@@ -253,7 +256,7 @@ fn ranking_row(item: UsageItem) -> impl IntoElement {
                         .w(px(76.0))
                         .text_right()
                         .whitespace_nowrap()
-                        .text_color(rgb(MUTED))
+                        .text_color(rgb(color_muted()))
                         .child(format!("{percentage:.1}%")),
                 ),
         )

@@ -3129,6 +3129,16 @@
     "Zużycie",
     "Использовано"
   ],
+  "界面主题": [
+    "界面主题",
+    "Interface theme",
+    "介面主題",
+    "インターフェーステーマ",
+    "Thème de l’interface",
+    "Tema de la interfaz",
+    "Motyw interfejsu",
+    "Тема интерфейса"
+  ],
   "界面语言": [
     "界面语言",
     "Interface Language",
@@ -3138,6 +3148,56 @@
     "Idioma de la interfaz",
     "Język interfejsu",
     "Язык интерфейса"
+  ],
+  "自动": [
+    "自动",
+    "Auto",
+    "自動",
+    "自動",
+    "Automatique",
+    "Automático",
+    "Automatycznie",
+    "Авто"
+  ],
+  "自动跟随系统外观，也可以固定使用深色或浅色主题。": [
+    "自动跟随系统外观，也可以固定使用深色或浅色主题。",
+    "Follow the system appearance automatically, or always use the dark or light theme.",
+    "自動跟隨系統外觀，也可以固定使用深色或淺色主題。",
+    "システムの外観に自動で合わせるか、ダークまたはライトテーマに固定します。",
+    "Suivez automatiquement l’apparence du système ou utilisez toujours le thème sombre ou clair.",
+    "Sigue automáticamente la apariencia del sistema o usa siempre el tema oscuro o claro.",
+    "Automatycznie dopasuj wygląd systemu albo zawsze używaj ciemnego lub jasnego motywu.",
+    "Автоматически следовать оформлению системы или всегда использовать тёмную либо светлую тему."
+  ],
+  "浅色": [
+    "浅色",
+    "Light",
+    "淺色",
+    "ライト",
+    "Clair",
+    "Claro",
+    "Jasny",
+    "Светлая"
+  ],
+  "深色": [
+    "深色",
+    "Dark",
+    "深色",
+    "ダーク",
+    "Sombre",
+    "Oscuro",
+    "Ciemny",
+    "Тёмная"
+  ],
+  "主题已切换，但保存失败：{0}": [
+    "主题已切换，但保存失败：{0}",
+    "Theme changed, but could not be saved: {0}",
+    "主題已切換，但儲存失敗：{0}",
+    "テーマを切り替えましたが保存できません：{0}",
+    "Thème modifié, mais non enregistré : {0}",
+    "El tema cambió, pero no se pudo guardar: {0}",
+    "Motyw został zmieniony, ale nie udało się go zapisać: {0}",
+    "Тема изменена, но сохранить её не удалось: {0}"
   ],
   "确认删除": [
     "确认删除",

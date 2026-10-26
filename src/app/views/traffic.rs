@@ -33,7 +33,7 @@ fn render_realtime(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
         return data_notice(
             tr("暂无流量数据"),
             tr("请先连接 Bandix 服务。").to_string(),
-            MUTED,
+            color_muted(),
         )
         .into_any_element();
     };
@@ -44,7 +44,7 @@ fn render_realtime(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
             if let Some(frozen) = app.realtime_chart.frozen_metrics() {
                 frozen
             } else {
-                return data_notice(tr("流量指标接口请求失败"), error.clone(), RED)
+                return data_notice(tr("流量指标接口请求失败"), error.clone(), color_red())
                     .into_any_element();
             }
         }
@@ -143,7 +143,7 @@ fn ranking_filters(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEle
         .pb_3()
         .mb_3()
         .border_b_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .child(
             div()
                 .flex()
@@ -190,7 +190,7 @@ fn ranking_filters(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEle
                 div()
                     .mt_2()
                     .text_size(px(11.0))
-                    .text_color(rgb(RED))
+                    .text_color(rgb(color_red()))
                     .child(error),
             )
         })
@@ -207,9 +207,9 @@ fn timeline_card(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEleme
         .w_full()
         .min_w_0()
         .rounded_xl()
-        .bg(rgb(SURFACE))
+        .bg(rgb(color_surface()))
         .border_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .p_5()
         .child(panel_title(tr("流量时间线")))
         .child(timeline_filters(app, cx))
@@ -218,7 +218,7 @@ fn timeline_card(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEleme
                 .mt_4()
                 .pt_4()
                 .border_t_1()
-                .border_color(rgb(BORDER))
+                .border_color(rgb(color_border()))
                 .child(timeline_result(app, cx)),
         )
 }
@@ -271,7 +271,7 @@ fn timeline_filters(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEl
                 div()
                     .mt_2()
                     .text_size(px(11.0))
-                    .text_color(rgb(RED))
+                    .text_color(rgb(color_red()))
                     .child(error),
             )
         })
@@ -286,7 +286,7 @@ fn timeline_filters(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoEl
                 .mt_4()
                 .pt_4()
                 .border_t_1()
-                .border_color(rgb(BORDER))
+                .border_color(rgb(color_border()))
                 .flex()
                 .flex_wrap()
                 .items_end()
@@ -324,7 +324,7 @@ fn filter_field(label: &'static str) -> Div {
     div().flex().flex_col().gap_2().child(
         div()
             .text_size(px(10.0))
-            .text_color(rgb(MUTED))
+            .text_color(rgb(color_muted()))
             .child(crate::i18n::text(&label)),
     )
 }
@@ -346,15 +346,15 @@ fn query_button(
         .items_center()
         .justify_center()
         .gap_2()
-        .bg(rgb(ACCENT))
-        .text_color(rgb(0x07110d))
+        .bg(rgb(color_accent()))
+        .text_color(rgb(color_accent_text()))
         .font_weight(FontWeight::SEMIBOLD)
         .text_size(px(11.0))
         .when(!loading, |button| {
             button
                 .cursor_pointer()
-                .hover(|style| style.bg(rgb(ACCENT).opacity(0.9)))
-                .active(|style| style.bg(rgb(ACCENT).opacity(0.7)))
+                .hover(|style| style.bg(rgb(color_accent()).opacity(0.9)))
+                .active(|style| style.bg(rgb(color_accent()).opacity(0.7)))
                 .on_click(cx.listener(move |app, _, _, cx| {
                     if ranking {
                         app.query_ranking(cx);
@@ -364,9 +364,11 @@ fn query_button(
                 }))
         })
         .when(loading, |button| {
-            button
-                .opacity(0.7)
-                .child(Spinner::new().small().color(rgb(0x07110d).into()))
+            button.opacity(0.7).child(
+                Spinner::new()
+                    .small()
+                    .color(rgb(color_accent_text()).into()),
+            )
         })
         .child(if loading {
             tr("查询中…")
@@ -397,15 +399,15 @@ fn small_filter_button(
         .child(crate::i18n::text(&label));
     if active {
         button
-            .bg(rgb(ACCENT))
-            .border_color(rgb(ACCENT))
-            .text_color(rgb(0x07110d))
+            .bg(rgb(color_accent()))
+            .border_color(rgb(color_accent()))
+            .text_color(rgb(color_accent_text()))
     } else {
         button
-            .bg(rgb(SURFACE_2))
-            .border_color(rgb(BORDER))
-            .text_color(rgb(MUTED))
-            .hover(|style| style.bg(rgb(0x1b2533)).text_color(rgb(TEXT)))
+            .bg(rgb(color_surface_alt()))
+            .border_color(rgb(color_border()))
+            .text_color(rgb(color_muted()))
+            .hover(|style| style.bg(rgb(color_hover())).text_color(rgb(color_text())))
     }
 }
 
@@ -455,12 +457,13 @@ fn timeline_result(app: &BandixApp, cx: &mut Context<BandixApp>) -> AnyElement {
             .child(timeline_summary(timeline))
             .into_any_element(),
         Some(Err(error)) => {
-            timeline_notice(tr("流量时间线接口请求失败"), error.clone(), RED).into_any_element()
+            timeline_notice(tr("流量时间线接口请求失败"), error.clone(), color_red())
+                .into_any_element()
         }
         None => timeline_notice(
             tr("暂无时间线数据"),
             tr("选择时间范围、网络类型、聚合粒度和设备后查询。").to_string(),
-            MUTED,
+            color_muted(),
         )
         .into_any_element(),
     }
@@ -480,7 +483,7 @@ fn timeline_notice(title: &'static str, detail: String, color: u32) -> impl Into
             div()
                 .mt_2()
                 .text_size(px(11.0))
-                .text_color(rgb(MUTED))
+                .text_color(rgb(color_muted()))
                 .child(detail),
         )
 }
@@ -488,9 +491,9 @@ fn timeline_notice(title: &'static str, detail: String, color: u32) -> impl Into
 fn timeline_summary(timeline: &UsageTimeline) -> impl IntoElement {
     div().flex().flex_wrap().gap_3().children(
         [
-            ("总上传", timeline.total_tx_bytes, UPLOAD),
-            ("总下载", timeline.total_rx_bytes, DOWNLOAD),
-            ("总流量", timeline.total_bytes, TEXT),
+            ("总上传", timeline.total_tx_bytes, color_upload()),
+            ("总下载", timeline.total_rx_bytes, color_download()),
+            ("总流量", timeline.total_bytes, color_text()),
         ]
         .map(|(label, bytes, color)| {
             div()
@@ -499,7 +502,7 @@ fn timeline_summary(timeline: &UsageTimeline) -> impl IntoElement {
                 .px_3()
                 .py_3()
                 .rounded_md()
-                .bg(rgb(SURFACE_2))
+                .bg(rgb(color_surface_alt()))
                 .flex()
                 .flex_col()
                 .items_center()
@@ -507,7 +510,7 @@ fn timeline_summary(timeline: &UsageTimeline) -> impl IntoElement {
                 .child(
                     div()
                         .text_size(px(10.0))
-                        .text_color(rgb(MUTED))
+                        .text_color(rgb(color_muted()))
                         .child(crate::i18n::text(&label)),
                 )
                 .child(
@@ -570,18 +573,23 @@ fn usage_timeline_chart(
                             div()
                                 .text_size(px(14.0))
                                 .font_weight(FontWeight::SEMIBOLD)
-                                .text_color(rgb(TEXT))
+                                .text_color(rgb(color_text()))
                                 .child(tr("时间线图表")),
                         )
-                        .child(div().text_size(px(10.0)).text_color(rgb(MUTED)).child(tf(
-                            "{0} · {1} · {2} · {3} 个时间段",
-                            &[
-                                format!("{}", network),
-                                format!("{}", aggregation),
-                                format!("{}", device),
-                                format!("{}", timeline.increments.len()),
-                            ],
-                        ))),
+                        .child(
+                            div()
+                                .text_size(px(10.0))
+                                .text_color(rgb(color_muted()))
+                                .child(tf(
+                                    "{0} · {1} · {2} · {3} 个时间段",
+                                    &[
+                                        format!("{}", network),
+                                        format!("{}", aggregation),
+                                        format!("{}", device),
+                                        format!("{}", timeline.increments.len()),
+                                    ],
+                                )),
+                        ),
                 )
                 .child(
                     div()
@@ -591,13 +599,13 @@ fn usage_timeline_chart(
                         .child(
                             div()
                                 .text_size(px(10.0))
-                                .text_color(rgb(DOWNLOAD))
+                                .text_color(rgb(color_download()))
                                 .child(tr("● 下载")),
                         )
                         .child(
                             div()
                                 .text_size(px(10.0))
-                                .text_color(rgb(UPLOAD))
+                                .text_color(rgb(color_upload()))
                                 .child(tr("● 上传")),
                         ),
                 ),
@@ -609,7 +617,7 @@ fn usage_timeline_chart(
                 .items_center()
                 .justify_center()
                 .text_size(px(11.0))
-                .text_color(rgb(MUTED))
+                .text_color(rgb(color_muted()))
                 .child(tr("暂无时间线数据"))
                 .into_any_element()
         } else {
@@ -633,7 +641,7 @@ fn usage_timeline_chart(
                                 .pr_3()
                                 .text_right()
                                 .text_size(px(10.0))
-                                .text_color(rgb(MUTED))
+                                .text_color(rgb(color_muted()))
                                 .child(format_bytes(value))
                         })),
                 )
@@ -644,7 +652,7 @@ fn usage_timeline_chart(
                         .h_full()
                         .relative()
                         .border_b_1()
-                        .border_color(rgb(BORDER))
+                        .border_color(rgb(color_border()))
                         .id("timeline-traffic-interaction")
                         .on_hover(cx.listener(|app, hovered, _, cx| {
                             app.set_timeline_chart_hover(*hovered, cx)
@@ -664,7 +672,7 @@ fn usage_timeline_chart(
                                 .left_0()
                                 .w_full()
                                 .border_t_1()
-                                .border_color(rgb(BORDER).opacity(0.55))
+                                .border_color(rgb(color_border()).opacity(0.55))
                         }))
                         .child(plot)
                         .child(wheel_capture(cx, |app, event, window, cx| {
@@ -680,7 +688,7 @@ fn usage_timeline_chart(
                 .pl(px(AXIS_WIDTH))
                 .pt_2()
                 .text_size(px(9.0))
-                .text_color(rgb(MUTED))
+                .text_color(rgb(color_muted()))
                 .child(format_timestamp(start_ms))
                 .child(format_timestamp(end_ms)),
         )

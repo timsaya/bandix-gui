@@ -47,11 +47,11 @@ pub(super) fn render(state: &DnsPage, cx: &Context<crate::app::BandixApp>) -> An
                                         .items_center()
                                         .h(px(34.0))
                                         .rounded_md()
-                                        .bg(rgb(0x0d131d))
+                                        .bg(rgb(color_table_header()))
                                         .children(COLUMNS.iter().map(|(label, width)| {
                                             cell(*width).child(text(
                                                 crate::i18n::tr(label),
-                                                MUTED,
+                                                color_muted(),
                                                 11.0,
                                             ))
                                         })),
@@ -67,9 +67,12 @@ pub(super) fn render(state: &DnsPage, cx: &Context<crate::app::BandixApp>) -> An
                 .scrollbar(&state.scroll, ScrollbarAxis::Both)
                 .child(crate::app::dns_monitor::scroll_capture(cx, false))
                 .into_any_element(),
-            Some(Ok(_)) => notice(tr("没有符合条件的 DNS 记录"), MUTED),
-            Some(Err(error)) => notice(&tf("DNS 查询读取失败：{0}", &[format!("{}", error)]), RED),
-            None => notice(tr("暂无 DNS 记录"), MUTED),
+            Some(Ok(_)) => notice(tr("没有符合条件的 DNS 记录"), color_muted()),
+            Some(Err(error)) => notice(
+                &tf("DNS 查询读取失败：{0}", &[format!("{}", error)]),
+                color_red(),
+            ),
+            None => notice(tr("暂无 DNS 记录"), color_muted()),
         })
         .when(state.loading, |view| {
             view.child(
@@ -78,11 +81,11 @@ pub(super) fn render(state: &DnsPage, cx: &Context<crate::app::BandixApp>) -> An
                     .inset_0()
                     .size_full()
                     .occlude()
-                    .bg(rgb(SURFACE).opacity(0.94))
+                    .bg(rgb(color_surface()).opacity(0.94))
                     .flex()
                     .items_center()
                     .justify_center()
-                    .child(text(tr("正在查询…"), MUTED, 12.0)),
+                    .child(text(tr("正在查询…"), color_muted(), 12.0)),
             )
         })
         .into_any_element()
@@ -95,7 +98,11 @@ fn row(index: usize, query: &DnsQuery) -> impl IntoElement {
     } else {
         &query.device_name
     };
-    let color = if query.is_query { BLUE } else { ACCENT };
+    let color = if query.is_query {
+        color_blue()
+    } else {
+        color_accent()
+    };
     let domain = query.domain.clone();
     let device_tip = format!("{}\n{}\n{}", device, query.device_ip(), query.device_mac);
     div()
@@ -105,22 +112,22 @@ fn row(index: usize, query: &DnsQuery) -> impl IntoElement {
         .min_h(px(54.0))
         .py_1()
         .border_b_1()
-        .border_color(rgb(BORDER).opacity(0.7))
+        .border_color(rgb(color_border()).opacity(0.7))
         .child(
             cell(COLUMNS[0].1)
                 .flex()
                 .flex_col()
                 .gap_1()
-                .child(text(date.to_string(), MUTED, 10.0))
-                .child(text(time.to_string(), TEXT, 11.0)),
+                .child(text(date.to_string(), color_muted(), 10.0))
+                .child(text(time.to_string(), color_text(), 11.0)),
         )
         .child(
             cell(COLUMNS[1].1)
                 .id("domain")
-                .child(text(domain.clone(), TEXT, 11.0).text_ellipsis())
+                .child(text(domain.clone(), color_text(), 11.0).text_ellipsis())
                 .tooltip(move |window, cx| Tooltip::new(domain.clone()).build(window, cx)),
         )
-        .child(cell(COLUMNS[2].1).child(text(query.query_type.clone(), BLUE, 11.0)))
+        .child(cell(COLUMNS[2].1).child(text(query.query_type.clone(), color_blue(), 11.0)))
         .child(
             cell(COLUMNS[3].1).child(
                 div()
@@ -144,7 +151,7 @@ fn row(index: usize, query: &DnsQuery) -> impl IntoElement {
                 query
                     .response_time_ms
                     .map_or_else(|| "—".into(), |ms| format!("{ms} ms")),
-                TEXT,
+                color_text(),
                 11.0,
             )),
         )
@@ -154,14 +161,19 @@ fn row(index: usize, query: &DnsQuery) -> impl IntoElement {
                 .flex()
                 .flex_col()
                 .gap_1()
-                .child(text(device.to_string(), TEXT, 11.0).text_ellipsis())
-                .child(text(empty(query.device_ip()).to_string(), MUTED, 10.0).text_ellipsis())
+                .child(text(device.to_string(), color_text(), 11.0).text_ellipsis())
+                .child(
+                    text(empty(query.device_ip()).to_string(), color_muted(), 10.0).text_ellipsis(),
+                )
                 .tooltip(move |window, cx| Tooltip::new(device_tip.clone()).build(window, cx)),
         )
         .child(
             cell(COLUMNS[6].1)
                 .id("dns-server")
-                .child(text(empty(query.dns_server()).to_string(), MUTED, 11.0).text_ellipsis())
+                .child(
+                    text(empty(query.dns_server()).to_string(), color_muted(), 11.0)
+                        .text_ellipsis(),
+                )
                 .tooltip({
                     let server = query.dns_server().to_string();
                     move |window, cx| Tooltip::new(server.clone()).build(window, cx)
@@ -206,14 +218,18 @@ fn results(query: &DnsQuery) -> impl IntoElement {
         .when(!query.is_query && !query.response_code.is_empty(), |view| {
             view.child(text(
                 status.to_string(),
-                if success { ACCENT } else { RED },
+                if success { color_accent() } else { color_red() },
                 10.0,
             ))
         })
         .child(
             text(
                 preview.unwrap_or_else(|| "—".into()),
-                if records.is_empty() { MUTED } else { TEXT },
+                if records.is_empty() {
+                    color_muted()
+                } else {
+                    color_text()
+                },
                 10.0,
             )
             .text_ellipsis(),

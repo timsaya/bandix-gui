@@ -20,10 +20,18 @@ fn nav_item(
         .rounded_lg()
         .cursor_pointer()
         .text_size(px(13.0))
-        .text_color(if active { rgb(TEXT) } else { rgb(MUTED) })
-        .when(active, |el| el.bg(rgb(0x17251f)))
+        .text_color(if active {
+            rgb(color_text())
+        } else {
+            rgb(color_muted())
+        })
+        .when(active, |el| el.bg(rgb(color_sidebar_active())))
         .when(!active, |el| {
-            el.hover(|style| style.bg(rgb(SURFACE_2)).text_color(rgb(TEXT)))
+            el.hover(|style| {
+                style
+                    .bg(rgb(color_surface_alt()))
+                    .text_color(rgb(color_text()))
+            })
         })
         .on_click(cx.listener(move |app, _, _, cx| {
             app.realtime_chart.resume();
@@ -40,7 +48,11 @@ fn nav_item(
                 .justify_center()
                 .w(px(22.0))
                 .text_size(px(18.0))
-                .text_color(if active { rgb(ACCENT) } else { rgb(MUTED) })
+                .text_color(if active {
+                    rgb(color_accent())
+                } else {
+                    rgb(color_muted())
+                })
                 .child(icon),
         )
         .child(crate::i18n::text(&label))
@@ -51,7 +63,7 @@ fn nav_item(
                     .w(px(3.0))
                     .h(px(18.0))
                     .rounded_full()
-                    .bg(rgb(ACCENT)),
+                    .bg(rgb(color_accent())),
             )
         })
 }
@@ -66,9 +78,9 @@ pub(super) fn sidebar(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl Into
         .flex_none()
         .flex()
         .flex_col()
-        .bg(rgb(SIDEBAR))
+        .bg(rgb(color_sidebar()))
         .border_r_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .pt_4()
         .pb_4()
         .px_3()
@@ -82,7 +94,7 @@ pub(super) fn sidebar(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl Into
                 .child(img(crate::assets::APP_ICON).size(px(40.0)).flex_none())
                 .child(
                     div()
-                        .text_color(rgb(TEXT))
+                        .text_color(rgb(color_text()))
                         .text_size(px(18.0))
                         .font_weight(FontWeight::SEMIBOLD)
                         .child("Bandix"),

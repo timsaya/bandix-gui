@@ -1,5 +1,5 @@
 use super::super::{BandixApp, components::panel_title, theme::*};
-use crate::app::preferences::SpeedUnit;
+use crate::app::preferences::{ColorScheme, SpeedUnit};
 use crate::i18n::{tf, tr};
 use crate::services::discovery::DiscoveryState;
 use gpui_kit::component::{
@@ -22,6 +22,7 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoE
             card()
                 .child(panel_title(tr("偏好设置")))
                 .child(language_settings(app))
+                .child(theme_settings(app, cx))
                 .child(speed_unit_settings(app, cx))
                 .child(refresh_interval_settings(app, cx))
                 .when_some(app.display_settings_error.clone(), |view, error| {
@@ -29,7 +30,7 @@ pub(super) fn render(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoE
                         div()
                             .mt_2()
                             .text_size(px(10.0))
-                            .text_color(rgb(RED))
+                            .text_color(rgb(color_red()))
                             .child(error),
                     )
                 }),
@@ -40,19 +41,19 @@ fn card() -> Div {
     div()
         .w_full()
         .rounded_xl()
-        .bg(rgb(SURFACE))
+        .bg(rgb(color_surface()))
         .border_1()
-        .border_color(rgb(BORDER))
+        .border_color(rgb(color_border()))
         .p_4()
 }
 
 fn service_connection(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
     let busy = matches!(app.discovery, DiscoveryState::Searching(_));
     let (label, color) = match &app.discovery {
-        DiscoveryState::Idle => (tr("未连接"), MUTED),
-        DiscoveryState::Searching(_) => (tr("连接中…"), BLUE),
-        DiscoveryState::Connected(_) => (tr("已连接"), ACCENT),
-        DiscoveryState::Failed(_) => (tr("连接失败"), RED),
+        DiscoveryState::Idle => (tr("未连接"), color_muted()),
+        DiscoveryState::Searching(_) => (tr("连接中…"), color_blue()),
+        DiscoveryState::Connected(_) => (tr("已连接"), color_accent()),
+        DiscoveryState::Failed(_) => (tr("连接失败"), color_red()),
     };
 
     card()
@@ -80,7 +81,7 @@ fn service_connection(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl Into
             div()
                 .mb_2()
                 .text_size(px(11.0))
-                .text_color(rgb(MUTED))
+                .text_color(rgb(color_muted()))
                 .child(tr("服务地址")),
         )
         .child(
@@ -102,9 +103,9 @@ fn service_connection(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl Into
                         .small()
                         .h(px(34.0))
                         .px_4()
-                        .bg(rgb(ACCENT))
-                        .border_color(rgb(ACCENT))
-                        .text_color(rgb(0x07110d))
+                        .bg(rgb(color_accent()))
+                        .border_color(rgb(color_accent()))
+                        .text_color(rgb(color_accent_text()))
                         .label(tr("连接服务"))
                         .loading(busy)
                         .disabled(busy)
@@ -134,7 +135,7 @@ fn service_connection(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl Into
                         .mt_3()
                         .pt_3()
                         .border_t_1()
-                        .border_color(rgb(BORDER))
+                        .border_color(rgb(color_border()))
                         .text_size(px(11.0))
                         .text_color(rgb(color))
                         .child(detail),
@@ -158,14 +159,14 @@ fn setting_row(label: &'static str, detail: &'static str) -> Div {
                     div()
                         .text_size(px(11.0))
                         .font_weight(FontWeight::MEDIUM)
-                        .text_color(rgb(TEXT))
+                        .text_color(rgb(color_text()))
                         .child(label),
                 )
                 .child(
                     div()
                         .mt_1()
                         .text_size(px(10.0))
-                        .text_color(rgb(MUTED))
+                        .text_color(rgb(color_muted()))
                         .child(detail),
                 ),
         )
@@ -183,13 +184,71 @@ fn language_settings(app: &BandixApp) -> impl IntoElement {
     )
 }
 
+fn theme_settings(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
+    setting_row(
+        tr("界面主题"),
+        tr("自动跟随系统外观，也可以固定使用深色或浅色主题。"),
+    )
+    .border_t_1()
+    .border_color(rgb(color_border()))
+    .child(
+        div()
+            .w(px(300.0))
+            .flex_none()
+            .flex()
+            .gap_2()
+            .children(ColorScheme::ALL.map(|scheme| {
+                let (id, label) = match scheme {
+                    ColorScheme::Auto => ("theme-auto", "自动"),
+                    ColorScheme::Dark => ("theme-dark", "深色"),
+                    ColorScheme::Light => ("theme-light", "浅色"),
+                };
+                let active = app.color_scheme == scheme;
+                div()
+                    .id(id)
+                    .flex_1()
+                    .h(px(32.0))
+                    .rounded_lg()
+                    .border_1()
+                    .cursor_pointer()
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .text_size(px(11.0))
+                    .font_weight(FontWeight::MEDIUM)
+                    .bg(rgb(if active {
+                        color_accent()
+                    } else {
+                        color_surface_alt()
+                    }))
+                    .border_color(rgb(if active {
+                        color_accent()
+                    } else {
+                        color_border()
+                    }))
+                    .text_color(rgb(if active {
+                        color_accent_text()
+                    } else {
+                        color_muted()
+                    }))
+                    .when(!active, |view| {
+                        view.hover(|style| {
+                            style.bg(rgb(color_hover())).text_color(rgb(color_text()))
+                        })
+                    })
+                    .on_click(cx.listener(move |app, _, _, cx| app.apply_color_scheme(scheme, cx)))
+                    .child(crate::i18n::text(label))
+            })),
+    )
+}
+
 fn speed_unit_settings(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl IntoElement {
     setting_row(
         tr("速度单位"),
         tr("1 字节 = 8 比特；自动换算速度，流量用量仍以字节显示。"),
     )
     .border_t_1()
-    .border_color(rgb(BORDER))
+    .border_color(rgb(color_border()))
     .child(
         div().w(px(300.0)).flex_none().flex().gap_2().children(
             [
@@ -209,11 +268,25 @@ fn speed_unit_settings(app: &BandixApp, cx: &mut Context<BandixApp>) -> impl Int
                     .items_center()
                     .justify_center()
                     .text_size(px(11.0))
-                    .bg(rgb(if active { ACCENT } else { SURFACE_2 }))
-                    .border_color(rgb(if active { ACCENT } else { BORDER }))
-                    .text_color(rgb(if active { 0x07110d } else { MUTED }))
+                    .bg(rgb(if active {
+                        color_accent()
+                    } else {
+                        color_surface_alt()
+                    }))
+                    .border_color(rgb(if active {
+                        color_accent()
+                    } else {
+                        color_border()
+                    }))
+                    .text_color(rgb(if active {
+                        color_accent_text()
+                    } else {
+                        color_muted()
+                    }))
                     .when(!active, |view| {
-                        view.hover(|style| style.bg(rgb(0x1b2533)).text_color(rgb(TEXT)))
+                        view.hover(|style| {
+                            style.bg(rgb(color_hover())).text_color(rgb(color_text()))
+                        })
                     })
                     .on_click(cx.listener(move |app, _, _, cx| app.set_speed_unit(unit, cx)))
                     .child(crate::i18n::text(&label))
@@ -228,7 +301,7 @@ fn refresh_interval_settings(app: &BandixApp, cx: &mut Context<BandixApp>) -> im
         tr("连接成功后自动读取实时数据；流量统计按筛选条件单独查询。"),
     )
     .border_t_1()
-    .border_color(rgb(BORDER))
+    .border_color(rgb(color_border()))
     .child(div().w(px(300.0)).flex_none().flex().gap_2().children(
         [1_u64, 2, 5, 10, 30].map(|seconds| interval_button(app, seconds, cx).into_any_element()),
     ))
@@ -248,11 +321,23 @@ fn interval_button(app: &BandixApp, seconds: u64, cx: &mut Context<BandixApp>) -
         .justify_center()
         .text_size(px(11.0))
         .font_weight(FontWeight::MEDIUM)
-        .bg(rgb(if active { ACCENT } else { SURFACE_2 }))
-        .border_color(rgb(if active { ACCENT } else { BORDER }))
-        .text_color(rgb(if active { 0x07110d } else { MUTED }))
+        .bg(rgb(if active {
+            color_accent()
+        } else {
+            color_surface_alt()
+        }))
+        .border_color(rgb(if active {
+            color_accent()
+        } else {
+            color_border()
+        }))
+        .text_color(rgb(if active {
+            color_accent_text()
+        } else {
+            color_muted()
+        }))
         .when(!active, |view| {
-            view.hover(|style| style.bg(rgb(0x1b2533)).text_color(rgb(TEXT)))
+            view.hover(|style| style.bg(rgb(color_hover())).text_color(rgb(color_text())))
         })
         .on_click(cx.listener(move |app, _, _, cx| app.set_refresh_interval(seconds, cx)))
         .child(tf("{0} 秒", &[seconds.to_string()]))
@@ -261,7 +346,7 @@ fn interval_button(app: &BandixApp, seconds: u64, cx: &mut Context<BandixApp>) -
 fn connection_detail(state: &DiscoveryState) -> Option<(String, u32)> {
     match state {
         DiscoveryState::Idle => None,
-        DiscoveryState::Searching(message) => Some((message.clone(), MUTED)),
+        DiscoveryState::Searching(message) => Some((message.clone(), color_muted())),
         DiscoveryState::Connected(report) => Some((
             tf(
                 "{0} · TCP 延迟 {1} ms · {2} 个模块可用",
@@ -271,8 +356,8 @@ fn connection_detail(state: &DiscoveryState) -> Option<(String, u32)> {
                     report.available_modules().to_string(),
                 ],
             ),
-            MUTED,
+            color_muted(),
         )),
-        DiscoveryState::Failed(error) => Some((error.clone(), RED)),
+        DiscoveryState::Failed(error) => Some((error.clone(), color_red())),
     }
 }
