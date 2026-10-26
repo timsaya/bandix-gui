@@ -590,6 +590,7 @@ impl DeviceConnection {
 #[derive(Clone, Debug)]
 pub struct ConnectionFlows {
     pub items: Vec<ConnectionFlow>,
+    pub geoip: std::collections::BTreeMap<String, GeoInfo>,
     pub total: usize,
     pub page: usize,
     pub page_size: usize,
@@ -603,6 +604,8 @@ impl<'de> Deserialize<'de> for ConnectionFlows {
         enum Response {
             Paged {
                 items: Vec<ConnectionFlow>,
+                #[serde(default)]
+                geoip: std::collections::BTreeMap<String, GeoInfo>,
                 total: usize,
                 page: Option<usize>,
                 page_size: Option<usize>,
@@ -613,6 +616,7 @@ impl<'de> Deserialize<'de> for ConnectionFlows {
         Ok(match Response::deserialize(deserializer)? {
             Response::Paged {
                 items,
+                geoip,
                 total,
                 page,
                 page_size,
@@ -624,6 +628,7 @@ impl<'de> Deserialize<'de> for ConnectionFlows {
                     .max(1);
                 Self {
                     items,
+                    geoip,
                     total,
                     page: page.unwrap_or(1).clamp(1, total_pages),
                     page_size,
@@ -635,6 +640,7 @@ impl<'de> Deserialize<'de> for ConnectionFlows {
                 page: 1,
                 page_size: items.len().max(1),
                 total_pages: 1,
+                geoip: std::collections::BTreeMap::new(),
                 items,
             },
         })
@@ -661,7 +667,7 @@ fn connection_flows_path(
     page_size: usize,
 ) -> String {
     let mut path = format!(
-        "/api/connection/flows?page={}&page_size={}",
+        "/api/connection/flows?page={}&page_size={}&geoip=1",
         page.max(1),
         page_size.clamp(1, 1000)
     );
@@ -683,6 +689,22 @@ fn encode_query_value(value: &str) -> String {
             _ => format!("%{byte:02X}"),
         })
         .collect()
+}
+
+#[derive(Clone, Debug, Default, Deserialize)]
+pub struct GeoInfo {
+    #[serde(default)]
+    pub country_code: Option<String>,
+    #[serde(default)]
+    pub country_names: std::collections::BTreeMap<String, String>,
+    #[serde(default)]
+    pub region_names: std::collections::BTreeMap<String, String>,
+    #[serde(default)]
+    pub city_names: std::collections::BTreeMap<String, String>,
+    #[serde(default)]
+    pub asn: Option<u32>,
+    #[serde(default)]
+    pub organization: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -1085,7 +1107,10 @@ mod tests {
             "orig":{"src":"192.168.1.2","sport":50000,"dst":"1.1.1.1","dport":443},
             "repl":{"src":"1.1.1.1","sport":443,"dst":"203.0.113.5","dport":50000},
             "orig_packets":30,"orig_bytes":3000,"repl_packets":90,"repl_bytes":9000,"flags":["ASSURED"]});
-        let data:ConnectionFlows=serde_json::from_value(serde_json::json!({"items":[flow.clone()],"total":201,"page":3,"page_size":100,"total_pages":3})).unwrap();
+        let data:ConnectionFlows=serde_json::from_value(serde_json::json!({
+            "items":[flow.clone()],"total":201,"page":3,"page_size":100,"total_pages":3,
+            "geoip":{"1.1.1.1":{"scope":"public","country_code":"AU","country_names":{"en":"Australia"},"city_names":{"en":"Sydney"},"asn":13335,"organization":"Cloudflare, Inc."}}
+        })).unwrap();
         assert_eq!(
             (data.total, data.page, data.page_size, data.total_pages),
             (201, 3, 100, 3)
@@ -1097,6 +1122,11 @@ mod tests {
             (30, 90)
         );
         assert_eq!(data.items[0].flags, ["ASSURED"]);
+        let geo = &data.geoip["1.1.1.1"];
+        assert_eq!(geo.country_code.as_deref(), Some("AU"));
+        assert_eq!(geo.city_names.get("en").map(String::as_str), Some("Sydney"));
+        assert_eq!(geo.asn, Some(13335));
+        assert_eq!(geo.organization.as_deref(), Some("Cloudflare, Inc."));
         let legacy: ConnectionFlows = serde_json::from_value(serde_json::json!([flow])).unwrap();
         assert_eq!(
             (
@@ -1112,6 +1142,10 @@ mod tests {
         )
         .unwrap();
         assert_eq!((empty.page, empty.page_size, empty.total_pages), (1, 1, 1));
+        assert_eq!(
+            connection_flows_path("192.168.1.2", "tcp", "", 2, 50),
+            "/api/connection/flows?page=2&page_size=50&geoip=1&ip=192.168.1.2&protocol=tcp"
+        );
     }
 
     #[test]

@@ -6,8 +6,10 @@ use crate::services::api::{self, ApiResult, ConnectionFlows, DeviceConnection};
 use gpui_kit::component::{
     Disableable, IndexPath, Sizable,
     button::Button,
+    input::{Input, InputEvent, InputState},
     select::{Select, SelectEvent, SelectItem, SelectState},
 };
+use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
 mod table;
@@ -56,7 +58,9 @@ pub(super) struct ConnectionDetails {
     protocol: Entity<Filter>,
     state: Entity<Filter>,
     page_size: Entity<Filter>,
+    search: Entity<InputState>,
     _subscriptions: [Subscription; 3],
+    _search_subscription: Subscription,
     data: Option<ApiResult<ConnectionFlows>>,
     loading: bool,
     page: usize,
@@ -131,6 +135,8 @@ impl BandixApp {
             window,
             cx,
         );
+        let search = cx
+            .new(|cx| InputState::new(window, cx).placeholder(tr("协议 / 状态 / IP / 端口 / ASN")));
         let subscriptions = [&protocol, &state, &page_size].map(|input| {
             cx.subscribe(input, |app, _, event: &SelectEvent<Vec<Choice>>, cx| {
                 if matches!(event, SelectEvent::Confirm(Some(_))) {
@@ -138,12 +144,22 @@ impl BandixApp {
                 }
             })
         });
+        let search_subscription = cx.subscribe(&search, |app, _, event: &InputEvent, cx| {
+            if matches!(event, InputEvent::Change) {
+                if let Some(details) = &app.connection_details {
+                    details.scroll.set_offset(Point::default());
+                }
+                cx.notify();
+            }
+        });
         self.connection_details = Some(ConnectionDetails {
             device,
             protocol,
             state,
             page_size,
+            search,
             _subscriptions: subscriptions,
+            _search_subscription: search_subscription,
             data: None,
             loading: false,
             page: 1,
@@ -239,6 +255,8 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
         return div().into_any_element();
     };
     let data = details.data.as_ref().and_then(|data| data.as_ref().ok());
+    let search_query = details.search.read(cx).value().trim().to_string();
+    let filtered_count = data.map(|data| table::filtered_count(data, &search_query));
     let total_pages = data.map_or(1, |data| data.total_pages);
     div()
         .id("connection-details-overlay")
@@ -341,17 +359,33 @@ pub(super) fn render_overlay(app: &BandixApp, cx: &mut Context<BandixApp>) -> An
                                     app.refresh_connection_details(false, cx)
                                 })),
                         )
-                        .child(div().ml_auto().child(text(
-                            if details.loading {
-                                tr("正在读取连接快照")
-                            } else {
-                                tr("连接快照 · 点击刷新获取最新数据")
-                            },
-                            MUTED,
-                            11.0,
-                        ))),
+                        .child(
+                            div()
+                                .id("connection-flow-search")
+                                .ml_auto()
+                                .w(px(280.0))
+                                .min_w(px(180.0))
+                                .child(
+                                    Input::new(&details.search)
+                                        .small()
+                                        .h(px(30.0))
+                                        .cleanable(true)
+                                        .aria_label(tr("搜索连接详情")),
+                                ),
+                        )
+                        .when(!search_query.is_empty(), |view| {
+                            view.child(text(
+                                format!(
+                                    "{} / {}",
+                                    filtered_count.unwrap_or(0),
+                                    data.map_or(0, |data| data.items.len())
+                                ),
+                                MUTED,
+                                11.0,
+                            ))
+                        }),
                 )
-                .child(table::render(details))
+                .child(table::render(details, cx))
                 .child(
                     div()
                         .flex_none()

@@ -58,6 +58,7 @@ pub(super) struct DnsPage {
     generation: u64,
     debounce_generation: u64,
     pub ranking: Ranking,
+    pub ranking_expanded: bool,
     pub ranking_scroll: ScrollHandle,
     pub scroll: ScrollHandle,
 }
@@ -131,6 +132,7 @@ impl DnsPage {
             generation: 0,
             debounce_generation: 0,
             ranking: Ranking::default(),
+            ranking_expanded: true,
             ranking_scroll: ScrollHandle::new(),
             scroll: ScrollHandle::new(),
         }
@@ -141,6 +143,7 @@ impl DnsPage {
         self.loading = false;
         self.data = None;
         self.page = 1;
+        self.ranking_expanded = true;
         self.scroll.set_offset(Point::default());
         self.ranking_scroll.set_offset(Point::default());
     }

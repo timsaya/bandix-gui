@@ -1999,6 +1999,16 @@
     "Szukaj urządzenia",
     "Поиск устройства"
   ],
+  "搜索连接详情": [
+    "搜索连接详情",
+    "Search connection details",
+    "搜尋連接詳情",
+    "接続詳細を検索",
+    "Rechercher dans les connexions",
+    "Buscar en los detalles de conexión",
+    "Szukaj w szczegółach połączeń",
+    "Поиск в сведениях о соединениях"
+  ],
   "搜索连接设备": [
     "搜索连接设备",
     "Search connected devices",
@@ -2008,6 +2018,16 @@
     "Buscar dispositivos conectados",
     "Szukaj połączonych urządzeń",
     "Поиск подключённых устройств"
+  ],
+  "协议 / 状态 / IP / 端口 / ASN": [
+    "协议 / 状态 / IP / 端口 / ASN",
+    "Protocol / state / IP / port / ASN",
+    "協定 / 狀態 / IP / 連接埠 / ASN",
+    "プロトコル / 状態 / IP / ポート / ASN",
+    "Protocole / état / IP / port / ASN",
+    "Protocolo / estado / IP / puerto / ASN",
+    "Protokół / stan / IP / port / ASN",
+    "Протокол / состояние / IP / порт / ASN"
   ],
   "搜索默认网关": [
     "搜索默认网关",

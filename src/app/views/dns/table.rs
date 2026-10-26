@@ -102,8 +102,8 @@ fn row(index: usize, query: &DnsQuery) -> impl IntoElement {
         .id(("dns-query", index))
         .flex()
         .items_center()
-        .min_h(px(70.0))
-        .py_2()
+        .min_h(px(54.0))
+        .py_1()
         .border_b_1()
         .border_color(rgb(BORDER).opacity(0.7))
         .child(
@@ -187,6 +187,17 @@ fn results(query: &DnsQuery) -> impl IntoElement {
     } else {
         format!("{}\n{}", status, records.join("\n"))
     };
+    let preview = records.first().map(|record| {
+        if records.len() == 1 {
+            record.clone()
+        } else {
+            format!(
+                "{} · {}",
+                record,
+                tf("另有 {0} 条", &[format!("{}", records.len() - 1)])
+            )
+        }
+    });
     cell(COLUMNS[7].1)
         .id("dns-result")
         .flex()
@@ -199,22 +210,14 @@ fn results(query: &DnsQuery) -> impl IntoElement {
                 10.0,
             ))
         })
-        .when(records.is_empty(), |view| {
-            view.child(text("—", MUTED, 11.0))
-        })
-        .children(
-            records
-                .iter()
-                .take(5)
-                .map(|record| text(record.clone(), TEXT, 10.0).text_ellipsis()),
-        )
-        .when(records.len() > 5, |view| {
-            view.child(text(
-                tf("另有 {0} 条", &[format!("{}", records.len() - 5)]),
-                BLUE,
+        .child(
+            text(
+                preview.unwrap_or_else(|| "—".into()),
+                if records.is_empty() { MUTED } else { TEXT },
                 10.0,
-            ))
-        })
+            )
+            .text_ellipsis(),
+        )
         .tooltip(move |window, cx| Tooltip::new(detail.clone()).build(window, cx))
 }
 fn timestamp(query: &DnsQuery) -> String {

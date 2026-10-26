@@ -57,7 +57,7 @@ fn summary(stats: &DnsStats) -> Div {
         .child(
             card()
                 .id("dns-query-summary")
-                .py_3()
+                .py_2()
                 .child(
                     div()
                         .flex()
@@ -125,7 +125,7 @@ fn summary(stats: &DnsStats) -> Div {
         .child(
             card()
                 .id("dns-latency-summary")
-                .py_3()
+                .py_2()
                 .child(
                     div()
                         .flex()
@@ -175,6 +175,7 @@ fn summary(stats: &DnsStats) -> Div {
 }
 fn rankings(app: &BandixApp, stats: &DnsStats, cx: &mut Context<BandixApp>) -> Div {
     let selected = app.dns_page.ranking;
+    let expanded = app.dns_page.ranking_expanded;
     let items = match selected {
         Ranking::Domains => &stats.top_domains,
         Ranking::Types => &stats.top_query_types,
@@ -188,58 +189,76 @@ fn rankings(app: &BandixApp, stats: &DnsStats, cx: &mut Context<BandixApp>) -> D
                 .flex()
                 .items_center()
                 .gap_3()
-                .pb_3()
+                .when(expanded, |view| view.pb_3())
                 .child(text(tr("查询排行"), TEXT, 14.0))
                 .child(text(tr("全局查询次数"), MUTED, 10.0))
+                .when(expanded, |view| {
+                    view.child(
+                        div().ml_auto().flex().gap_1().children(
+                            Ranking::ALL.into_iter().enumerate().map(
+                                |(index, (ranking, label))| {
+                                    Button::new(("dns-ranking", index))
+                                        .small()
+                                        .h(px(26.0))
+                                        .label(crate::i18n::text(&label))
+                                        .when(selected == ranking, |button| {
+                                            button.bg(rgb(SURFACE_2)).text_color(rgb(BLUE))
+                                        })
+                                        .on_click(cx.listener(move |app, _, _, cx| {
+                                            app.dns_page.ranking = ranking;
+                                            app.dns_page
+                                                .ranking_scroll
+                                                .set_offset(Point::default());
+                                            cx.notify();
+                                        }))
+                                },
+                            ),
+                        ),
+                    )
+                })
                 .child(
-                    div().ml_auto().flex().gap_1().children(
-                        Ranking::ALL
-                            .into_iter()
-                            .enumerate()
-                            .map(|(index, (ranking, label))| {
-                                Button::new(("dns-ranking", index))
-                                    .small()
-                                    .h(px(26.0))
-                                    .label(crate::i18n::text(&label))
-                                    .when(selected == ranking, |button| {
-                                        button.bg(rgb(SURFACE_2)).text_color(rgb(BLUE))
-                                    })
-                                    .on_click(cx.listener(move |app, _, _, cx| {
-                                        app.dns_page.ranking = ranking;
-                                        app.dns_page.ranking_scroll.set_offset(Point::default());
-                                        cx.notify();
-                                    }))
-                            }),
-                    ),
+                    Button::new("toggle-dns-ranking")
+                        .small()
+                        .h(px(26.0))
+                        .when(!expanded, |button| button.ml_auto())
+                        .label(if expanded {
+                            tr("收起")
+                        } else {
+                            tr("展开查看")
+                        })
+                        .on_click(cx.listener(|app, _, _, cx| {
+                            app.dns_page.ranking_expanded = !app.dns_page.ranking_expanded;
+                            app.dns_page.ranking_scroll.set_offset(Point::default());
+                            cx.notify();
+                        })),
                 ),
         )
-        .child(if items.is_empty() {
-            div()
-                .h(px(55.0))
-                .flex()
-                .items_center()
-                .justify_center()
-                .child(text(tr("暂无排行数据"), MUTED, 11.0))
-                .into_any_element()
-        } else {
-            div()
-                .relative()
-                .child(
-                    div()
-                        .id("dns-ranking-scroll")
-                        .max_h(px(180.0))
-                        .overflow_y_scroll()
-                        .track_scroll(&app.dns_page.ranking_scroll)
-                        .children(
-                            items
-                                .iter()
-                                .enumerate()
-                                .map(|(index, item)| ranking_row(index, item, stats.total_queries)),
-                        ),
-                )
-                .vertical_scrollbar(&app.dns_page.ranking_scroll)
-                .child(crate::app::dns_monitor::scroll_capture(cx, true))
-                .into_any_element()
+        .when(expanded, |view| {
+            view.child(if items.is_empty() {
+                div()
+                    .h(px(55.0))
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .child(text(tr("暂无排行数据"), MUTED, 11.0))
+                    .into_any_element()
+            } else {
+                div()
+                    .relative()
+                    .child(
+                        div()
+                            .id("dns-ranking-scroll")
+                            .max_h(px(150.0))
+                            .overflow_y_scroll()
+                            .track_scroll(&app.dns_page.ranking_scroll)
+                            .children(items.iter().enumerate().map(|(index, item)| {
+                                ranking_row(index, item, stats.total_queries)
+                            })),
+                    )
+                    .vertical_scrollbar(&app.dns_page.ranking_scroll)
+                    .child(crate::app::dns_monitor::scroll_capture(cx, true))
+                    .into_any_element()
+            })
         })
 }
 fn ranking_row(index: usize, item: &DnsTopItem, total: usize) -> impl IntoElement {
