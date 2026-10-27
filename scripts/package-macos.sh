@@ -160,7 +160,7 @@ package_binary() {
     local binary="$1"
     local package_arch="$2"
     local stage="$work/package-$package_arch"
-    local app="$stage/bandix-gui.app"
+    local app="$stage/Bandix GUI.app"
     local package_name="bandix-gui-${version}-macos-${package_arch}"
     local exported_app="$out/$package_name.app"
     local zip_path="$out/$package_name.zip"
@@ -178,12 +178,12 @@ package_binary() {
 
     plutil -create xml1 "$plist"
     plutil -insert CFBundleDevelopmentRegion -string en "$plist"
-    plutil -insert CFBundleDisplayName -string Bandix "$plist"
+    plutil -insert CFBundleDisplayName -string "Bandix GUI" "$plist"
     plutil -insert CFBundleExecutable -string Bandix "$plist"
     plutil -insert CFBundleIconFile -string Bandix "$plist"
     plutil -insert CFBundleIdentifier -string "$bundle_id" "$plist"
     plutil -insert CFBundleInfoDictionaryVersion -string 6.0 "$plist"
-    plutil -insert CFBundleName -string Bandix "$plist"
+    plutil -insert CFBundleName -string "Bandix GUI" "$plist"
     plutil -insert CFBundlePackageType -string APPL "$plist"
     plutil -insert CFBundleShortVersionString -string "$version" "$plist"
     plutil -insert CFBundleVersion -string "$version" "$plist"
@@ -213,10 +213,10 @@ package_binary() {
         local dmg_root="$work/dmg-$package_arch"
         local dmg_path="$out/$package_name.dmg"
         mkdir -p "$dmg_root"
-        ditto "$app" "$dmg_root/bandix-gui.app"
+        ditto "$app" "$dmg_root/Bandix GUI.app"
         ln -s /Applications "$dmg_root/Applications"
         rm -f -- "$dmg_path"
-        hdiutil create -quiet -volname Bandix -srcfolder "$dmg_root" \
+        hdiutil create -quiet -volname "Bandix GUI" -srcfolder "$dmg_root" \
             -ov -format UDZO "$dmg_path"
         outputs+=("$dmg_path")
     fi

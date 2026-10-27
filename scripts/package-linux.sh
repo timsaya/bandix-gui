@@ -174,14 +174,14 @@ install -m755 packaging/linux/install.sh "$appdir/install.sh"
 python3 scripts/check-linux-abi.py "$appdir/usr" --max-glibc "$glibc_baseline" > "$work/abi.json"
 required_glibc="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["minimum_glibc"])' "$work/abi.json")"
 cat > "$appdir/README.txt" <<EOF
-Bandix $version - Linux $arch
+Bandix GUI $version - Linux $arch
 
 Run: ./AppRun
 Optional per-user installation (requires Python 3):
   AppImage: ./$name.AppImage --install
   Without FUSE: ./$name.AppImage --appimage-extract-and-run --install
   Extracted bundle: ./AppRun --install (or ./install.sh)
-The installer adds Bandix and its icon to the application menu without root.
+The installer adds Bandix GUI and its icon to the application menu without root.
 AppImage installs use a stable copy in the user's data directory, so the
 downloaded file can be moved or deleted afterwards. Reinstall to update it.
 

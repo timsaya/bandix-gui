@@ -50,7 +50,7 @@ sudo apt install ./bandix-gui-0.1.0-linux-x86_64.deb
 sudo dnf install ./bandix-gui-0.1.0-linux-x86_64.rpm
 ```
 
-Start Bandix from the applications menu or run `bandix-gui`.
+Start **Bandix GUI** from the applications menu or run `bandix-gui`. AppImage and tar.gz user installations use the same menu name.
 
 **AppImage:**
 
@@ -71,7 +71,7 @@ See [Linux packaging](packaging/linux/README.md) for dependencies, checksums, in
 
 ### macOS
 
-The packaging script produces `.app`, `.zip` and `.dmg` outputs for Apple Silicon and Intel Macs, either separately or as a universal bundle. Open the DMG and drag `bandix-gui.app` to Applications, or extract the ZIP and copy `bandix-gui.app` there.
+The packaging script produces `.app`, `.zip` and `.dmg` outputs for Apple Silicon and Intel Macs, either separately or as a universal bundle. Open the DMG and drag `Bandix GUI.app` to Applications, or extract the ZIP and copy `Bandix GUI.app` there. The installed application is named **Bandix GUI**.
 
 Output names use `bandix-gui-<version>-macos-<arch>`, for example `bandix-gui-0.1.0-macos-arm64.dmg`. The architecture is `arm64`, `x86_64` or `universal`.
 

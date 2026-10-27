@@ -53,7 +53,7 @@ def stage_files(stage, binary, info, metadata, abi_path):
     docs.mkdir(parents=True)
     (docs / 'BUILD-INFO.json').write_text(json.dumps(native_info, indent=2) + '\n')
     (docs / 'README').write_text(
-        f"Bandix {info['version']}\n\nLaunch Bandix from the applications menu or run bandix-gui.\n"
+        f"Bandix GUI {info['version']}\n\nLaunch Bandix GUI from the applications menu or run bandix-gui.\n"
         f"Connect to your Bandix service in Settings.\n"
         f"Minimum supported glibc: {info['glibc_baseline']}.\n"
         f"Maintainer: {metadata['maintainer']}\nHomepage: {metadata['homepage']}\n"

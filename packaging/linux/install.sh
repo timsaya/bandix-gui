@@ -73,6 +73,6 @@ if appimage and shutil.which('gio'):
     icon = data_home / 'icons/hicolor/512x512/apps/bandix-gui.png'
     subprocess.run(['gio', 'set', str(destination), 'metadata::custom-icon', icon.as_uri()],
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-print('Bandix installed for the current user:', destination)
-print('Launch Bandix from the applications menu. No root access is required.')
+print('Bandix GUI installed for the current user:', destination)
+print('Launch Bandix GUI from the applications menu. No root access is required.')
 PY

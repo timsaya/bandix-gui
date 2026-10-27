@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Bandix
+Name=Bandix GUI
 Comment=Network traffic and device monitor
 Comment[zh_CN]=网络流量与设备监控
 Exec=bandix-gui

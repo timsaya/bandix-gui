@@ -50,7 +50,7 @@ sudo apt install ./bandix-gui-0.1.0-linux-x86_64.deb
 sudo dnf install ./bandix-gui-0.1.0-linux-x86_64.rpm
 ```
 
-安装后从应用菜单启动 Bandix，或运行 `bandix-gui`。
+安装后从应用菜单启动 **Bandix GUI**，或运行 `bandix-gui`。AppImage 和 tar.gz 安装到用户目录后也使用相同的菜单名称。
 
 **AppImage：**
 
@@ -71,7 +71,7 @@ chmod +x bandix-gui-0.1.0-linux-x86_64.AppImage
 
 ### macOS
 
-打包脚本可生成 Apple Silicon 和 Intel 的 `.app`、`.zip`、`.dmg`，支持分别打包或生成通用包。打开 DMG 后将 `bandix-gui.app` 拖入 Applications，或解压 ZIP 后将 `bandix-gui.app` 复制到该目录。
+打包脚本可生成 Apple Silicon 和 Intel 的 `.app`、`.zip`、`.dmg`，支持分别打包或生成通用包。打开 DMG 后将 `Bandix GUI.app` 拖入 Applications，或解压 ZIP 后将 `Bandix GUI.app` 复制到该目录。安装后的应用名称为 **Bandix GUI**。
 
 产物名称统一为 `bandix-gui-<版本>-macos-<架构>`，例如 `bandix-gui-0.1.0-macos-arm64.dmg`。架构为 `arm64`、`x86_64` 或 `universal`。
 

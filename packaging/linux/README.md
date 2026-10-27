@@ -85,7 +85,7 @@ sudo dnf install ./bandix-gui-0.1.0-linux-x86_64.rpm
 ```
 
 Both packages install `/usr/bin/bandix-gui`, a system applications-menu entry,
-and the Bandix icons. Launch from the menu or run `bandix-gui`. The native
+and the Bandix icons. Launch **Bandix GUI** from the menu or run `bandix-gui`. The native
 packages use system libraries; DEB dependencies are generated with
 `dpkg-shlibdeps`, and RPM uses automatic ELF dependency generation. Dynamically
 loaded font, Wayland and graphics libraries are also declared explicitly.
@@ -126,7 +126,7 @@ the original download's file-manager thumbnail still depends on desktop support.
 
 Alternatively, extract the tar.gz and run `./AppRun` inside its directory. Run
 `./AppRun --install` (or `./install.sh`) there to copy the bundle into the current user's data directory
-and add the Bandix desktop launcher and icon. Installation requires Python 3
+and add the **Bandix GUI** desktop launcher and icon. Installation requires Python 3
 and does not need root. Keep the complete bundle together when running without
 installation.
 
