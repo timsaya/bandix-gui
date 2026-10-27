@@ -98,7 +98,7 @@ with open('Cargo.toml', 'rb') as source:
 PY_VERSION
 )"
 tools="$target_dir/packaging-tools"
-name="bandix-${version}-linux-${arch}"
+name="bandix-gui-${version}-linux-${arch}"
 mkdir -p "$out" "$tools"
 # Build in a temporary directory: failed builds leave previous packages intact.
 work="$(mktemp -d "$out/.bandix-package.XXXXXX")"

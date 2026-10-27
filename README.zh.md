@@ -41,13 +41,13 @@ GUI 是独立客户端。流量采集、历史存储、限速和配额执行均�
 **Debian / Ubuntu：**
 
 ```sh
-sudo apt install ./bandix-0.1.0-linux-x86_64.deb
+sudo apt install ./bandix-gui-0.1.0-linux-x86_64.deb
 ```
 
 **Fedora / 使用 DNF 的 RPM 系统：**
 
 ```sh
-sudo dnf install ./bandix-0.1.0-linux-x86_64.rpm
+sudo dnf install ./bandix-gui-0.1.0-linux-x86_64.rpm
 ```
 
 安装后从应用菜单启动 Bandix，或运行 `bandix-gui`。
@@ -55,14 +55,14 @@ sudo dnf install ./bandix-0.1.0-linux-x86_64.rpm
 **AppImage：**
 
 ```sh
-chmod +x bandix-0.1.0-linux-x86_64.AppImage
-./bandix-0.1.0-linux-x86_64.AppImage
+chmod +x bandix-gui-0.1.0-linux-x86_64.AppImage
+./bandix-gui-0.1.0-linux-x86_64.AppImage
 ```
 
 系统没有 FUSE 时，添加 `--appimage-extract-and-run`。若要复制到当前用户的应用目录，并注册菜单入口和图标：
 
 ```sh
-./bandix-0.1.0-linux-x86_64.AppImage --appimage-extract-and-run --install
+./bandix-gui-0.1.0-linux-x86_64.AppImage --appimage-extract-and-run --install
 ```
 
 此可选安装方式需要 Python 3，无需 root，也支持用新版重复安装。tar.gz 包解压后，在解压目录运行 `./AppRun`；运行 `./AppRun --install` 可安装到当前用户目录。
@@ -71,7 +71,9 @@ chmod +x bandix-0.1.0-linux-x86_64.AppImage
 
 ### macOS
 
-打包脚本可生成 Apple Silicon 和 Intel 的 `.app`、`.zip`、`.dmg`，支持分别打包或生成通用包。打开 DMG 后将 Bandix 拖入 Applications，或解压 ZIP 后将 `Bandix.app` 复制到该目录。
+打包脚本可生成 Apple Silicon 和 Intel 的 `.app`、`.zip`、`.dmg`，支持分别打包或生成通用包。打开 DMG 后将 `bandix-gui.app` 拖入 Applications，或解压 ZIP 后将 `bandix-gui.app` 复制到该目录。
+
+产物名称统一为 `bandix-gui-<版本>-macos-<架构>`，例如 `bandix-gui-0.1.0-macos-arm64.dmg`。架构为 `arm64`、`x86_64` 或 `universal`。
 
 
 ## 连接 Bandix

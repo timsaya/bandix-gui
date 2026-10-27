@@ -171,7 +171,7 @@ def main():
     work.mkdir()
     stage = work / 'root'
     stage_files(stage, args.binary, info, metadata, work / 'abi.json')
-    name = f"bandix-{info['version']}-linux-{info['architecture']}"
+    name = f"bandix-gui-{info['version']}-linux-{info['architecture']}"
     if args.format in ['all', 'deb']:
         build_deb(stage, work, args.output_dir / f'{name}.deb', info, metadata)
     if args.format in ['all', 'rpm']:

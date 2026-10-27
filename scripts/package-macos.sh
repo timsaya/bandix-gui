@@ -160,9 +160,9 @@ package_binary() {
     local binary="$1"
     local package_arch="$2"
     local stage="$work/package-$package_arch"
-    local app="$stage/Bandix.app"
-    local exported_app="$out/Bandix-$package_arch.app"
-    local package_name="bandix-${version}-macos-${package_arch}"
+    local app="$stage/bandix-gui.app"
+    local package_name="bandix-gui-${version}-macos-${package_arch}"
+    local exported_app="$out/$package_name.app"
     local zip_path="$out/$package_name.zip"
     local plist="$app/Contents/Info.plist"
 
@@ -213,7 +213,7 @@ package_binary() {
         local dmg_root="$work/dmg-$package_arch"
         local dmg_path="$out/$package_name.dmg"
         mkdir -p "$dmg_root"
-        ditto "$app" "$dmg_root/Bandix.app"
+        ditto "$app" "$dmg_root/bandix-gui.app"
         ln -s /Applications "$dmg_root/Applications"
         rm -f -- "$dmg_path"
         hdiutil create -quiet -volname Bandix -srcfolder "$dmg_root" \

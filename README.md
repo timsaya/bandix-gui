@@ -41,13 +41,13 @@ The following examples use version `0.1.0` on `x86_64`; substitute the version a
 **Debian / Ubuntu:**
 
 ```sh
-sudo apt install ./bandix-0.1.0-linux-x86_64.deb
+sudo apt install ./bandix-gui-0.1.0-linux-x86_64.deb
 ```
 
 **Fedora / RPM-based systems with DNF:**
 
 ```sh
-sudo dnf install ./bandix-0.1.0-linux-x86_64.rpm
+sudo dnf install ./bandix-gui-0.1.0-linux-x86_64.rpm
 ```
 
 Start Bandix from the applications menu or run `bandix-gui`.
@@ -55,14 +55,14 @@ Start Bandix from the applications menu or run `bandix-gui`.
 **AppImage:**
 
 ```sh
-chmod +x bandix-0.1.0-linux-x86_64.AppImage
-./bandix-0.1.0-linux-x86_64.AppImage
+chmod +x bandix-gui-0.1.0-linux-x86_64.AppImage
+./bandix-gui-0.1.0-linux-x86_64.AppImage
 ```
 
 Add `--appimage-extract-and-run` if FUSE is unavailable. To copy the AppImage into your user applications directory and register its launcher and icons:
 
 ```sh
-./bandix-0.1.0-linux-x86_64.AppImage --appimage-extract-and-run --install
+./bandix-gui-0.1.0-linux-x86_64.AppImage --appimage-extract-and-run --install
 ```
 
 This optional installation requires Python 3, does not require root, and supports reinstalling a newer version. For the tar.gz package, extract it and run `./AppRun` inside the extracted directory; `./AppRun --install` registers a user installation.
@@ -71,7 +71,9 @@ See [Linux packaging](packaging/linux/README.md) for dependencies, checksums, in
 
 ### macOS
 
-The packaging script produces `.app`, `.zip` and `.dmg` outputs for Apple Silicon and Intel Macs, either separately or as a universal bundle. Open the DMG and drag Bandix to Applications, or extract the ZIP and copy `Bandix.app` there.
+The packaging script produces `.app`, `.zip` and `.dmg` outputs for Apple Silicon and Intel Macs, either separately or as a universal bundle. Open the DMG and drag `bandix-gui.app` to Applications, or extract the ZIP and copy `bandix-gui.app` there.
+
+Output names use `bandix-gui-<version>-macos-<arch>`, for example `bandix-gui-0.1.0-macos-arm64.dmg`. The architecture is `arm64`, `x86_64` or `universal`.
 
 
 ## Connect to Bandix

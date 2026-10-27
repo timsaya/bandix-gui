@@ -6,14 +6,14 @@ packages inside an Ubuntu 22.04 container using Podman (preferred) or Docker.
 It uses `Cargo.lock`, embeds the selected charcoal icon, and produces packages
 in `target/dist/`:
 
-- `bandix-<version>-linux-<arch>.AppImage`: one executable file.
-- `bandix-<version>-linux-<arch>.tar.gz`: the same application directory, with
+- `bandix-gui-<version>-linux-<arch>.AppImage`: one executable file.
+- `bandix-gui-<version>-linux-<arch>.tar.gz`: the same application directory, with
   bundled libraries, desktop entry and icons from 32 to 512 pixels.
-- `bandix-<version>-linux-<arch>.deb`: Debian/Ubuntu package (`amd64` or `arm64`).
-- `bandix-<version>-linux-<arch>.rpm`: RPM package (`x86_64` or `aarch64`).
-- `bandix-<version>-linux-<arch>.build-info.json`: architecture, build distribution,
+- `bandix-gui-<version>-linux-<arch>.deb`: Debian/Ubuntu package (`amd64` or `arm64`).
+- `bandix-gui-<version>-linux-<arch>.rpm`: RPM package (`x86_64` or `aarch64`).
+- `bandix-gui-<version>-linux-<arch>.build-info.json`: architecture, build distribution,
   detected minimum glibc version, source commit/dirty state and tool hashes.
-- `bandix-<version>-linux-<arch>.sha256`: checksums for the selected packages and
+- `bandix-gui-<version>-linux-<arch>.sha256`: checksums for the selected packages and
   build information. Verify them with `sha256sum -c <filename>.sha256`.
 
 Supported architectures are x86_64 and aarch64. Build natively on each
@@ -70,7 +70,7 @@ does not replace runtime testing of graphics drivers and desktop integrations.
 
 ```sh
 python3 scripts/test-linux-abi.py
-python3 scripts/check-linux-abi.py target/dist/bandix-0.1.0-linux-x86_64/usr
+python3 scripts/check-linux-abi.py target/dist/bandix-gui-0.1.0-linux-x86_64/usr
 ```
 
 ## Running
@@ -80,8 +80,8 @@ python3 scripts/check-linux-abi.py target/dist/bandix-0.1.0-linux-x86_64/usr
 Install with a package manager so runtime dependencies are resolved:
 
 ```sh
-sudo apt install ./bandix-0.1.0-linux-x86_64.deb
-sudo dnf install ./bandix-0.1.0-linux-x86_64.rpm
+sudo apt install ./bandix-gui-0.1.0-linux-x86_64.deb
+sudo dnf install ./bandix-gui-0.1.0-linux-x86_64.rpm
 ```
 
 Both packages install `/usr/bin/bandix-gui`, a system applications-menu entry,
@@ -104,15 +104,15 @@ builds, not submissions to official distribution repositories.
 ### AppImage and tar.gz
 
 Make the AppImage executable and launch it. If FUSE is unavailable, use
-`./bandix-<version>-linux-<arch>.AppImage --appimage-extract-and-run`.
+`./bandix-gui-<version>-linux-<arch>.AppImage --appimage-extract-and-run`.
 
 To install the AppImage for the current user, including its application menu
 entry and icons:
 
 ```sh
-./bandix-<version>-linux-<arch>.AppImage --install
+./bandix-gui-<version>-linux-<arch>.AppImage --install
 # Without FUSE:
-./bandix-<version>-linux-<arch>.AppImage --appimage-extract-and-run --install
+./bandix-gui-<version>-linux-<arch>.AppImage --appimage-extract-and-run --install
 ```
 
 Installation requires Python 3 and no root access. It copies the AppImage to
