@@ -1,0 +1,7 @@
+{
+  "name": "bandix-gui",
+  "maintainer": "https://github.com/timsaya",
+  "homepage": "https://github.com/timsaya/bandix-gui",
+  "license": "Unspecified",
+  "summary": "Desktop client for Bandix network traffic monitoring"
+}

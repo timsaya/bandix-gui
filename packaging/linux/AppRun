@@ -2,6 +2,12 @@
 set -euo pipefail
 
 appdir="${APPDIR:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)}"
+if [[ "${1:-}" == --install ]]; then
+    [[ $# == 1 ]] || { echo 'Usage: Bandix.AppImage --install' >&2; exit 2; }
+    # Run before setting bundle library paths: system integration tools must use
+    # their own system libraries. APPIMAGE identifies the original single file.
+    exec "$appdir/install.sh"
+fi
 export LD_LIBRARY_PATH="$appdir/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export XDG_DATA_DIRS="$appdir/usr/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 exec "$appdir/usr/bin/bandix-gui" "$@"

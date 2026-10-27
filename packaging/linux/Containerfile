@@ -1,0 +1,17 @@
+FROM docker.io/library/ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential clang cmake pkg-config ca-certificates curl git \
+    python3 python3-tomli binutils file desktop-file-utils patchelf dpkg-dev rpm cpio \
+    libfontconfig1-dev libfreetype6-dev libwayland-dev libxkbcommon-dev \
+    libxkbcommon-x11-dev libxcb1-dev libssl-dev libzstd-dev \
+    libvulkan1 mesa-vulkan-drivers libegl1-mesa libgl1-mesa-dri \
+    fonts-dejavu-core xvfb xauth x11-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Mount the host's selected Rust toolchain read-only at /rust-toolchain.
+# Compile/link against this image's headers and libraries, never the host's.
+ENV PATH=/rust-toolchain/bin:$PATH
+ENV CARGO_HOME=/cargo CARGO_TARGET_DIR=/build
+WORKDIR /workspace
