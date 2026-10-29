@@ -54,4 +54,4 @@ Download the DMG matching your Mac (`arm64`, `x86_64` or `universal`), open it, 
 ### First connection
 
 1. In the router's LuCI Bandix settings, set the listening Host to `0.0.0.0` or the router's LAN IPv4 address, then save and apply.
-2. Open Bandix GUI. Linux and macOS will try to discover the router automatically. If needed, enter the service address in Settings, for example `http://192.168.1.1:8686`.
+2. Open Bandix GUI. Linux, macOS and Windows will try to discover the router automatically (on Windows the IPv4 default routes from every interface are probed, so LAN and VPN setups both work). If needed, enter the service address in Settings, for example `http://192.168.1.1:8686`.

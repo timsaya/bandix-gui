@@ -54,4 +54,4 @@ chmod +x bandix-gui-0.1.0-linux-x86_64.AppImage
 ### 首次连接
 
 1. 在路由器的 LuCI Bandix 设置中，将监听 Host 设为 `0.0.0.0` 或路由器的局域网 IPv4 地址，然后保存并应用。
-2. 打开 Bandix GUI。Linux 和 macOS 会尝试自动发现路由器；如未发现，请在设置中手动填写服务地址，例如 `http://192.168.1.1:8686`。
+2. 打开 Bandix GUI。Linux、macOS 和 Windows 会尝试自动发现路由器（Windows 会读取所有网卡的 IPv4 默认路由并逐个探测，因此同时挂 VPN 也能发现局域网路由器）；如未发现，请在设置中手动填写服务地址，例如 `http://192.168.1.1:8686`。
